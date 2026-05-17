@@ -1,0 +1,85 @@
+name: SightSingingApp
+options:
+  bundleIdPrefix: com.sightsinging
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "15.0"
+  generateEmptyDirectories: true
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    TARGETED_DEVICE_FAMILY: "1,2"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    PRODUCT_NAME: "$(TARGET_NAME)"
+
+targets:
+  SightSingingApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: SightSingingApp
+        excludes:
+          - "**/*.xcassets"
+      - path: SightSingingApp/Resources/Assets.xcassets
+        type: folder
+    settings:
+      base:
+        INFOPLIST_FILE: SightSingingApp/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.sightsinging.app
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ENABLE_PREVIEWS: YES
+    info:
+      path: SightSingingApp/Info.plist
+      properties:
+        CFBundleDisplayName: 视唱练耳
+        CFBundleShortVersionString: "1.0.0"
+        CFBundleVersion: "1"
+        UILaunchScreen:
+          UIColorName: ""
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        NSMicrophoneUsageDescription: "视唱练习需要使用麦克风来检测您的音准"
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
+
+  SightSingingAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SightSingingAppTests
+    dependencies:
+      - target: SightSingingApp
+    settings:
+      base:
+        INFOPLIST_FILE: SightSingingAppTests/Info.plist
+        PRODUCT_BUNDLE_IDENTIFIER: com.sightsinging.app.tests
+
+schemes:
+  SightSingingApp:
+    build:
+      targets:
+        SightSingingApp: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - SightSingingAppTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

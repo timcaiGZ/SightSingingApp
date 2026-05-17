@@ -1,0 +1,553 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		061C47E8C86676CCC29CCF5A /* DiagnosticTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B360997A3A21A677A74F35C6 /* DiagnosticTestView.swift */; };
+		2732479C34DDB36A6AA282D9 /* TestQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E5D95C4942C09A8D311BCB /* TestQuestion.swift */; };
+		2E8FDFE7D44EDCD906F1E190 /* TheoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D519024DB6ED32B6B18FA74 /* TheoryDetailView.swift */; };
+		302BDA53CB83CB64EC661184 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5B86F3AE1CE6A63F1625AA5 /* ContentView.swift */; };
+		373596F4C7EFA2A548ED089E /* TestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9065E983AF8D09BF8BDE5F /* TestViewModel.swift */; };
+		387430C704F4DFABC60E33FA /* TestHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76BD6724A47D565B80AC285 /* TestHistory.swift */; };
+		3DB1E50FC4828EB8BB9F543A /* TestEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0D0EB41C0223396CDACDE6 /* TestEngine.swift */; };
+		41ABE9990EAB3D31FB5B8688 /* RecommendationEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8097D737617F4F5D82FD658 /* RecommendationEngineTests.swift */; };
+		45FD64D79FB02176AB83FF6C /* ExerciseType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 601790FC8AAC3DEC81863517 /* ExerciseType.swift */; };
+		4A6705231BAACF69EFAC5C73 /* MusicTheory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B93E2FD9903FEE1810B4F2E /* MusicTheory.swift */; };
+		5F54881E666121F453C03A05 /* ProfileTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41988167FF293DA080EA87C4 /* ProfileTab.swift */; };
+		86774ECFBA6BF70DFD39C41F /* TheoryTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BF2E2A5437F7DFA8650DA15 /* TheoryTab.swift */; };
+		88F4AB67BA0B68503891A75E /* TestEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319F086C6C64D0805C0276BE /* TestEngineTests.swift */; };
+		90AC3CB688462ABE4D44D611 /* TestTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2104C12A8CB3D4EB2C9D5D4 /* TestTab.swift */; };
+		951AF669B9F17A48992D37CB /* ModuleDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625C6E5C1D3734074879496 /* ModuleDetailView.swift */; };
+		98457F44018C48C222601C70 /* PracticeRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D70A42CB83C67D7719433C2 /* PracticeRecord.swift */; };
+		9F64F8944E91F76283B7DF26 /* SightSingingResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */; };
+		AEDCCBDF5CF207615A7C25DA /* SightSingingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EF59FACB6B74712F2D261D /* SightSingingApp.swift */; };
+		B575E2EF6B41C73F45877EAB /* PracticeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BC2207F89228789EFB8BB5 /* PracticeViewModel.swift */; };
+		B881BA1B9230837CA249A329 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C1CCAE6A2F831E379A970C /* AudioEngine.swift */; };
+		BE36E458AFDD395987EE50C6 /* TheoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44327F8C01BE33003F2AD880 /* TheoryViewModel.swift */; };
+		C26B52AC8F3C1B3190BAE732 /* SightSingingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3092C30EE32CDD092F5A5700 /* SightSingingView.swift */; };
+		C8E94BD96F53D7CA4A15ED48 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261DC55094851555851B7D28 /* PitchDetector.swift */; };
+		CE4A8FD277E718D254AE164B /* TheoryTopic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 441FFD531C75180F398FA453 /* TheoryTopic.swift */; };
+		D261179F5344CF64F3B65ED0 /* RecommendationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9BE4CBE9F17A18BD015D84 /* RecommendationEngine.swift */; };
+		D32ABB66ABE7D94FFEF1C715 /* PracticeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92ADB02EE70BAE9FAFA1148 /* PracticeTab.swift */; };
+		D70720469349B1E0ED50DF19 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8B4B3FA9716AF3F5F7B76A /* ColorTheme.swift */; };
+		DFD2AB34CA00A3CEEA980955 /* TestResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36388BDCE24BCA0FE243B7A /* TestResult.swift */; };
+		E488F1D31F4E0D31D1003C09 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9D52E8CCBCD5B65636F68E /* ProfileViewModel.swift */; };
+		E4C4D21C9D8C0C86D4AAE630 /* ExerciseModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F03FF10A76E950C3E7E52B2 /* ExerciseModule.swift */; };
+		FCEA3FB254BF9D04BC0C5E0D /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF045E71746A6A01BDDFA465 /* ExerciseDetailView.swift */; };
+		FE37C355FD16F3624509CC58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5C74E639898EA234B0BDF206 /* Assets.xcassets */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A50FA53467B0BEEF5A7D7727 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 72048ED5947E58F2C4608C4C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C60380853403D991AC8EDC35;
+			remoteInfo = SightSingingApp;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		05BC2207F89228789EFB8BB5 /* PracticeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeViewModel.swift; sourceTree = "<group>"; };
+		0A9BE4CBE9F17A18BD015D84 /* RecommendationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationEngine.swift; sourceTree = "<group>"; };
+		0B93E2FD9903FEE1810B4F2E /* MusicTheory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicTheory.swift; sourceTree = "<group>"; };
+		261DC55094851555851B7D28 /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
+		27C1CCAE6A2F831E379A970C /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
+		2BF2E2A5437F7DFA8650DA15 /* TheoryTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryTab.swift; sourceTree = "<group>"; };
+		2C0D0EB41C0223396CDACDE6 /* TestEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEngine.swift; sourceTree = "<group>"; };
+		3092C30EE32CDD092F5A5700 /* SightSingingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingView.swift; sourceTree = "<group>"; };
+		319F086C6C64D0805C0276BE /* TestEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEngineTests.swift; sourceTree = "<group>"; };
+		3625C6E5C1D3734074879496 /* ModuleDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleDetailView.swift; sourceTree = "<group>"; };
+		3D519024DB6ED32B6B18FA74 /* TheoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryDetailView.swift; sourceTree = "<group>"; };
+		3F03FF10A76E950C3E7E52B2 /* ExerciseModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModule.swift; sourceTree = "<group>"; };
+		406D0F83B4C7A3E47AC8657B /* SightSingingApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SightSingingApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		41988167FF293DA080EA87C4 /* ProfileTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTab.swift; sourceTree = "<group>"; };
+		441FFD531C75180F398FA453 /* TheoryTopic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryTopic.swift; sourceTree = "<group>"; };
+		44327F8C01BE33003F2AD880 /* TheoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryViewModel.swift; sourceTree = "<group>"; };
+		44EF59FACB6B74712F2D261D /* SightSingingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingApp.swift; sourceTree = "<group>"; };
+		5816B263FFF1327A242A0150 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5C74E639898EA234B0BDF206 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets.xcassets; path = SightSingingApp/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		601790FC8AAC3DEC81863517 /* ExerciseType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseType.swift; sourceTree = "<group>"; };
+		6C1F38696F0F2E9CC8124984 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		9D70A42CB83C67D7719433C2 /* PracticeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeRecord.swift; sourceTree = "<group>"; };
+		9E9D52E8CCBCD5B65636F68E /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
+		A76BD6724A47D565B80AC285 /* TestHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHistory.swift; sourceTree = "<group>"; };
+		B360997A3A21A677A74F35C6 /* DiagnosticTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticTestView.swift; sourceTree = "<group>"; };
+		B36388BDCE24BCA0FE243B7A /* TestResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestResult.swift; sourceTree = "<group>"; };
+		BA9065E983AF8D09BF8BDE5F /* TestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestViewModel.swift; sourceTree = "<group>"; };
+		C2E5D95C4942C09A8D311BCB /* TestQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestQuestion.swift; sourceTree = "<group>"; };
+		D2104C12A8CB3D4EB2C9D5D4 /* TestTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTab.swift; sourceTree = "<group>"; };
+		D5B86F3AE1CE6A63F1625AA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D92ADB02EE70BAE9FAFA1148 /* PracticeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeTab.swift; sourceTree = "<group>"; };
+		DD8B4B3FA9716AF3F5F7B76A /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTheme.swift; sourceTree = "<group>"; };
+		DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingResultView.swift; sourceTree = "<group>"; };
+		E8097D737617F4F5D82FD658 /* RecommendationEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationEngineTests.swift; sourceTree = "<group>"; };
+		F628C61320497D17D65DB8A1 /* SightSingingAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SightSingingAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FF045E71746A6A01BDDFA465 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		011485ED5E9C10124A237275 /* Practice */ = {
+			isa = PBXGroup;
+			children = (
+				FF045E71746A6A01BDDFA465 /* ExerciseDetailView.swift */,
+				3625C6E5C1D3734074879496 /* ModuleDetailView.swift */,
+				DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */,
+				3092C30EE32CDD092F5A5700 /* SightSingingView.swift */,
+			);
+			path = Practice;
+			sourceTree = "<group>";
+		};
+		039B0B491C6EDAB5591B3F8B /* User */ = {
+			isa = PBXGroup;
+			children = (
+				9D70A42CB83C67D7719433C2 /* PracticeRecord.swift */,
+				A76BD6724A47D565B80AC285 /* TestHistory.swift */,
+			);
+			path = User;
+			sourceTree = "<group>";
+		};
+		12784CC302FC982FA584107C /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				E8097D737617F4F5D82FD658 /* RecommendationEngineTests.swift */,
+				319F086C6C64D0805C0276BE /* TestEngineTests.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		274420DC5795FAEAF4534CD1 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		3532F7D231D37F8A5D86EDDF /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				DD8B4B3FA9716AF3F5F7B76A /* ColorTheme.swift */,
+				0B93E2FD9903FEE1810B4F2E /* MusicTheory.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		3E2634A90A491C0F0282FFA0 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				406D0F83B4C7A3E47AC8657B /* SightSingingApp.app */,
+				F628C61320497D17D65DB8A1 /* SightSingingAppTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3EA20ECD8A31F5DC54787E53 /* Theory */ = {
+			isa = PBXGroup;
+			children = (
+				3D519024DB6ED32B6B18FA74 /* TheoryDetailView.swift */,
+			);
+			path = Theory;
+			sourceTree = "<group>";
+		};
+		47894CCAD4F73BD80FFDA7CC /* Tabs */ = {
+			isa = PBXGroup;
+			children = (
+				D92ADB02EE70BAE9FAFA1148 /* PracticeTab.swift */,
+				41988167FF293DA080EA87C4 /* ProfileTab.swift */,
+				D2104C12A8CB3D4EB2C9D5D4 /* TestTab.swift */,
+				2BF2E2A5437F7DFA8650DA15 /* TheoryTab.swift */,
+			);
+			path = Tabs;
+			sourceTree = "<group>";
+		};
+		4C957E820B4900603E3CCAA2 = {
+			isa = PBXGroup;
+			children = (
+				5C74E639898EA234B0BDF206 /* Assets.xcassets */,
+				7BFCBCD227701992B09653E3 /* SightSingingApp */,
+				5236DB697E490F9511D3D831 /* SightSingingAppTests */,
+				3E2634A90A491C0F0282FFA0 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5236DB697E490F9511D3D831 /* SightSingingAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				5816B263FFF1327A242A0150 /* Info.plist */,
+				12784CC302FC982FA584107C /* Services */,
+				274420DC5795FAEAF4534CD1 /* ViewModels */,
+			);
+			path = SightSingingAppTests;
+			sourceTree = "<group>";
+		};
+		52AD6D96DFD8FB26DACEF826 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Profile;
+			sourceTree = "<group>";
+		};
+		69AE561C639C59BEE6A07083 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				D5B86F3AE1CE6A63F1625AA5 /* ContentView.swift */,
+				44EF59FACB6B74712F2D261D /* SightSingingApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		6D46F02CE2B5432C1DCBC317 /* Exercise */ = {
+			isa = PBXGroup;
+			children = (
+				3F03FF10A76E950C3E7E52B2 /* ExerciseModule.swift */,
+				601790FC8AAC3DEC81863517 /* ExerciseType.swift */,
+			);
+			path = Exercise;
+			sourceTree = "<group>";
+		};
+		6FD470112CDA20DAA50F8D1B /* Test */ = {
+			isa = PBXGroup;
+			children = (
+				C2E5D95C4942C09A8D311BCB /* TestQuestion.swift */,
+				B36388BDCE24BCA0FE243B7A /* TestResult.swift */,
+			);
+			path = Test;
+			sourceTree = "<group>";
+		};
+		77258777886680D970F1ADDD /* Test */ = {
+			isa = PBXGroup;
+			children = (
+				B360997A3A21A677A74F35C6 /* DiagnosticTestView.swift */,
+			);
+			path = Test;
+			sourceTree = "<group>";
+		};
+		7BFCBCD227701992B09653E3 /* SightSingingApp */ = {
+			isa = PBXGroup;
+			children = (
+				6C1F38696F0F2E9CC8124984 /* Info.plist */,
+				69AE561C639C59BEE6A07083 /* App */,
+				CB362A5EF70E510D99ADEDEF /* Models */,
+				7C0CB62DACF026D9F9F1E469 /* Resources */,
+				82F4E42E8BF42E49F70987CE /* Services */,
+				3532F7D231D37F8A5D86EDDF /* Utilities */,
+				B96CECA143C77943957726A3 /* ViewModels */,
+				C29F1558E45E8460A47BB5AD /* Views */,
+			);
+			path = SightSingingApp;
+			sourceTree = "<group>";
+		};
+		7C0CB62DACF026D9F9F1E469 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		82F4E42E8BF42E49F70987CE /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				27C1CCAE6A2F831E379A970C /* AudioEngine.swift */,
+				261DC55094851555851B7D28 /* PitchDetector.swift */,
+				0A9BE4CBE9F17A18BD015D84 /* RecommendationEngine.swift */,
+				2C0D0EB41C0223396CDACDE6 /* TestEngine.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		B96CECA143C77943957726A3 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				05BC2207F89228789EFB8BB5 /* PracticeViewModel.swift */,
+				9E9D52E8CCBCD5B65636F68E /* ProfileViewModel.swift */,
+				BA9065E983AF8D09BF8BDE5F /* TestViewModel.swift */,
+				44327F8C01BE33003F2AD880 /* TheoryViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		C29F1558E45E8460A47BB5AD /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				011485ED5E9C10124A237275 /* Practice */,
+				52AD6D96DFD8FB26DACEF826 /* Profile */,
+				47894CCAD4F73BD80FFDA7CC /* Tabs */,
+				77258777886680D970F1ADDD /* Test */,
+				3EA20ECD8A31F5DC54787E53 /* Theory */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		CB362A5EF70E510D99ADEDEF /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				6D46F02CE2B5432C1DCBC317 /* Exercise */,
+				6FD470112CDA20DAA50F8D1B /* Test */,
+				CD317B852FE677C61219897D /* Theory */,
+				039B0B491C6EDAB5591B3F8B /* User */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		CD317B852FE677C61219897D /* Theory */ = {
+			isa = PBXGroup;
+			children = (
+				441FFD531C75180F398FA453 /* TheoryTopic.swift */,
+			);
+			path = Theory;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2D92335A57E6DFD38061B1D3 /* SightSingingAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 06204E2C6B18B16EC799830B /* Build configuration list for PBXNativeTarget "SightSingingAppTests" */;
+			buildPhases = (
+				3458DB9D181401F20F149F01 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F47A1184B8C708DB995B06D0 /* PBXTargetDependency */,
+			);
+			name = SightSingingAppTests;
+			packageProductDependencies = (
+			);
+			productName = SightSingingAppTests;
+			productReference = F628C61320497D17D65DB8A1 /* SightSingingAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		C60380853403D991AC8EDC35 /* SightSingingApp */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0E4D8EA6C7DC66AB698EDD9B /* Build configuration list for PBXNativeTarget "SightSingingApp" */;
+			buildPhases = (
+				2F8668E4E2E0B7D40CA8E0EE /* Sources */,
+				7B62E4B815630107FD8E637C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SightSingingApp;
+			packageProductDependencies = (
+			);
+			productName = SightSingingApp;
+			productReference = 406D0F83B4C7A3E47AC8657B /* SightSingingApp.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		72048ED5947E58F2C4608C4C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					2D92335A57E6DFD38061B1D3 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					C60380853403D991AC8EDC35 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 86866E2E3D4DBC8252C9C8FA /* Build configuration list for PBXProject "SightSingingApp" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4C957E820B4900603E3CCAA2;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 3E2634A90A491C0F0282FFA0 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C60380853403D991AC8EDC35 /* SightSingingApp */,
+				2D92335A57E6DFD38061B1D3 /* SightSingingAppTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7B62E4B815630107FD8E637C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE37C355FD16F3624509CC58 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2F8668E4E2E0B7D40CA8E0EE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B881BA1B9230837CA249A329 /* AudioEngine.swift in Sources */,
+				D70720469349B1E0ED50DF19 /* ColorTheme.swift in Sources */,
+				302BDA53CB83CB64EC661184 /* ContentView.swift in Sources */,
+				061C47E8C86676CCC29CCF5A /* DiagnosticTestView.swift in Sources */,
+				FCEA3FB254BF9D04BC0C5E0D /* ExerciseDetailView.swift in Sources */,
+				E4C4D21C9D8C0C86D4AAE630 /* ExerciseModule.swift in Sources */,
+				45FD64D79FB02176AB83FF6C /* ExerciseType.swift in Sources */,
+				951AF669B9F17A48992D37CB /* ModuleDetailView.swift in Sources */,
+				4A6705231BAACF69EFAC5C73 /* MusicTheory.swift in Sources */,
+				C8E94BD96F53D7CA4A15ED48 /* PitchDetector.swift in Sources */,
+				98457F44018C48C222601C70 /* PracticeRecord.swift in Sources */,
+				D32ABB66ABE7D94FFEF1C715 /* PracticeTab.swift in Sources */,
+				B575E2EF6B41C73F45877EAB /* PracticeViewModel.swift in Sources */,
+				5F54881E666121F453C03A05 /* ProfileTab.swift in Sources */,
+				E488F1D31F4E0D31D1003C09 /* ProfileViewModel.swift in Sources */,
+				D261179F5344CF64F3B65ED0 /* RecommendationEngine.swift in Sources */,
+				AEDCCBDF5CF207615A7C25DA /* SightSingingApp.swift in Sources */,
+				9F64F8944E91F76283B7DF26 /* SightSingingResultView.swift in Sources */,
+				C26B52AC8F3C1B3190BAE732 /* SightSingingView.swift in Sources */,
+				3DB1E50FC4828EB8BB9F543A /* TestEngine.swift in Sources */,
+				387430C704F4DFABC60E33FA /* TestHistory.swift in Sources */,
+				2732479C34DDB36A6AA282D9 /* TestQuestion.swift in Sources */,
+				DFD2AB34CA00A3CEEA980955 /* TestResult.swift in Sources */,
+				90AC3CB688462ABE4D44D611 /* TestTab.swift in Sources */,
+				373596F4C7EFA2A548ED089E /* TestViewModel.swift in Sources */,
+				2E8FDFE7D44EDCD906F1E190 /* TheoryDetailView.swift in Sources */,
+				86774ECFBA6BF70DFD39C41F /* TheoryTab.swift in Sources */,
+				CE4A8FD277E718D254AE164B /* TheoryTopic.swift in Sources */,
+				BE36E458AFDD395987EE50C6 /* TheoryViewModel.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3458DB9D181401F20F149F01 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				41ABE9990EAB3D31FB5B8688 /* RecommendationEngineTests.swift in Sources */,
+				88F4AB67BA0B68503891A75E /* TestEngineTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		F47A1184B8C708DB995B06D0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = C60380853403D991AC8EDC35 /* SightSingingApp */;
+			targetProxy = A50FA53467B0BEEF5A7D7727 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		5B6E89477F4F45E87A84FF9C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		655CBCD025861B2FF4BBF535 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = SightSingingApp/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sightsinging.app;
+			};
+			name = Release;
+		};
+		7637E507136E2A3857E94578 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = SightSingingAppTests/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sightsinging.app.tests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SightSingingApp.app/SightSingingApp";
+			};
+			name = Debug;
+		};
+		ACFD53023DF0A5C3D42F9E7D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ENABLE_PREVIEWS = YES;
+				INFOPLIST_FILE = SightSingingApp/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sightsinging.app;
+			};
+			name = Debug;
+		};
+		C62273C43DBF82549B543BB5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = SightSingingAppTests/Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.sightsinging.app.tests;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SightSingingApp.app/SightSingingApp";
+			};
+			name = Release;
+		};
+		CCBE8B4162708F03AEA09073 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		06204E2C6B18B16EC799830B /* Build configuration list for PBXNativeTarget "SightSingingAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7637E507136E2A3857E94578 /* Debug */,
+				C62273C43DBF82549B543BB5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		0E4D8EA6C7DC66AB698EDD9B /* Build configuration list for PBXNativeTarget "SightSingingApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ACFD53023DF0A5C3D42F9E7D /* Debug */,
+				655CBCD025861B2FF4BBF535 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		86866E2E3D4DBC8252C9C8FA /* Build configuration list for PBXProject "SightSingingApp" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CCBE8B4162708F03AEA09073 /* Debug */,
+				5B6E89477F4F45E87A84FF9C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 72048ED5947E58F2C4608C4C /* Project object */;
+}

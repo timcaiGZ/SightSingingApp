@@ -1,0 +1,36 @@
+# Xcode
+*.xcuserstate
+*.xcworkspace
+xcuserdata/
+build/
+DerivedData/
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# CocoaPods
+Pods/
+Podfile.lock
+
+# Swift Package Manager
+.Packages/
+.build/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Build logs
+*.log
+
+# Environment files
+*.env
+.env.*
