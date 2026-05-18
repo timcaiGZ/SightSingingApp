@@ -28,6 +28,7 @@ targets:
           - "**/*.xcassets"
       - path: SightSingingApp/Resources/Assets.xcassets
         type: folder
+        buildPhase: resources
     settings:
       base:
         INFOPLIST_FILE: SightSingingApp/Info.plist

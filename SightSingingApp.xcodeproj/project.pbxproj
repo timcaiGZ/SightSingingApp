@@ -101,7 +101,7 @@
 		5816B263FFF1327A242A0150 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		594EEDCA1634DDC6D0FAEF2F /* PianoKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboardView.swift; sourceTree = "<group>"; };
 		5AF4C613E2AADD0497ADEB90 /* CourseViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CourseViewModel.swift; path = SightSingingApp/ViewModels/CourseViewModel.swift; sourceTree = "<group>"; };
-		5C74E639898EA234B0BDF206 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets.xcassets; path = SightSingingApp/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		5C74E639898EA234B0BDF206 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = SightSingingApp/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		601790FC8AAC3DEC81863517 /* ExerciseType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseType.swift; sourceTree = "<group>"; };
 		60DF0F61-4BBB-4ACE-8EB7- /* CourseLessonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CourseLessonView.swift; path = SightSingingApp/Views/Course/CourseLessonView.swift; sourceTree = "<group>"; };
 		65971A83DB4549BB931EF1C9 /* CourseTab.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CourseTab.swift; path = SightSingingApp/Views/Tabs/CourseTab.swift; sourceTree = "<group>"; };
