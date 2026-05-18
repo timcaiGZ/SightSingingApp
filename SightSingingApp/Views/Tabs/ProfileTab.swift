@@ -1,7 +1,7 @@
 import SwiftUI
 import Charts
 
-/// Tab 4 — 我的（增加学习统计可视化）
+/// Tab 4 — 我的（深蓝主题重构）
 struct ProfileTab: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = ProfileViewModel()
@@ -10,6 +10,9 @@ struct ProfileTab: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 20) {
+                    // 用户头像区域
+                    userProfileCard
+                    
                     // 学习概览卡片
                     statsOverviewCard
 
@@ -24,12 +27,50 @@ struct ProfileTab: View {
                 }
                 .padding(.bottom, 24)
             }
-            .background(Color(.systemGroupedBackground))
+            .pageBackground()
             .navigationTitle("我的")
         }
         .onAppear {
             viewModel.setModelContext(modelContext)
         }
+    }
+
+    // MARK: - User Profile Card
+
+    private var userProfileCard: some View {
+        HStack(spacing: 16) {
+            // 头像
+            ZStack {
+                Circle()
+                    .fill(AppColors.primaryBlue.opacity(0.15))
+                    .frame(width: 64, height: 64)
+                
+                Image(systemName: "person.fill")
+                    .font(.title)
+                    .foregroundStyle(AppColors.primaryBlue)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("音乐学习者")
+                    .font(.headline)
+                    .foregroundStyle(AppColors.primaryText)
+                
+                Text("开始你的视唱练耳之旅")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.secondaryText)
+            }
+            
+            Spacer()
+            
+            // 等级徽章
+            ModuleBadge(title: "Lv.5", color: AppColors.primaryBlue)
+        }
+        .padding(16)
+        .background(AppColors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
     }
 
     // MARK: - Stats Overview Card
@@ -40,17 +81,18 @@ struct ProfileTab: View {
             HStack {
                 Text("学习概览")
                     .font(.headline)
+                    .foregroundStyle(AppColors.primaryText)
                 Spacer()
             }
 
             // 统计数字
             let stats = viewModel.totalStats()
             HStack(spacing: 0) {
-                CompactStatItem(value: "\(stats.totalPracticeMinutes)", label: "练习分钟", icon: "clock")
+                CompactStatItem(value: "\(stats.totalPracticeMinutes)", label: "练习分钟", icon: "clock", color: AppColors.primaryBlue)
                 Divider().frame(height: 50)
-                CompactStatItem(value: "\(stats.totalPracticeCount)", label: "练习次数", icon: "play")
+                CompactStatItem(value: "\(stats.totalPracticeCount)", label: "练习次数", icon: "play.fill", color: AppColors.accentBlue)
                 Divider().frame(height: 50)
-                CompactStatItem(value: "\(stats.averageScore)", label: "平均得分", icon: "star")
+                CompactStatItem(value: "\(stats.averageScore)", label: "平均得分", icon: "star.fill", color: AppColors.warning)
             }
 
             Divider()
@@ -59,24 +101,24 @@ struct ProfileTab: View {
             weekOverviewChart
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(AppColors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
         .padding(.horizontal, 16)
-        .padding(.top, 16)
     }
 
     private var weekOverviewChart: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("本周练习")
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.secondaryText)
 
             let overview = viewModel.weekOverview()
 
             if overview.isEmpty {
                 Text("暂无练习数据")
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.secondaryText)
                     .frame(height: 80)
             } else {
                 Chart {
@@ -85,7 +127,7 @@ struct ProfileTab: View {
                             x: .value("日期", day.date, unit: .day),
                             y: .value("分钟", day.practiceMinutes)
                         )
-                        .foregroundStyle(AppColors.primary.gradient)
+                        .foregroundStyle(AppColors.primaryBlue.gradient)
                         .cornerRadius(4)
                     }
                 }
@@ -115,6 +157,7 @@ struct ProfileTab: View {
             HStack {
                 Text("模块得分趋势")
                     .font(.headline)
+                    .foregroundStyle(AppColors.primaryText)
                 Spacer()
             }
 
@@ -128,8 +171,9 @@ struct ProfileTab: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(AppColors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
         .padding(.horizontal, 16)
     }
 
@@ -140,6 +184,7 @@ struct ProfileTab: View {
             HStack {
                 Text("快捷操作")
                     .font(.headline)
+                    .foregroundStyle(AppColors.primaryText)
                 Spacer()
             }
 
@@ -148,7 +193,7 @@ struct ProfileTab: View {
                     // 导航到测试
                 }
 
-                QuickActionButton(icon: "book.fill", title: "乐理", color: AppColors.info) {
+                QuickActionButton(icon: "book.fill", title: "乐理", color: AppColors.accentBlue) {
                     // 导航到乐理
                 }
 
@@ -158,8 +203,9 @@ struct ProfileTab: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(AppColors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
         .padding(.horizontal, 16)
     }
 
@@ -187,8 +233,9 @@ struct ProfileTab: View {
             Divider()
                 .padding(.leading, 56)
         }
-        .background(Color(.systemBackground))
+        .background(AppColors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
         .padding(.horizontal, 16)
     }
 
@@ -206,21 +253,22 @@ struct CompactStatItem: View {
     let value: String
     let label: String
     let icon: String
+    let color: Color
 
     var body: some View {
         VStack(spacing: 4) {
             HStack(spacing: 4) {
                 Image(systemName: icon)
                     .font(.caption)
-                    .foregroundStyle(AppColors.primary)
+                    .foregroundStyle(color)
                 Text(value)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundStyle(AppColors.primary)
+                    .foregroundStyle(color)
             }
             Text(label)
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.secondaryText)
         }
         .frame(maxWidth: .infinity)
     }
@@ -241,20 +289,25 @@ struct ModuleScoreRow: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(module.rawValue)
                     .font(.body)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(AppColors.primaryText)
 
                 if let lastScore = viewModel.moduleScoreTrend(module: module).last?.score, lastScore > 0 {
                     Text("最近得分: \(lastScore)")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(AppColors.secondaryText)
                 }
             }
 
             Spacer()
 
+            // 得分进度圆点
+            let trend = viewModel.moduleScoreTrend(module: module)
+            let progressCount = min(5, trend.count)
+            ProgressDots(total: 5, completed: progressCount)
+
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.tertiaryText)
         }
         .padding(.vertical, 4)
     }
@@ -287,7 +340,7 @@ struct QuickActionButton: View {
 
                 Text(title)
                     .font(.caption)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(AppColors.primaryText)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
@@ -308,24 +361,24 @@ struct SettingsRow: View {
         HStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.body)
-                .foregroundStyle(AppColors.primary)
+                .foregroundStyle(AppColors.primaryBlue)
                 .frame(width: 24)
 
             Text(title)
                 .font(.body)
-                .foregroundStyle(.primary)
+                .foregroundStyle(AppColors.primaryText)
 
             Spacer()
 
             if let value = value {
                 Text(value)
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.secondaryText)
             }
 
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(AppColors.tertiaryText)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -402,11 +455,11 @@ struct ThemeSettingsView: View {
                             Spacer()
                             if viewModel.colorScheme == (option == "浅色模式" ? .light : (option == "深色模式" ? .dark : nil)) {
                                 Image(systemName: "checkmark")
-                                    .foregroundStyle(AppColors.primary)
+                                    .foregroundStyle(AppColors.primaryBlue)
                             }
                         }
                     }
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(AppColors.primaryText)
                 }
             }
         }
@@ -422,8 +475,8 @@ struct AboutView: View {
                 HStack {
                     Text("版本")
                     Spacer()
-                    Text(AppConstants.appVersion)
-                        .foregroundStyle(.secondary)
+                    Text("1.0.0")
+                        .foregroundStyle(AppColors.secondaryText)
                 }
             }
         }

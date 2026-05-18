@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Tab 1 — 练习首页（采用灰色分隔线列表布局）
+/// Tab 1 — 练习首页（深蓝主题重构）
 struct PracticeTab: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = PracticeViewModel()
@@ -19,7 +19,7 @@ struct PracticeTab: View {
                     }
                 }
             }
-            .background(Color(.systemGroupedBackground))
+            .pageBackground()
             .navigationTitle("练习")
             .navigationDestination(for: ExerciseModule.self) { module in
                 ModuleDetailView(module: module, viewModel: viewModel)
@@ -44,7 +44,11 @@ struct PracticeTab: View {
 
             Spacer()
 
-            // 模块进度
+            // 模块进度圆点
+            let progress = viewModel.progress(for: module)
+            ProgressDots(total: 5, completed: progress)
+
+            // 模块得分
             if let bestScore = viewModel.bestScore(for: ExerciseType.allCases.first { $0.module == module } ?? .singleNoteRecognition),
                bestScore > 0 {
                 Text("\(bestScore) 分")
@@ -54,7 +58,7 @@ struct PracticeTab: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(Color(.systemGroupedBackground))
+        .background(AppColors.pageBackground)
     }
 
     /// 模块内的练习列表
@@ -73,7 +77,11 @@ struct PracticeTab: View {
             }
         }
         .padding(.horizontal, 16)
-        .background(Color(.systemBackground))
+        .background(AppColors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 4)
     }
 
     /// 单个练习行
@@ -175,6 +183,17 @@ struct PracticeTab: View {
         if score >= 90 { return AppColors.success }
         else if score >= 70 { return AppColors.warning }
         else { return AppColors.error }
+    }
+}
+
+// MARK: - PracticeViewModel Extension
+extension PracticeViewModel {
+    /// 计算模块进度（0-5）
+    func progress(for module: ExerciseModule) -> Int {
+        let exercises = exercises(for: module)
+        let completedCount = exercises.filter { bestScore(for: $0) ?? 0 > 0 }.count
+        let totalCount = max(exercises.count, 1)
+        return min(5, Int((Double(completedCount) / Double(totalCount)) * 5))
     }
 }
 

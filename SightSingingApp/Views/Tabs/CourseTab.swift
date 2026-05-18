@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Tab 2 — 课程列表首页（4层深度结构入口）
+/// Tab 2 — 课程列表首页（深蓝主题重构）
 struct CourseTab: View {
     @State private var viewModel = CourseViewModel()
 
@@ -16,7 +16,7 @@ struct CourseTab: View {
                 }
                 .padding(.vertical, 16)
             }
-            .background(Color(.systemGroupedBackground))
+            .pageBackground()
             .navigationTitle("课程")
             .navigationDestination(for: Course.self) { course in
                 CourseDetailView(course: course, viewModel: viewModel)
@@ -36,7 +36,7 @@ struct CourseTab: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("学习进度")
                 .font(.headline)
-                .foregroundStyle(.primary)
+                .foregroundStyle(AppColors.primaryText)
                 .padding(.horizontal, 16)
 
             HStack(spacing: 16) {
@@ -54,7 +54,7 @@ struct CourseTab: View {
         VStack(alignment: .leading, spacing: 12) {
             Text("全部课程")
                 .font(.headline)
-                .foregroundStyle(.primary)
+                .foregroundStyle(AppColors.primaryText)
                 .padding(.horizontal, 16)
 
             VStack(spacing: 12) {
@@ -97,13 +97,14 @@ struct ProgressCard: View {
 
             Text(course.title)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(AppColors.secondaryText)
                 .lineLimit(1)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(Color(.systemBackground))
+        .background(AppColors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -130,11 +131,11 @@ struct CourseCard: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text(course.title)
                     .font(.headline)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(AppColors.primaryText)
 
                 Text(course.description)
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(AppColors.secondaryText)
                     .lineLimit(2)
 
                 // 进度条
@@ -143,24 +144,32 @@ struct CourseCard: View {
                     .padding(.top, 4)
 
                 HStack {
-                    Text("\(course.chapters.count) 章节")
-                    Text("·")
+                    // 章节数
+                    ModuleBadge(title: "\(course.chapters.count) 章节", color: viewModel.iconColor(for: course))
+                    
+                    // 课时数
                     Text("\(course.totalLessons) 课时")
+                        .font(.caption2)
+                        .foregroundStyle(AppColors.tertiaryText)
+                    
+                    Spacer()
+                    
+                    // 进度圆点
+                    let progressPercent = Int(viewModel.calculateProgress(for: course) * 5)
+                    ProgressDots(total: 5, completed: progressPercent)
                 }
-                .font(.caption2)
-                .foregroundStyle(.tertiary)
             }
 
             Spacer()
 
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(AppColors.tertiaryText)
         }
         .padding(16)
-        .background(Color(.systemBackground))
+        .background(AppColors.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 2)
+        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 

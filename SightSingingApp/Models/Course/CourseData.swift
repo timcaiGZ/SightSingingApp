@@ -79,7 +79,7 @@ extension CourseViewModel {
 // MARK: - 预置课程
 
 extension Course {
-    static let allCourses: [Course] = [.musicTheoryBasics, .sightSingingIntro, .rhythmTraining]
+    static let allCourses: [Course] = [.musicTheoryBasics, .sightSingingIntro, .rhythmTraining, .earTrainingCourse]
 
     static let musicTheoryBasics = Course(
         id: "course_music_theory",
@@ -160,6 +160,61 @@ extension Course {
                 Lesson(id: "les_ss_3_1", title: "3.1 四分音符", content: "稳定节拍训练", duration: 10,
                        exercises: [
                            CourseExercise(id: "ex16", title: "四分音符节奏", type: .singing, difficulty: 2, description: "稳定节拍演唱", content: "使用节拍器（速度60），每拍演唱一个音：\n\n| 1 | 2 | 3 | 4 | 1 | 2 | 3 | 4 |\n| C | D | E | F | G | A | B | C |")
+                       ])
+            ])
+        ]
+    )
+
+    static let earTrainingCourse = Course(
+        id: "course_ear_training",
+        title: "听力训练",
+        description: "系统训练音乐听力，掌握音高、音程、和弦听辨",
+        icon: "ear.fill",
+        colorName: "purple",
+        chapters: [
+            Chapter(id: "ch_et_1", title: "第一章 音高辨别", courseId: "course_ear_training", lessons: [
+                Lesson(id: "les_et_1_1", title: "1.1 音高感知", content: "训练对音高上下行的感知能力", duration: 10,
+                       exercises: [
+                           CourseExercise(id: "ex_et_1", title: "音高上行辨别", type: .earTraining, difficulty: 1, description: "辨别音高上行", content: "聆听两组音符，判断第二组音高比第一组高还是低：\n\n1. C → D（高/低？）\n2. G → E（高/低？）\n3. A → B（高/低？）"),
+                           CourseExercise(id: "ex_et_2", title: "音高记忆", type: .earTraining, difficulty: 2, description: "记住标准音高", content: "记住A4=440Hz的标准音高，然后判断以下音比A高还是低：\n\n1. G4\n2. B4\n3. F#4")
+                       ]),
+                Lesson(id: "les_et_1_2", title: "1.2 音名听辨", content: "听辨吉他空弦音名", duration: 12,
+                       exercises: [
+                           CourseExercise(id: "ex_et_3", title: "空弦音听辨", type: .earTraining, difficulty: 2, description: "听辨空弦音名", content: "聆听吉他空弦音，判断是哪根弦的音：\n\n1. 答案：E2（六弦空弦）\n2. 答案：A2（五弦空弦）\n3. 答案：G3（三弦空弦）\n4. 答案：E4（一弦空弦）")
+                       ])
+            ]),
+            Chapter(id: "ch_et_2", title: "第二章 音程听辨", courseId: "course_ear_training", lessons: [
+                Lesson(id: "les_et_2_1", title: "2.1 大小二度听辨", content: "辨别大二度和小二度音程", duration: 15,
+                       exercises: [
+                           CourseExercise(id: "ex_et_4", title: "大小二度辨析", type: .earTraining, difficulty: 3, description: "听辨大二度与小二度", content: "聆听以下音程，判断是大二度还是小二度：\n\n1. C-D（大二度/小二度？）\n2. E-F（大二度/小二度？）\n3. B-C（大二度/小二度？）\n\n提示：小二度听起来更\"紧张\"")
+                       ]),
+                Lesson(id: "les_et_2_2", title: "2.2 大小三度听辨", content: "辨别大三度和小三度音程", duration: 15,
+                       exercises: [
+                           CourseExercise(id: "ex_et_5", title: "大小三度辨析", type: .earTraining, difficulty: 3, description: "听辨大三度与小三度", content: "聆听以下音程，判断是大三度还是小三度：\n\n1. C-E（大三度/小三度？）\n2. D-F（大三度/小三度？）\n3. A-C（大三度/小三度？）\n\n提示：大三度听起来更\"明亮\"，小三度更\"忧郁\"")
+                       ]),
+                Lesson(id: "les_et_2_3", title: "2.3 纯四五度听辨", content: "辨别纯四度和纯五度音程", duration: 18,
+                       exercises: [
+                           CourseExercise(id: "ex_et_6", title: "纯四五度辨析", type: .earTraining, difficulty: 4, description: "听辨纯四度与纯五度", content: "聆听以下音程，判断是纯四度还是纯五度：\n\n1. C-F（纯四度/纯五度？）\n2. C-G（纯四度/纯五度？）\n3. G-C（纯四度/纯五度？）\n\n提示：纯四度听起来像\"婚礼进行曲\"开头，纯五度像\"星球大战\"主题")
+                       ])
+            ]),
+            Chapter(id: "ch_et_3", title: "第三章 和弦听辨", courseId: "course_ear_training", lessons: [
+                Lesson(id: "les_et_3_1", title: "3.1 大小三和弦听辨", content: "辨别大三和弦与小三和弦", duration: 20,
+                       exercises: [
+                           CourseExercise(id: "ex_et_7", title: "大小和弦辨析", type: .earTraining, difficulty: 3, description: "听辨大三和弦与小三和弦", content: "聆听以下和弦，判断是大三和弦还是小三和弦：\n\n1. C-E-G（大/小？）\n2. A-C-E（大/小？）\n3. D-F#-A（大/小？）\n4. E-G-B（大/小？）\n\n提示：大三和弦听起来\"明亮开朗\"，小三和弦听起来\"忧伤沉郁\"")
+                       ]),
+                Lesson(id: "les_et_3_2", title: "3.2 常见和弦进行听辨", content: "听辨常见和弦进行模式", duration: 25,
+                       exercises: [
+                           CourseExercise(id: "ex_et_8", title: "和弦进行识别", type: .earTraining, difficulty: 5, description: "听辨和弦进行", content: "聆听以下和弦进行，写出和弦级数：\n\n1. C-G-Am-F（这是哪个经典进行？）\n2. C-Am-F-G（这是哪个经典进行？）\n3. Am-F-C-G（这是哪个经典进行？）\n\n提示：I-V-vi-IV, I-vi-IV-V, vi-IV-I-V")
+                       ])
+            ]),
+            Chapter(id: "ch_et_4", title: "第四章 节奏模仿", courseId: "course_ear_training", lessons: [
+                Lesson(id: "les_et_4_1", title: "4.1 简单节奏模仿", content: "听打节奏并模仿", duration: 12,
+                       exercises: [
+                           CourseExercise(id: "ex_et_9", title: "四拍子模仿", type: .earTraining, difficulty: 2, description: "模仿简单节奏", content: "聆听节奏，用手拍出相同的节奏：\n\n1. | 哒 | 哒 | 哒 | 哒 |（四分音符）\n2. | 哒哒 | 哒哒 | 哒哒 | 哒哒 |（八分音符）\n3. | 哒 | 哒哒 | 哒 | 哒哒 |（混合）")
+                       ]),
+                Lesson(id: "les_et_4_2", title: "4.2 旋律听写入门", content: "听旋律并写出简谱", duration: 20,
+                       exercises: [
+                           CourseExercise(id: "ex_et_10", title: "简谱听写", type: .earTraining, difficulty: 4, description: "听旋律写简谱", content: "聆听钢琴演奏的旋律，用简谱数字写出：\n\n1. 两小节，4/4拍，仅使用1 2 3\n2. 两小节，4/4拍，使用1 2 3 4 5\n3. 两小节，4/4拍，使用1-7全部音\n\n提示：先确定第一个音，再判断后续音是上行还是下行")
                        ])
             ])
         ]
