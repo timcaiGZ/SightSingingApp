@@ -55,6 +55,17 @@ enum NoteValue: String {
     func withDash(count: Int) -> String {
         String(repeating: "-", count: count)
     }
+    
+    /// 转换为五线谱时值
+    func toNoteDuration() -> NoteDuration {
+        switch self {
+        case .whole: return .whole
+        case .half: return .half
+        case .quarter: return .quarter
+        case .eighth: return .eighth
+        case .sixteenth: return .sixteenth
+        }
+    }
 }
 
 /// 简谱视图

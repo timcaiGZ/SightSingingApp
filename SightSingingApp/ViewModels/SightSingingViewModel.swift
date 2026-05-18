@@ -232,7 +232,7 @@ final class SightSingingViewModel {
             DispatchQueue.main.async {
                 self?.detectedFrequency = Double(result.frequency)
                 self?.centsDeviation = Double(result.cents)
-                self?.currentAmplitude = result.amplitude
+                self?.currentAmplitude = Float(result.amplitude)
             }
         }
     }

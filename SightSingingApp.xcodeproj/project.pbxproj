@@ -7,30 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00E39602B932A851F2815A24 /* NotationDisplayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D81F937A8A46BC53602A14D2 /* NotationDisplayView.swift */; };
 		061C47E8C86676CCC29CCF5A /* DiagnosticTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B360997A3A21A677A74F35C6 /* DiagnosticTestView.swift */; };
 		0C9B0C9E8D7947AA830C8647 /* TestConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43A03F556DC80288C9DA37A /* TestConfigurationTests.swift */; };
 		0E74608B3FB9AF57FF2FE3EE /* PitchMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963FE412C2BA09770E554DD4 /* PitchMeterView.swift */; };
-		13DD5EB8-381D-499F-81C6- /* CourseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79ED5F5A-81A6-4404-9549- /* CourseData.swift */; };
-		1B2A95AF-3C06-44BB-9975- /* CourseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FBB5F5D-1FB6-402C-9413- /* CourseDetailView.swift */; };
+		171359E664DCFE39CC27AFD6 /* ScoreResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA907455E32AF2BB2C5E1DA2 /* ScoreResultView.swift */; };
 		243E31F0274BB67A9AA84340 /* MusicTheoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DE4A370F6300914E4059D5 /* MusicTheoryTests.swift */; };
+		245F60726B30BB4BDD4D13FE /* CourseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D47F7A26AA62EA3F54D3453 /* CourseData.swift */; };
 		2732479C34DDB36A6AA282D9 /* TestQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E5D95C4942C09A8D311BCB /* TestQuestion.swift */; };
+		2BD15902F27BE0F8C161869C /* CourseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16715C142A8D0D27C94E5B07 /* CourseViewModel.swift */; };
 		2E8FDFE7D44EDCD906F1E190 /* TheoryDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D519024DB6ED32B6B18FA74 /* TheoryDetailView.swift */; };
 		302BDA53CB83CB64EC661184 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5B86F3AE1CE6A63F1625AA5 /* ContentView.swift */; };
 		324F096B55626D6E9438521A /* PianoKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 594EEDCA1634DDC6D0FAEF2F /* PianoKeyboardView.swift */; };
 		373596F4C7EFA2A548ED089E /* TestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9065E983AF8D09BF8BDE5F /* TestViewModel.swift */; };
+		3768C73B7988AC9CB66A2392 /* CourseChapterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C49B7A44F14A609637FB77E /* CourseChapterView.swift */; };
 		387430C704F4DFABC60E33FA /* TestHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A76BD6724A47D565B80AC285 /* TestHistory.swift */; };
 		3DB1E50FC4828EB8BB9F543A /* TestEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C0D0EB41C0223396CDACDE6 /* TestEngine.swift */; };
 		3ECE7229782EAA78780A1E45 /* QuestionBank.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB598DB81C5E521DA7B4DABC /* QuestionBank.swift */; };
-		3EE8D0D0-D02A-44B1-9A3C- /* CourseChapterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EEBBB4F-065C-43D2-9230- /* CourseChapterView.swift */; };
 		41ABE9990EAB3D31FB5B8688 /* RecommendationEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8097D737617F4F5D82FD658 /* RecommendationEngineTests.swift */; };
 		45FD64D79FB02176AB83FF6C /* ExerciseType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 601790FC8AAC3DEC81863517 /* ExerciseType.swift */; };
 		485A1F2C3FF99EB159B928FC /* RootNoteListeningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 259AE7447E570D2EDAA052CE /* RootNoteListeningView.swift */; };
 		4A6705231BAACF69EFAC5C73 /* MusicTheory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B93E2FD9903FEE1810B4F2E /* MusicTheory.swift */; };
 		5F54881E666121F453C03A05 /* ProfileTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41988167FF293DA080EA87C4 /* ProfileTab.swift */; };
-		65BCB99B-2048-4789-9A50- /* CourseViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A169C3E-9085-4DA6-A63A- /* CourseViewModel.swift */; };
 		69867AC2B20606A87D60B501 /* NotationSwitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = B687B7E5F44A8733579A6E0E /* NotationSwitcher.swift */; };
+		72367AF351AF6C0069B89972 /* CourseTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A17795DC1E007BBC2E08ED3 /* CourseTab.swift */; };
 		7582E26C577B3FA42E4F5567 /* MelodyNote.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2E0413F87AFB27C0E2F8505 /* MelodyNote.swift */; };
 		7B13BA07A8B72ACF26D3FCDD /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3EE67C78A353FF5D5C0DFA2 /* Configuration.swift */; };
+		7E62F658BB58ED2120480BB9 /* ModuleCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F83E4A98F279D7162C19BD2 /* ModuleCard.swift */; };
+		8013128FA921258705DE8241 /* MusicKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA815A1C20BA71339B9FA117 /* MusicKeyboardView.swift */; };
+		826AEEA10291420C46957BD6 /* CourseLessonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEAF4456ACB0A58387A55182 /* CourseLessonView.swift */; };
 		86774ECFBA6BF70DFD39C41F /* TheoryTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BF2E2A5437F7DFA8650DA15 /* TheoryTab.swift */; };
 		8831626FAFA24CC748782C0E /* PitchDetectorConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBFEA9F796E057A2655E130B /* PitchDetectorConfigurationTests.swift */; };
 		88F4AB67BA0B68503891A75E /* TestEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319F086C6C64D0805C0276BE /* TestEngineTests.swift */; };
@@ -42,15 +47,18 @@
 		AEDCCBDF5CF207615A7C25DA /* SightSingingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EF59FACB6B74712F2D261D /* SightSingingApp.swift */; };
 		B575E2EF6B41C73F45877EAB /* PracticeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BC2207F89228789EFB8BB5 /* PracticeViewModel.swift */; };
 		B881BA1B9230837CA249A329 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C1CCAE6A2F831E379A970C /* AudioEngine.swift */; };
+		BA76018C3D10521BA176F91B /* SightSingingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EDF272F2F72B0A720246A6 /* SightSingingViewModel.swift */; };
 		BE36E458AFDD395987EE50C6 /* TheoryViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44327F8C01BE33003F2AD880 /* TheoryViewModel.swift */; };
-		C035DEF9-A16B-4BD7-9A9A- /* CourseTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12915D23-E1F4-4FEB-B8D2- /* CourseTab.swift */; };
 		C26B52AC8F3C1B3190BAE732 /* SightSingingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3092C30EE32CDD092F5A5700 /* SightSingingView.swift */; };
+		C4EA9265924432C5A9300413 /* CourseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ABCA9603B0F6855DF04E23 /* CourseDetailView.swift */; };
 		C7B22881A7213F1C904E3A4C /* NotationType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D7C724F714E1B7C161F690 /* NotationType.swift */; };
 		C8E94BD96F53D7CA4A15ED48 /* PitchDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 261DC55094851555851B7D28 /* PitchDetector.swift */; };
 		CE4A8FD277E718D254AE164B /* TheoryTopic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 441FFD531C75180F398FA453 /* TheoryTopic.swift */; };
 		D261179F5344CF64F3B65ED0 /* RecommendationEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A9BE4CBE9F17A18BD015D84 /* RecommendationEngine.swift */; };
 		D32ABB66ABE7D94FFEF1C715 /* PracticeTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92ADB02EE70BAE9FAFA1148 /* PracticeTab.swift */; };
 		D70720469349B1E0ED50DF19 /* ColorTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD8B4B3FA9716AF3F5F7B76A /* ColorTheme.swift */; };
+		D72EAB90DAB24B2BD841DAA1 /* ExerciseContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DB9CED400BDB2785833F239 /* ExerciseContainerView.swift */; };
+		D8D5D321322912AAD8F086C0 /* CourseExerciseListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 955DB4783CB6A1E82BED9B00 /* CourseExerciseListView.swift */; };
 		DFD2AB34CA00A3CEEA980955 /* TestResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = B36388BDCE24BCA0FE243B7A /* TestResult.swift */; };
 		E488F1D31F4E0D31D1003C09 /* ProfileViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9D52E8CCBCD5B65636F68E /* ProfileViewModel.swift */; };
 		E4C36AD0047A0369D511DF5E /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 049CD77A308C2EDA6BDEA517 /* AppLogger.swift */; };
@@ -59,7 +67,6 @@
 		FC7F4528060AFDBA43E1A411 /* SingleNoteListeningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0BA723F9D87160EE3751AC98 /* SingleNoteListeningView.swift */; };
 		FCEA3FB254BF9D04BC0C5E0D /* ExerciseDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF045E71746A6A01BDDFA465 /* ExerciseDetailView.swift */; };
 		FE37C355FD16F3624509CC58 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 5C74E639898EA234B0BDF206 /* Assets.xcassets */; };
-		FF334C98-F5EA-48DB-9452- /* CourseLessonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DF0F61-4BBB-4ACE-8EB7- /* CourseLessonView.swift */; };
 		FFD1B330E67ED5BE0495B146 /* StaffNotationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA3BE023D84A72ED98E30509 /* StaffNotationView.swift */; };
 /* End PBXBuildFile section */
 
@@ -75,24 +82,25 @@
 
 /* Begin PBXFileReference section */
 		049CD77A308C2EDA6BDEA517 /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
+		04EDF272F2F72B0A720246A6 /* SightSingingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingViewModel.swift; sourceTree = "<group>"; };
 		05BC2207F89228789EFB8BB5 /* PracticeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeViewModel.swift; sourceTree = "<group>"; };
 		0A9BE4CBE9F17A18BD015D84 /* RecommendationEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationEngine.swift; sourceTree = "<group>"; };
 		0B93E2FD9903FEE1810B4F2E /* MusicTheory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicTheory.swift; sourceTree = "<group>"; };
 		0BA723F9D87160EE3751AC98 /* SingleNoteListeningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleNoteListeningView.swift; sourceTree = "<group>"; };
-		12915D23-E1F4-4FEB-B8D2- /* CourseTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CourseTab.swift; path = SightSingingApp/Views/Tabs/CourseTab.swift; sourceTree = "<group>"; };
-		144AD40BA541869368F92D83 /* CourseDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CourseDetailView.swift; path = SightSingingApp/Views/Course/CourseDetailView.swift; sourceTree = "<group>"; };
+		10ABCA9603B0F6855DF04E23 /* CourseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseDetailView.swift; sourceTree = "<group>"; };
+		16715C142A8D0D27C94E5B07 /* CourseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseViewModel.swift; sourceTree = "<group>"; };
 		259AE7447E570D2EDAA052CE /* RootNoteListeningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNoteListeningView.swift; sourceTree = "<group>"; };
 		261DC55094851555851B7D28 /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
 		27C1CCAE6A2F831E379A970C /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioEngine.swift; sourceTree = "<group>"; };
 		2BF2E2A5437F7DFA8650DA15 /* TheoryTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryTab.swift; sourceTree = "<group>"; };
 		2C0D0EB41C0223396CDACDE6 /* TestEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEngine.swift; sourceTree = "<group>"; };
-		2FBB5F5D-1FB6-402C-9413- /* CourseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CourseDetailView.swift; path = SightSingingApp/Views/Course/CourseDetailView.swift; sourceTree = "<group>"; };
+		2DB9CED400BDB2785833F239 /* ExerciseContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseContainerView.swift; sourceTree = "<group>"; };
 		3092C30EE32CDD092F5A5700 /* SightSingingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingView.swift; sourceTree = "<group>"; };
 		319F086C6C64D0805C0276BE /* TestEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEngineTests.swift; sourceTree = "<group>"; };
 		3625C6E5C1D3734074879496 /* ModuleDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleDetailView.swift; sourceTree = "<group>"; };
-		3A169C3E-9085-4DA6-A63A- /* CourseViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CourseViewModel.swift; path = SightSingingApp/ViewModels/CourseViewModel.swift; sourceTree = "<group>"; };
 		3D519024DB6ED32B6B18FA74 /* TheoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryDetailView.swift; sourceTree = "<group>"; };
 		3F03FF10A76E950C3E7E52B2 /* ExerciseModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModule.swift; sourceTree = "<group>"; };
+		3F83E4A98F279D7162C19BD2 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleCard.swift; sourceTree = "<group>"; };
 		406D0F83B4C7A3E47AC8657B /* SightSingingApp.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = SightSingingApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		41988167FF293DA080EA87C4 /* ProfileTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTab.swift; sourceTree = "<group>"; };
 		441FFD531C75180F398FA453 /* TheoryTopic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryTopic.swift; sourceTree = "<group>"; };
@@ -100,43 +108,43 @@
 		44EF59FACB6B74712F2D261D /* SightSingingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingApp.swift; sourceTree = "<group>"; };
 		5816B263FFF1327A242A0150 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		594EEDCA1634DDC6D0FAEF2F /* PianoKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PianoKeyboardView.swift; sourceTree = "<group>"; };
-		5AF4C613E2AADD0497ADEB90 /* CourseViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CourseViewModel.swift; path = SightSingingApp/ViewModels/CourseViewModel.swift; sourceTree = "<group>"; };
-		5C74E639898EA234B0BDF206 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = SightSingingApp/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
+		5C74E639898EA234B0BDF206 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Assets.xcassets; path = SightSingingApp/Resources/Assets.xcassets; sourceTree = SOURCE_ROOT; };
 		601790FC8AAC3DEC81863517 /* ExerciseType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseType.swift; sourceTree = "<group>"; };
-		60DF0F61-4BBB-4ACE-8EB7- /* CourseLessonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CourseLessonView.swift; path = SightSingingApp/Views/Course/CourseLessonView.swift; sourceTree = "<group>"; };
-		65971A83DB4549BB931EF1C9 /* CourseTab.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CourseTab.swift; path = SightSingingApp/Views/Tabs/CourseTab.swift; sourceTree = "<group>"; };
 		6C1F38696F0F2E9CC8124984 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		6D47F7A26AA62EA3F54D3453 /* CourseData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseData.swift; sourceTree = "<group>"; };
 		6E0148CC8B0113DCFA7044A4 /* SolfegeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SolfegeView.swift; sourceTree = "<group>"; };
-		6EEBBB4F-065C-43D2-9230- /* CourseChapterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CourseChapterView.swift; path = SightSingingApp/Views/Course/CourseChapterView.swift; sourceTree = "<group>"; };
 		76D7C724F714E1B7C161F690 /* NotationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotationType.swift; sourceTree = "<group>"; };
-		79ED5F5A-81A6-4404-9549- /* CourseData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CourseData.swift; path = SightSingingApp/Models/Course/CourseData.swift; sourceTree = "<group>"; };
+		7C49B7A44F14A609637FB77E /* CourseChapterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseChapterView.swift; sourceTree = "<group>"; };
+		8A17795DC1E007BBC2E08ED3 /* CourseTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseTab.swift; sourceTree = "<group>"; };
+		955DB4783CB6A1E82BED9B00 /* CourseExerciseListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseExerciseListView.swift; sourceTree = "<group>"; };
 		963FE412C2BA09770E554DD4 /* PitchMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchMeterView.swift; sourceTree = "<group>"; };
-		9BAC0A8F9F6EE2EAFCAE942E /* CourseChapterView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CourseChapterView.swift; path = SightSingingApp/Views/Course/CourseChapterView.swift; sourceTree = "<group>"; };
 		9D70A42CB83C67D7719433C2 /* PracticeRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeRecord.swift; sourceTree = "<group>"; };
 		9E9D52E8CCBCD5B65636F68E /* ProfileViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileViewModel.swift; sourceTree = "<group>"; };
 		A3DE4A370F6300914E4059D5 /* MusicTheoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicTheoryTests.swift; sourceTree = "<group>"; };
 		A76BD6724A47D565B80AC285 /* TestHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHistory.swift; sourceTree = "<group>"; };
 		AA3BE023D84A72ED98E30509 /* StaffNotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaffNotationView.swift; sourceTree = "<group>"; };
+		AA815A1C20BA71339B9FA117 /* MusicKeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicKeyboardView.swift; sourceTree = "<group>"; };
 		AB598DB81C5E521DA7B4DABC /* QuestionBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionBank.swift; sourceTree = "<group>"; };
 		B360997A3A21A677A74F35C6 /* DiagnosticTestView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticTestView.swift; sourceTree = "<group>"; };
 		B36388BDCE24BCA0FE243B7A /* TestResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestResult.swift; sourceTree = "<group>"; };
 		B3EE67C78A353FF5D5C0DFA2 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		B687B7E5F44A8733579A6E0E /* NotationSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotationSwitcher.swift; sourceTree = "<group>"; };
 		BA9065E983AF8D09BF8BDE5F /* TestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestViewModel.swift; sourceTree = "<group>"; };
+		BA907455E32AF2BB2C5E1DA2 /* ScoreResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreResultView.swift; sourceTree = "<group>"; };
 		C2E5D95C4942C09A8D311BCB /* TestQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestQuestion.swift; sourceTree = "<group>"; };
-		C708A214991276D60601373A /* CourseLessonView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CourseLessonView.swift; path = SightSingingApp/Views/Course/CourseLessonView.swift; sourceTree = "<group>"; };
 		D2104C12A8CB3D4EB2C9D5D4 /* TestTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTab.swift; sourceTree = "<group>"; };
 		D43A03F556DC80288C9DA37A /* TestConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestConfigurationTests.swift; sourceTree = "<group>"; };
 		D5B86F3AE1CE6A63F1625AA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D6D950CE790C5A1604DFB9F3 /* GuitarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuitarTabView.swift; sourceTree = "<group>"; };
+		D81F937A8A46BC53602A14D2 /* NotationDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotationDisplayView.swift; sourceTree = "<group>"; };
 		D92ADB02EE70BAE9FAFA1148 /* PracticeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeTab.swift; sourceTree = "<group>"; };
 		DD8B4B3FA9716AF3F5F7B76A /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTheme.swift; sourceTree = "<group>"; };
 		DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingResultView.swift; sourceTree = "<group>"; };
-		E0B3A04E81072F09004D1B40 /* CourseData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CourseData.swift; path = SightSingingApp/Models/Course/CourseData.swift; sourceTree = "<group>"; };
 		E8097D737617F4F5D82FD658 /* RecommendationEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationEngineTests.swift; sourceTree = "<group>"; };
 		F2E0413F87AFB27C0E2F8505 /* MelodyNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MelodyNote.swift; sourceTree = "<group>"; };
 		F628C61320497D17D65DB8A1 /* SightSingingAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SightSingingAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FBFEA9F796E057A2655E130B /* PitchDetectorConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetectorConfigurationTests.swift; sourceTree = "<group>"; };
+		FEAF4456ACB0A58387A55182 /* CourseLessonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CourseLessonView.swift; sourceTree = "<group>"; };
 		FF045E71746A6A01BDDFA465 /* ExerciseDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -144,9 +152,12 @@
 		011485ED5E9C10124A237275 /* Practice */ = {
 			isa = PBXGroup;
 			children = (
+				2DB9CED400BDB2785833F239 /* ExerciseContainerView.swift */,
 				FF045E71746A6A01BDDFA465 /* ExerciseDetailView.swift */,
 				3625C6E5C1D3734074879496 /* ModuleDetailView.swift */,
+				AA815A1C20BA71339B9FA117 /* MusicKeyboardView.swift */,
 				259AE7447E570D2EDAA052CE /* RootNoteListeningView.swift */,
+				BA907455E32AF2BB2C5E1DA2 /* ScoreResultView.swift */,
 				DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */,
 				3092C30EE32CDD092F5A5700 /* SightSingingView.swift */,
 				0BA723F9D87160EE3751AC98 /* SingleNoteListeningView.swift */,
@@ -207,11 +218,11 @@
 		47894CCAD4F73BD80FFDA7CC /* Tabs */ = {
 			isa = PBXGroup;
 			children = (
+				8A17795DC1E007BBC2E08ED3 /* CourseTab.swift */,
 				D92ADB02EE70BAE9FAFA1148 /* PracticeTab.swift */,
 				41988167FF293DA080EA87C4 /* ProfileTab.swift */,
 				D2104C12A8CB3D4EB2C9D5D4 /* TestTab.swift */,
 				2BF2E2A5437F7DFA8650DA15 /* TheoryTab.swift */,
-				65971A83DB4549BB931EF1C9 /* CourseTab.swift */,
 			);
 			path = Tabs;
 			sourceTree = "<group>";
@@ -224,6 +235,17 @@
 				5236DB697E490F9511D3D831 /* SightSingingAppTests */,
 				3E2634A90A491C0F0282FFA0 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		4D2137E3BDB09821CAA3E931 /* Course */ = {
+			isa = PBXGroup;
+			children = (
+				7C49B7A44F14A609637FB77E /* CourseChapterView.swift */,
+				10ABCA9603B0F6855DF04E23 /* CourseDetailView.swift */,
+				955DB4783CB6A1E82BED9B00 /* CourseExerciseListView.swift */,
+				FEAF4456ACB0A58387A55182 /* CourseLessonView.swift */,
+			);
+			path = Course;
 			sourceTree = "<group>";
 		};
 		5236DB697E490F9511D3D831 /* SightSingingAppTests */ = {
@@ -242,6 +264,14 @@
 				44EF59FACB6B74712F2D261D /* SightSingingApp.swift */,
 			);
 			path = App;
+			sourceTree = "<group>";
+		};
+		6D0053E04A6C591D4BBB5B09 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				3F83E4A98F279D7162C19BD2 /* ModuleCard.swift */,
+			);
+			path = Components;
 			sourceTree = "<group>";
 		};
 		6D46F02CE2B5432C1DCBC317 /* Exercise */ = {
@@ -272,19 +302,12 @@
 			path = Test;
 			sourceTree = "<group>";
 		};
-		7BFB5C703C0D8DE40554FBC6 /* Course */ = {
-			isa = PBXGroup;
-			children = (
-				E0B3A04E81072F09004D1B40 /* CourseData.swift */,
-			);
-			name = Course;
-			sourceTree = "<group>";
-		};
 		7BFCBCD227701992B09653E3 /* SightSingingApp */ = {
 			isa = PBXGroup;
 			children = (
 				6C1F38696F0F2E9CC8124984 /* Info.plist */,
 				69AE561C639C59BEE6A07083 /* App */,
+				6D0053E04A6C591D4BBB5B09 /* Components */,
 				CB362A5EF70E510D99ADEDEF /* Models */,
 				7C0CB62DACF026D9F9F1E469 /* Resources */,
 				82F4E42E8BF42E49F70987CE /* Services */,
@@ -314,36 +337,35 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
-		8C0785180AFF32159FFE8E71 /* Course */ = {
-			isa = PBXGroup;
-			children = (
-				144AD40BA541869368F92D83 /* CourseDetailView.swift */,
-				9BAC0A8F9F6EE2EAFCAE942E /* CourseChapterView.swift */,
-				C708A214991276D60601373A /* CourseLessonView.swift */,
-			);
-			name = Course;
-			sourceTree = "<group>";
-		};
 		B96CECA143C77943957726A3 /* ViewModels */ = {
 			isa = PBXGroup;
 			children = (
+				16715C142A8D0D27C94E5B07 /* CourseViewModel.swift */,
 				05BC2207F89228789EFB8BB5 /* PracticeViewModel.swift */,
 				9E9D52E8CCBCD5B65636F68E /* ProfileViewModel.swift */,
+				04EDF272F2F72B0A720246A6 /* SightSingingViewModel.swift */,
 				BA9065E983AF8D09BF8BDE5F /* TestViewModel.swift */,
 				44327F8C01BE33003F2AD880 /* TheoryViewModel.swift */,
-				5AF4C613E2AADD0497ADEB90 /* CourseViewModel.swift */,
 			);
 			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		BE61BB5DE9102CA9CEA6B845 /* Course */ = {
+			isa = PBXGroup;
+			children = (
+				6D47F7A26AA62EA3F54D3453 /* CourseData.swift */,
+			);
+			path = Course;
 			sourceTree = "<group>";
 		};
 		C29F1558E45E8460A47BB5AD /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				4D2137E3BDB09821CAA3E931 /* Course */,
 				011485ED5E9C10124A237275 /* Practice */,
 				47894CCAD4F73BD80FFDA7CC /* Tabs */,
 				77258777886680D970F1ADDD /* Test */,
 				3EA20ECD8A31F5DC54787E53 /* Theory */,
-				8C0785180AFF32159FFE8E71 /* Course */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -352,6 +374,7 @@
 			isa = PBXGroup;
 			children = (
 				D6D950CE790C5A1604DFB9F3 /* GuitarTabView.swift */,
+				D81F937A8A46BC53602A14D2 /* NotationDisplayView.swift */,
 				B687B7E5F44A8733579A6E0E /* NotationSwitcher.swift */,
 				594EEDCA1634DDC6D0FAEF2F /* PianoKeyboardView.swift */,
 				963FE412C2BA09770E554DD4 /* PitchMeterView.swift */,
@@ -364,11 +387,11 @@
 		CB362A5EF70E510D99ADEDEF /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				BE61BB5DE9102CA9CEA6B845 /* Course */,
 				6D46F02CE2B5432C1DCBC317 /* Exercise */,
 				6FD470112CDA20DAA50F8D1B /* Test */,
 				CD317B852FE677C61219897D /* Theory */,
 				039B0B491C6EDAB5591B3F8B /* User */,
-				7BFB5C703C0D8DE40554FBC6 /* Course */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -396,6 +419,8 @@
 				F47A1184B8C708DB995B06D0 /* PBXTargetDependency */,
 			);
 			name = SightSingingAppTests;
+			packageProductDependencies = (
+			);
 			productName = SightSingingAppTests;
 			productReference = F628C61320497D17D65DB8A1 /* SightSingingAppTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -412,6 +437,8 @@
 			dependencies = (
 			);
 			name = SightSingingApp;
+			packageProductDependencies = (
+			);
 			productName = SightSingingApp;
 			productReference = 406D0F83B4C7A3E47AC8657B /* SightSingingApp.app */;
 			productType = "com.apple.product-type.application";
@@ -476,14 +503,25 @@
 				D70720469349B1E0ED50DF19 /* ColorTheme.swift in Sources */,
 				7B13BA07A8B72ACF26D3FCDD /* Configuration.swift in Sources */,
 				302BDA53CB83CB64EC661184 /* ContentView.swift in Sources */,
+				3768C73B7988AC9CB66A2392 /* CourseChapterView.swift in Sources */,
+				245F60726B30BB4BDD4D13FE /* CourseData.swift in Sources */,
+				C4EA9265924432C5A9300413 /* CourseDetailView.swift in Sources */,
+				D8D5D321322912AAD8F086C0 /* CourseExerciseListView.swift in Sources */,
+				826AEEA10291420C46957BD6 /* CourseLessonView.swift in Sources */,
+				72367AF351AF6C0069B89972 /* CourseTab.swift in Sources */,
+				2BD15902F27BE0F8C161869C /* CourseViewModel.swift in Sources */,
 				061C47E8C86676CCC29CCF5A /* DiagnosticTestView.swift in Sources */,
+				D72EAB90DAB24B2BD841DAA1 /* ExerciseContainerView.swift in Sources */,
 				FCEA3FB254BF9D04BC0C5E0D /* ExerciseDetailView.swift in Sources */,
 				E4C4D21C9D8C0C86D4AAE630 /* ExerciseModule.swift in Sources */,
 				45FD64D79FB02176AB83FF6C /* ExerciseType.swift in Sources */,
 				8C5CCA9BA165E0B8B14408C8 /* GuitarTabView.swift in Sources */,
 				7582E26C577B3FA42E4F5567 /* MelodyNote.swift in Sources */,
+				7E62F658BB58ED2120480BB9 /* ModuleCard.swift in Sources */,
 				951AF669B9F17A48992D37CB /* ModuleDetailView.swift in Sources */,
+				8013128FA921258705DE8241 /* MusicKeyboardView.swift in Sources */,
 				4A6705231BAACF69EFAC5C73 /* MusicTheory.swift in Sources */,
+				00E39602B932A851F2815A24 /* NotationDisplayView.swift in Sources */,
 				69867AC2B20606A87D60B501 /* NotationSwitcher.swift in Sources */,
 				C7B22881A7213F1C904E3A4C /* NotationType.swift in Sources */,
 				324F096B55626D6E9438521A /* PianoKeyboardView.swift in Sources */,
@@ -497,9 +535,11 @@
 				3ECE7229782EAA78780A1E45 /* QuestionBank.swift in Sources */,
 				D261179F5344CF64F3B65ED0 /* RecommendationEngine.swift in Sources */,
 				485A1F2C3FF99EB159B928FC /* RootNoteListeningView.swift in Sources */,
+				171359E664DCFE39CC27AFD6 /* ScoreResultView.swift in Sources */,
 				AEDCCBDF5CF207615A7C25DA /* SightSingingApp.swift in Sources */,
 				9F64F8944E91F76283B7DF26 /* SightSingingResultView.swift in Sources */,
 				C26B52AC8F3C1B3190BAE732 /* SightSingingView.swift in Sources */,
+				BA76018C3D10521BA176F91B /* SightSingingViewModel.swift in Sources */,
 				FC7F4528060AFDBA43E1A411 /* SingleNoteListeningView.swift in Sources */,
 				E7947959E15CB2C718D4C3F3 /* SolfegeView.swift in Sources */,
 				FFD1B330E67ED5BE0495B146 /* StaffNotationView.swift in Sources */,
@@ -512,12 +552,6 @@
 				2E8FDFE7D44EDCD906F1E190 /* TheoryDetailView.swift in Sources */,
 				86774ECFBA6BF70DFD39C41F /* TheoryTab.swift in Sources */,
 				CE4A8FD277E718D254AE164B /* TheoryTopic.swift in Sources */,
-				13DD5EB8-381D-499F-81C6- /* CourseData.swift in Sources */,
-				65BCB99B-2048-4789-9A50- /* CourseViewModel.swift in Sources */,
-				C035DEF9-A16B-4BD7-9A9A- /* CourseTab.swift in Sources */,
-				1B2A95AF-3C06-44BB-9975- /* CourseDetailView.swift in Sources */,
-				3EE8D0D0-D02A-44B1-9A3C- /* CourseChapterView.swift in Sources */,
-				FF334C98-F5EA-48DB-9452- /* CourseLessonView.swift in Sources */,
 				BE36E458AFDD395987EE50C6 /* TheoryViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

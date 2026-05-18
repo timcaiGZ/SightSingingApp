@@ -1,16 +1,6 @@
 import SwiftUI
 import SwiftData
 
-// MARK: - 状态枚举
-
-enum SightSingingState {
-    case intro        // 介绍页
-    case playingDemo  // 播放示范
-    case waitingToSing // 等待演唱
-    case singing      // 演唱中
-    case result       // 结果页
-}
-
 /// 视唱练习视图（集成谱式展示和音准指示器）
 struct SightSingingView: View {
     let exercise: ExerciseType

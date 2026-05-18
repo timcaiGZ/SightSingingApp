@@ -83,7 +83,7 @@ struct SimpleNotationDisplayView: View {
                 notes: solfegeNotes.map { note in
                     StaffNote(
                         pitch: StaffPitch(line: 0),
-                        duration: note.duration,
+                        duration: note.duration.toNoteDuration(),
                         accidental: nil
                     )
                 }

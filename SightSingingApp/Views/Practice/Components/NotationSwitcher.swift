@@ -60,6 +60,14 @@ struct CompactNotationSwitcher: View {
     @Binding var selectedNotation: NotationType
     let availableNotations: [NotationType]
 
+    init(
+        selectedNotation: Binding<NotationType>,
+        availableNotations: [NotationType] = NotationType.allCases
+    ) {
+        self._selectedNotation = selectedNotation
+        self.availableNotations = availableNotations
+    }
+
     var body: some View {
         HStack(spacing: 4) {
             ForEach(availableNotations) { notation in
