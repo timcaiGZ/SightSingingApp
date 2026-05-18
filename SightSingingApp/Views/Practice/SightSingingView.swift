@@ -33,7 +33,7 @@ struct SightSingingView: View {
     @State private var singingTimer: Timer?
 
     @State private var melody: [MelodyNote] = []
-    @State private var selectedNotation: NotationType = .solfege
+    @State private var selectedNotation: NotationType = .tabWithSolfege
 
     private let pitchDetector = PitchDetector.shared
 
@@ -169,18 +169,21 @@ struct SightSingingView: View {
             // 谱式内容
             Group {
                 switch selectedNotation {
-                case .tab:
-                    GuitarTablatureView(
-                        notes: guitarNotesForCurrent,
-                        fretRange: 0...5
-                    )
+                case .tabWithSolfege:
+                    // 六线谱+简谱组合视图
+                    VStack(spacing: 12) {
+                        GuitarTablatureView(
+                            notes: guitarNotesForCurrent,
+                            fretRange: 0...5
+                        )
+                        Divider()
+                        SolfegeView(
+                            notes: melody.map { SolfegeNote(solfege: $0.solfege, octave: $0.octave, duration: .quarter) },
+                            highlightedIndex: currentNoteIndex
+                        )
+                    }
                 case .staff:
                     StaffNotationView(notes: staffNotesForCurrent)
-                case .solfege:
-                    SolfegeView(
-                        notes: melody.map { SolfegeNote(solfege: $0.solfege, octave: $0.octave, duration: .quarter) },
-                        highlightedIndex: currentNoteIndex
-                    )
                 }
             }
             .padding(.horizontal, 24)

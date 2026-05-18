@@ -24,7 +24,7 @@ struct SingleNoteListeningView: View {
     @State private var isCorrect: Bool = false
 
     // 谱式切换
-    @State private var selectedNotation: NotationType = .tab
+    @State private var selectedNotation: NotationType = .tabWithSolfege
 
     private let referenceNote = 69 // A4 = 440Hz
     private let whiteKeyNotes = ["C", "D", "E", "F", "G", "A", "B"]
@@ -143,19 +143,22 @@ struct SingleNoteListeningView: View {
             // 谱式展示
             Group {
                 switch selectedNotation {
-                case .tab:
-                    GuitarTablatureView(
-                        notes: [GuitarTabNote(string: 5, fret: 0, technique: nil)],
-                        fretRange: 0...3
-                    )
+                case .tabWithSolfege:
+                    // 六线谱+简谱组合视图
+                    VStack(spacing: 12) {
+                        GuitarTablatureView(
+                            notes: [GuitarTabNote(string: 5, fret: 0, technique: nil)],
+                            fretRange: 0...3
+                        )
+                        Divider()
+                        SolfegeView(
+                            notes: [SolfegeNote(solfege: targetNoteName, octave: targetOctave, duration: .quarter)],
+                            highlightedIndex: 0
+                        )
+                    }
                 case .staff:
                     StaffNotationView(
                         notes: [StaffNote(pitch: StaffPitch(line: 0), duration: .quarter, accidental: nil)]
-                    )
-                case .solfege:
-                    SolfegeView(
-                        notes: [SolfegeNote(solfege: targetNoteName, octave: targetOctave, duration: .quarter)],
-                        highlightedIndex: 0
                     )
                 }
             }

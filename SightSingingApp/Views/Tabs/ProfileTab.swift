@@ -213,6 +213,16 @@ struct ProfileTab: View {
 
     private var settingsSection: some View {
         VStack(spacing: 0) {
+            // 谱式设置 (V2.1 新增)
+            NavigationLink {
+                NotationSettingsView()
+            } label: {
+                SettingsRow(icon: "music.note.list", title: "谱式选择", value: NotationPreferences.shared.preferredNotation.rawValue)
+            }
+
+            Divider()
+                .padding(.leading, 56)
+
             // 主题设置
             NavigationLink {
                 ThemeSettingsView(viewModel: viewModel)
@@ -484,7 +494,61 @@ struct AboutView: View {
     }
 }
 
+// MARK: - 谱式设置页面 (V2.1 新增)
+
+/// 谱式选择设置页面
+struct NotationSettingsView: View {
+    @ObservedObject private var notationPrefs = NotationPreferences.shared
+
+    var body: some View {
+        List {
+            Section {
+                ForEach(NotationType.allCases) { notationType in
+                    Button {
+                        notationPrefs.preferredNotation = notationType
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: notationType.iconName)
+                                .font(.title2)
+                                .foregroundStyle(AppColors.primaryBlue)
+                                .frame(width: 32)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(notationType.rawValue)
+                                    .font(.body)
+                                    .foregroundStyle(AppColors.primaryText)
+
+                                Text(notationType.longDescription)
+                                    .font(.caption)
+                                    .foregroundStyle(AppColors.secondaryText)
+                            }
+
+                            Spacer()
+
+                            if notationPrefs.preferredNotation == notationType {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(AppColors.primaryBlue)
+                            } else {
+                                Image(systemName: "circle")
+                                    .foregroundStyle(AppColors.tertiaryText)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .buttonStyle(.plain)
+                }
+            } header: {
+                Text("选择练习时显示的谱式类型")
+            } footer: {
+                Text("五线谱适合专业视唱练耳训练，六线谱+简谱适合吉他弹唱学习")
+            }
+        }
+        .navigationTitle("谱式选择")
+    }
+}
+
 #Preview {
-    ProfileTab()
-        .modelContainer(for: [PracticeRecord.self, TestHistory.self], inMemory: true)
+    NavigationStack {
+        NotationSettingsView()
+    }
 }

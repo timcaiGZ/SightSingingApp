@@ -32,7 +32,7 @@ final class SightSingingViewModel {
 
     // 旋律数据
     var melody: [MelodyNote] = []
-    var selectedNotation: NotationType = .solfege
+    var selectedNotation: NotationType = .tabWithSolfege
 
     // MARK: - 私有属性
 

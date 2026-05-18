@@ -1,8 +1,9 @@
 import SwiftUI
 
-// MARK: - 谱式切换器
+// MARK: - 谱式切换器 (V2.1 简化)
 
-/// 顶部谱式切换器组件
+///
+/// 顶部谱式切换器组件（仅两个选项：五线谱 | 六线谱+简谱）
 struct NotationSwitcher: View {
     @Binding var selectedNotation: NotationType
     let availableNotations: [NotationType]
@@ -92,14 +93,14 @@ struct CompactNotationSwitcher: View {
 #Preview {
     VStack(spacing: 20) {
         NotationSwitcher(
-            selectedNotation: .constant(.tab),
-            availableNotations: [.tab, .solfege, .staff]
+            selectedNotation: .constant(.tabWithSolfege),
+            availableNotations: [.staff, .tabWithSolfege]
         )
         .padding()
 
         CompactNotationSwitcher(
-            selectedNotation: .constant(.tab),
-            availableNotations: [.tab, .solfege, .staff]
+            selectedNotation: .constant(.tabWithSolfege),
+            availableNotations: [.staff, .tabWithSolfege]
         )
     }
 }

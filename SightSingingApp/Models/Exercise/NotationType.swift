@@ -1,12 +1,14 @@
 import Foundation
 
-// MARK: - 谱式类型枚举
+// MARK: - 谱式类型枚举 (V2.1 简化)
 
-/// 三种谱式类型
+///
+/// 两种谱式选项：
+/// - 五线谱：单独使用（专业视唱练耳训练）
+/// - 六线谱+简谱：组合使用（吉他弹唱学习），默认选项
 enum NotationType: String, CaseIterable, Identifiable {
     case staff = "五线谱"
-    case tab = "六线谱"
-    case solfege = "简谱"
+    case tabWithSolfege = "六线谱+简谱"
 
     var id: String { rawValue }
 
@@ -14,17 +16,23 @@ enum NotationType: String, CaseIterable, Identifiable {
     var iconName: String {
         switch self {
         case .staff: return "music.quarternote.3"
-        case .tab: return "guitars"
-        case .solfege: return "textformat.123"
+        case .tabWithSolfege: return "guitars"
         }
     }
 
     /// 简短描述
     var shortDescription: String {
         switch self {
-        case .staff: return "传统五线谱"
-        case .tab: return "吉他六线谱"
-        case .solfege: return "数字简谱"
+        case .staff: return "专业视唱练耳训练"
+        case .tabWithSolfege: return "吉他弹唱学习"
+        }
+    }
+
+    /// 详细描述
+    var longDescription: String {
+        switch self {
+        case .staff: return "传统五线谱，适合专业视唱练耳训练"
+        case .tabWithSolfege: return "六线谱与简谱同步显示，方便吉他弹唱学习"
         }
     }
 }
@@ -49,15 +57,16 @@ final class NotationPreferences: ObservableObject {
     }
 
     private init() {
-        let savedNotation = UserDefaults.standard.string(forKey: "preferredNotation") ?? NotationType.tab.rawValue
-        self.preferredNotation = NotationType(rawValue: savedNotation) ?? .tab
+        // 默认使用六线谱+简谱组合
+        let savedNotation = UserDefaults.standard.string(forKey: "preferredNotation") ?? NotationType.tabWithSolfege.rawValue
+        self.preferredNotation = NotationType(rawValue: savedNotation) ?? .tabWithSolfege
 
         self.showNotationSwitcher = UserDefaults.standard.object(forKey: "showNotationSwitcher") as? Bool ?? true
     }
 
     /// 重置为默认设置（六线谱+简谱）
     func resetToDefaults() {
-        preferredNotation = .tab
+        preferredNotation = .tabWithSolfege
         showNotationSwitcher = true
     }
 }

@@ -17,7 +17,7 @@ struct ExerciseDetailView: View {
     @State private var selectedAnswer: Int?
     @State private var isCorrect: Bool?
     @State private var startTime: Date = Date()
-    @State private var selectedNotation: NotationType = .tab
+    @State private var selectedNotation: NotationType = .tabWithSolfege
 
     enum ExerciseState {
         case question
@@ -174,18 +174,21 @@ struct ExerciseDetailView: View {
     private var notationDisplayArea: some View {
         Group {
             switch selectedNotation {
-            case .tab:
-                GuitarTablatureView(
-                    notes: tabNotesForCurrent,
-                    fretRange: 0...5
-                )
+            case .tabWithSolfege:
+                // 六线谱+简谱组合视图
+                VStack(spacing: 12) {
+                    GuitarTablatureView(
+                        notes: tabNotesForCurrent,
+                        fretRange: 0...5
+                    )
+                    Divider()
+                    SolfegeView(
+                        notes: solfegeNotesForCurrent,
+                        highlightedIndex: 0
+                    )
+                }
             case .staff:
                 StaffNotationView(notes: staffNotesForCurrent)
-            case .solfege:
-                SolfegeView(
-                    notes: solfegeNotesForCurrent,
-                    highlightedIndex: 0
-                )
             }
         }
         .padding(.horizontal, 24)
