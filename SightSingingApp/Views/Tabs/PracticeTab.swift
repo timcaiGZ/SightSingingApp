@@ -4,26 +4,37 @@ import SwiftUI
 struct PracticeTab: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = PracticeViewModel()
-    @State private var selectedModule: ExerciseModule?
     @State private var showingExercise: ExerciseType?
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
+                LazyVStack(spacing: 12, pinnedViews: .sectionHeaders) {
                     ForEach(ExerciseModule.allCases) { module in
-                        Section {
-                            moduleExercisesList(module: module)
-                        } header: {
-                            sectionHeader(module: module)
+                        if !viewModel.exercises(for: module).isEmpty {
+                            Section {
+                                moduleExercisesList(module: module)
+                            } header: {
+                                sectionHeader(module: module)
+                            }
                         }
                     }
                 }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 24)
             }
             .pageBackground()
-            .navigationTitle("练习")
-            .navigationDestination(for: ExerciseModule.self) { module in
-                ModuleDetailView(module: module, viewModel: viewModel)
+            .navigationTitle("自由练习")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        // TODO: Settings action
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .foregroundStyle(AppColors.secondaryText)
+                    }
+                }
             }
             .fullScreenCover(item: $showingExercise) { exercise in
                 exerciseView(for: exercise)
@@ -48,47 +59,29 @@ struct PracticeTab: View {
         }
     }
 
-    /// 分类标题 — 点击进入模块详情页
+    /// 分类标题
     private func sectionHeader(module: ExerciseModule) -> some View {
-        Button {
-            selectedModule = module
-        } label: {
-            HStack {
-                Image(systemName: module.iconName)
-                    .font(.caption)
-                    .foregroundStyle(moduleColor(for: module))
+        HStack(spacing: 8) {
+            // 左侧彩色竖条
+            Rectangle()
+                .fill(moduleColor(for: module).opacity(0.5))
+                .frame(width: 3, height: 16)
+                .clipShape(RoundedRectangle(cornerRadius: 1.5))
 
-                Text(module.rawValue)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(AppColors.primaryText)
+            Text(module.rawValue)
+                .font(.subheadline)
+                .fontWeight(.bold)
+                .foregroundStyle(AppColors.primaryText)
 
-                Spacer()
+            Spacer()
 
-                // 模块进度圆点
-                let progress = viewModel.progress(for: module)
-                ProgressDots(total: 5, completed: progress)
-
-                // 模块得分
-                if let bestScore = viewModel.bestScore(for: ExerciseType.allCases.first { $0.module == module } ?? .singleNoteRecognition),
-                   bestScore > 0 {
-                    Text("\(bestScore) 分")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.secondaryText)
-                }
-
-                Image(systemName: "chevron.right")
-                    .font(.caption2)
-                    .foregroundStyle(AppColors.tertiaryText)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(AppColors.pageBackground)
+            // 模块进度圆点
+            let progress = viewModel.progress(for: module)
+            ProgressDots(total: 5, completed: progress)
         }
-        .buttonStyle(.plain)
-        .navigationDestination(item: $selectedModule) { module in
-            ModuleDetailView(module: module, viewModel: viewModel)
-        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(AppColors.pageBackground)
     }
 
     /// 模块内的练习列表 — 点击练习直接进入答题页
@@ -104,16 +97,12 @@ struct PracticeTab: View {
 
                 if exercise != viewModel.exercises(for: module).last {
                     Divider()
-                        .padding(.leading, 56)
+                        .padding(.leading, 52)
                 }
             }
         }
-        .padding(.horizontal, 16)
         .background(AppColors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 4)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     /// 单个练习行
@@ -121,55 +110,40 @@ struct PracticeTab: View {
         HStack(spacing: 12) {
             // 图标
             Image(systemName: exerciseIcon(for: exercise))
-                .font(.title3)
+                .font(.body)
                 .foregroundStyle(moduleColor(for: exercise.module))
-                .frame(width: 32)
+                .frame(width: 28)
 
-            // 练习名称和进度
-            VStack(alignment: .leading, spacing: 2) {
-                Text(exercise.rawValue)
-                    .font(.body)
-                    .foregroundStyle(AppColors.primaryText)
-
-                if let bestScore = viewModel.bestScore(for: exercise), bestScore > 0 {
-                    Text("最高 \(bestScore) 分")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.secondaryText)
-                } else {
-                    Text("未练习")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.tertiaryText)
-                }
-            }
+            // 练习名称
+            Text(exercise.rawValue)
+                .font(.body)
+                .foregroundStyle(AppColors.primaryText)
 
             Spacer()
 
-            // 进度指示
-            progressIndicator(for: exercise)
+            // 进度圆点
+            let exerciseProgress = exerciseProgress(for: exercise)
+            ProgressDots(total: 5, completed: exerciseProgress)
+
+            // 分数
+            if let bestScore = viewModel.bestScore(for: exercise), bestScore > 0 {
+                Text("\(bestScore) 分")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.secondaryText)
+            }
 
             Image(systemName: "chevron.right")
                 .font(.caption)
                 .foregroundStyle(AppColors.tertiaryText)
         }
+        .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .contentShape(Rectangle())
     }
 
-    /// 进度指示器
-    @ViewBuilder
-    private func progressIndicator(for exercise: ExerciseType) -> some View {
-        if let bestScore = viewModel.bestScore(for: exercise), bestScore > 0 {
-            HStack(spacing: 4) {
-                Text("\(bestScore)")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(scoreColor(bestScore))
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(scoreColor(bestScore).opacity(0.1))
-            .clipShape(Capsule())
-        }
+    /// 单个练习的进度（基于是否完成）
+    private func exerciseProgress(for exercise: ExerciseType) -> Int {
+        viewModel.bestScore(for: exercise) ?? 0 > 0 ? 5 : 0
     }
 
     /// 模块对应颜色
@@ -191,7 +165,7 @@ struct PracticeTab: View {
         case .openStringRecognition: return "guitars"
         case .rootNoteRecognition: return "music.note.list"
         case .tablatureNoteReading: return "text.alignleft"
-        case .intervalRecognition, .fretboardIntervalComparison: return "music.note"
+        case .intervalRecognition: return "music.note"
         case .intervalSinging: return "mic.fill"
         case .fretboardIntervalComparison: return "square.grid.3x3"
         case .hammerPullInterval: return "hand.tap"

@@ -48,7 +48,7 @@ struct SightSingingView: View {
             case .singing:
                 singingView
             case .result:
-                SightSingingResultView(
+                PracticeResultView.sightSinging(
                     pitchScore: pitchScore,
                     rhythmScore: rhythmScore,
                     noteScores: noteScores,

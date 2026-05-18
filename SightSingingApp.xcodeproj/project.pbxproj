@@ -11,7 +11,7 @@
 		061C47E8C86676CCC29CCF5A /* DiagnosticTestView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B360997A3A21A677A74F35C6 /* DiagnosticTestView.swift */; };
 		0C9B0C9E8D7947AA830C8647 /* TestConfigurationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D43A03F556DC80288C9DA37A /* TestConfigurationTests.swift */; };
 		0E74608B3FB9AF57FF2FE3EE /* PitchMeterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 963FE412C2BA09770E554DD4 /* PitchMeterView.swift */; };
-		171359E664DCFE39CC27AFD6 /* ScoreResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA907455E32AF2BB2C5E1DA2 /* ScoreResultView.swift */; };
+		171359E664DCFE39CC27AFD6 /* PracticeResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA907455E32AF2BB2C5E1DA2 /* PracticeResultView.swift */; };
 		243E31F0274BB67A9AA84340 /* MusicTheoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DE4A370F6300914E4059D5 /* MusicTheoryTests.swift */; };
 		245F60726B30BB4BDD4D13FE /* CourseData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D47F7A26AA62EA3F54D3453 /* CourseData.swift */; };
 		2732479C34DDB36A6AA282D9 /* TestQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E5D95C4942C09A8D311BCB /* TestQuestion.swift */; };
@@ -41,9 +41,7 @@
 		88F4AB67BA0B68503891A75E /* TestEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 319F086C6C64D0805C0276BE /* TestEngineTests.swift */; };
 		8C5CCA9BA165E0B8B14408C8 /* GuitarTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6D950CE790C5A1604DFB9F3 /* GuitarTabView.swift */; };
 		90AC3CB688462ABE4D44D611 /* TestTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2104C12A8CB3D4EB2C9D5D4 /* TestTab.swift */; };
-		951AF669B9F17A48992D37CB /* ModuleDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3625C6E5C1D3734074879496 /* ModuleDetailView.swift */; };
 		98457F44018C48C222601C70 /* PracticeRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D70A42CB83C67D7719433C2 /* PracticeRecord.swift */; };
-		9F64F8944E91F76283B7DF26 /* SightSingingResultView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */; };
 		AEDCCBDF5CF207615A7C25DA /* SightSingingApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44EF59FACB6B74712F2D261D /* SightSingingApp.swift */; };
 		B575E2EF6B41C73F45877EAB /* PracticeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05BC2207F89228789EFB8BB5 /* PracticeViewModel.swift */; };
 		B881BA1B9230837CA249A329 /* AudioEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C1CCAE6A2F831E379A970C /* AudioEngine.swift */; };
@@ -97,7 +95,6 @@
 		2DB9CED400BDB2785833F239 /* ExerciseContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseContainerView.swift; sourceTree = "<group>"; };
 		3092C30EE32CDD092F5A5700 /* SightSingingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingView.swift; sourceTree = "<group>"; };
 		319F086C6C64D0805C0276BE /* TestEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestEngineTests.swift; sourceTree = "<group>"; };
-		3625C6E5C1D3734074879496 /* ModuleDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleDetailView.swift; sourceTree = "<group>"; };
 		3D519024DB6ED32B6B18FA74 /* TheoryDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryDetailView.swift; sourceTree = "<group>"; };
 		3F03FF10A76E950C3E7E52B2 /* ExerciseModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseModule.swift; sourceTree = "<group>"; };
 		3F83E4A98F279D7162C19BD2 /* ModuleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModuleCard.swift; sourceTree = "<group>"; };
@@ -130,7 +127,7 @@
 		B3EE67C78A353FF5D5C0DFA2 /* Configuration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Configuration.swift; sourceTree = "<group>"; };
 		B687B7E5F44A8733579A6E0E /* NotationSwitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotationSwitcher.swift; sourceTree = "<group>"; };
 		BA9065E983AF8D09BF8BDE5F /* TestViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestViewModel.swift; sourceTree = "<group>"; };
-		BA907455E32AF2BB2C5E1DA2 /* ScoreResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScoreResultView.swift; sourceTree = "<group>"; };
+		BA907455E32AF2BB2C5E1DA2 /* PracticeResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeResultView.swift; sourceTree = "<group>"; };
 		C2E5D95C4942C09A8D311BCB /* TestQuestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestQuestion.swift; sourceTree = "<group>"; };
 		D2104C12A8CB3D4EB2C9D5D4 /* TestTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestTab.swift; sourceTree = "<group>"; };
 		D43A03F556DC80288C9DA37A /* TestConfigurationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestConfigurationTests.swift; sourceTree = "<group>"; };
@@ -139,7 +136,6 @@
 		D81F937A8A46BC53602A14D2 /* NotationDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotationDisplayView.swift; sourceTree = "<group>"; };
 		D92ADB02EE70BAE9FAFA1148 /* PracticeTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeTab.swift; sourceTree = "<group>"; };
 		DD8B4B3FA9716AF3F5F7B76A /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTheme.swift; sourceTree = "<group>"; };
-		DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingResultView.swift; sourceTree = "<group>"; };
 		E8097D737617F4F5D82FD658 /* RecommendationEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecommendationEngineTests.swift; sourceTree = "<group>"; };
 		F2E0413F87AFB27C0E2F8505 /* MelodyNote.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MelodyNote.swift; sourceTree = "<group>"; };
 		F628C61320497D17D65DB8A1 /* SightSingingAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = SightSingingAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -154,11 +150,9 @@
 			children = (
 				2DB9CED400BDB2785833F239 /* ExerciseContainerView.swift */,
 				FF045E71746A6A01BDDFA465 /* ExerciseDetailView.swift */,
-				3625C6E5C1D3734074879496 /* ModuleDetailView.swift */,
 				AA815A1C20BA71339B9FA117 /* MusicKeyboardView.swift */,
 				259AE7447E570D2EDAA052CE /* RootNoteListeningView.swift */,
-				BA907455E32AF2BB2C5E1DA2 /* ScoreResultView.swift */,
-				DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */,
+				BA907455E32AF2BB2C5E1DA2 /* PracticeResultView.swift */,
 				3092C30EE32CDD092F5A5700 /* SightSingingView.swift */,
 				0BA723F9D87160EE3751AC98 /* SingleNoteListeningView.swift */,
 				C6D60385B8C13C214AB44503 /* Components */,
@@ -518,7 +512,6 @@
 				8C5CCA9BA165E0B8B14408C8 /* GuitarTabView.swift in Sources */,
 				7582E26C577B3FA42E4F5567 /* MelodyNote.swift in Sources */,
 				7E62F658BB58ED2120480BB9 /* ModuleCard.swift in Sources */,
-				951AF669B9F17A48992D37CB /* ModuleDetailView.swift in Sources */,
 				8013128FA921258705DE8241 /* MusicKeyboardView.swift in Sources */,
 				4A6705231BAACF69EFAC5C73 /* MusicTheory.swift in Sources */,
 				00E39602B932A851F2815A24 /* NotationDisplayView.swift in Sources */,
@@ -535,9 +528,8 @@
 				3ECE7229782EAA78780A1E45 /* QuestionBank.swift in Sources */,
 				D261179F5344CF64F3B65ED0 /* RecommendationEngine.swift in Sources */,
 				485A1F2C3FF99EB159B928FC /* RootNoteListeningView.swift in Sources */,
-				171359E664DCFE39CC27AFD6 /* ScoreResultView.swift in Sources */,
+				171359E664DCFE39CC27AFD6 /* PracticeResultView.swift in Sources */,
 				AEDCCBDF5CF207615A7C25DA /* SightSingingApp.swift in Sources */,
-				9F64F8944E91F76283B7DF26 /* SightSingingResultView.swift in Sources */,
 				C26B52AC8F3C1B3190BAE732 /* SightSingingView.swift in Sources */,
 				BA76018C3D10521BA176F91B /* SightSingingViewModel.swift in Sources */,
 				FC7F4528060AFDBA43E1A411 /* SingleNoteListeningView.swift in Sources */,
