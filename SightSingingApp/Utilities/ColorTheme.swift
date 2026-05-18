@@ -5,6 +5,7 @@ struct AppColors {
     // 主色调
     static let primaryBlue = Color(hex: "1E3A5F")      // 深蓝
     static let accentBlue = Color(hex: "3B82F6")        // 亮蓝
+    static let primary = primaryBlue                    // 兼容旧代码别名
     
     // 功能色
     static let success = Color(hex: "22C55E")
