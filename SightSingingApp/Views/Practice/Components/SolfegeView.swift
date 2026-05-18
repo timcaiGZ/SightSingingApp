@@ -113,7 +113,9 @@ struct SolfegeView: View {
     /// 简谱音符行
     private var notesRow: some View {
         HStack(spacing: 0) {
-            ForEach(Array(notes.enumerated()), id: \.offset) { index, note in
+            ForEach(Array(notes.enumerated()), id: \.offset) { tuple in
+                let index = tuple.offset
+                let note = tuple.element
                 SolfegeNoteView(
                     note: note,
                     isHighlighted: index == highlightedIndex
@@ -218,7 +220,9 @@ struct CompactSolfegeRow: View {
 
     var body: some View {
         HStack(spacing: compact ? 8 : 16) {
-            ForEach(Array(notes.enumerated()), id: \.offset) { index, note in
+            ForEach(Array(notes.enumerated()), id: \.offset) { tuple in
+                let index = tuple.offset
+                let note = tuple.element
                 CompactSolfegeNote(
                     note: note,
                     isHighlighted: index == highlightedIndex,

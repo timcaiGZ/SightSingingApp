@@ -22,6 +22,9 @@ struct AppColors {
     static let secondaryText = Color(hex: "64748B")
     static let tertiaryText = Color(hex: "94A3B8")
     
+    // 分隔线
+    static let separator = Color(hex: "E2E8F0")
+    
     // 模块色
     static let noteName = Color(hex: "3B82F6")
     static let interval = Color(hex: "8B5CF6")
