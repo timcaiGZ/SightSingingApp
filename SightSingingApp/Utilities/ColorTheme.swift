@@ -11,6 +11,7 @@ struct AppColors {
     static let success = Color(hex: "22C55E")
     static let warning = Color(hex: "F59E0B")
     static let error = Color(hex: "EF4444")
+    static let info = Color(hex: "3B82F6")
     
     // 背景色
     static let pageBackground = Color(hex: "F8FAFC")
