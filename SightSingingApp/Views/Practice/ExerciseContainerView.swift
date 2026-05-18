@@ -55,13 +55,16 @@ struct ExerciseContainerView: View {
             
             // 内容区
             contentArea
+                .frame(maxHeight: .infinity)
             
             Divider()
             
             // 操作栏
             actionBar
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(.systemGroupedBackground))
+        .ignoresSafeArea(.container, edges: .bottom)
         .onAppear {
             determineExerciseMode()
         }

@@ -22,7 +22,7 @@ struct CourseDetailView: View {
         .background(Color(.systemGroupedBackground))
         .navigationTitle(course.title)
         .navigationBarTitleDisplayMode(.large)
-        .sheet(isPresented: $showingExercise) {
+        .fullScreenCover(isPresented: $showingExercise) {
             if let lesson = selectedLesson {
                 ExerciseContainerView(
                     exercise: lesson.exercises.first ?? CourseExercise(
@@ -34,8 +34,21 @@ struct CourseDetailView: View {
                         content: lesson.content
                     )
                 )
+            } else {
+                VStack(spacing: 16) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.largeTitle)
+                        .foregroundStyle(.orange)
+                    Text("未能加载练习内容")
+                        .font(.headline)
+                    Button("关闭") {
+                        showingExercise = false
+                    }
+                }
+                .padding()
             }
         }
+    }
 
     // MARK: - 课程头部
 
