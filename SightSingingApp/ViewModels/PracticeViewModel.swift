@@ -11,9 +11,9 @@ final class PracticeViewModel {
         self.modelContext = context
     }
 
-    /// 获取指定模块的所有练习类型
+    /// 获取指定模块的所有练习类型（排除不在首页显示的练习）
     func exercises(for module: ExerciseModule) -> [ExerciseType] {
-        ExerciseType.allCases.filter { $0.module == module }
+        ExerciseType.allCases.filter { $0.module == module && $0.isVisibleInPracticeTab }
     }
 
     /// 获取某练习类型的最佳得分

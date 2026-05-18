@@ -56,6 +56,16 @@ enum ExerciseType: String, CaseIterable, Identifiable, Codable {
         }
     }
 
+    /// 是否在练习首页显示（部分练习只在特定场景出现，不在首页展示）
+    var isVisibleInPracticeTab: Bool {
+        switch self {
+        case .openStringRecognition, .tablatureNoteReading:
+            return false
+        default:
+            return true
+        }
+    }
+
     /// 难度等级
     var difficulty: Difficulty {
         switch self {

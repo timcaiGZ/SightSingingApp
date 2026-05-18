@@ -5,6 +5,7 @@ struct PracticeTab: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = PracticeViewModel()
     @State private var selectedModule: ExerciseModule?
+    @State private var showingExercise: ExerciseType?
 
     var body: some View {
         NavigationStack {
@@ -24,48 +25,79 @@ struct PracticeTab: View {
             .navigationDestination(for: ExerciseModule.self) { module in
                 ModuleDetailView(module: module, viewModel: viewModel)
             }
+            .fullScreenCover(item: $showingExercise) { exercise in
+                exerciseView(for: exercise)
+            }
         }
         .onAppear {
             viewModel.setModelContext(modelContext)
         }
     }
 
-    /// 分类标题
-    private func sectionHeader(module: ExerciseModule) -> some View {
-        HStack {
-            Image(systemName: module.iconName)
-                .font(.caption)
-                .foregroundStyle(moduleColor(for: module))
-
-            Text(module.rawValue)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(AppColors.primaryText)
-
-            Spacer()
-
-            // 模块进度圆点
-            let progress = viewModel.progress(for: module)
-            ProgressDots(total: 5, completed: progress)
-
-            // 模块得分
-            if let bestScore = viewModel.bestScore(for: ExerciseType.allCases.first { $0.module == module } ?? .singleNoteRecognition),
-               bestScore > 0 {
-                Text("\(bestScore) 分")
-                    .font(.caption)
-                    .foregroundStyle(AppColors.secondaryText)
-            }
+    @ViewBuilder
+    private func exerciseView(for exercise: ExerciseType) -> some View {
+        switch exercise {
+        case .singleNoteRecognition:
+            SingleNoteListeningView(module: exercise.module, viewModel: viewModel)
+        case .rootNoteRecognition:
+            RootNoteListeningView(module: exercise.module, viewModel: viewModel)
+        case .intervalSinging:
+            SightSingingView(exercise: exercise, module: exercise.module, viewModel: viewModel)
+        default:
+            ExerciseDetailView(exercise: exercise, module: exercise.module, viewModel: viewModel)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(AppColors.pageBackground)
     }
 
-    /// 模块内的练习列表
+    /// 分类标题 — 点击进入模块详情页
+    private func sectionHeader(module: ExerciseModule) -> some View {
+        Button {
+            selectedModule = module
+        } label: {
+            HStack {
+                Image(systemName: module.iconName)
+                    .font(.caption)
+                    .foregroundStyle(moduleColor(for: module))
+
+                Text(module.rawValue)
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(AppColors.primaryText)
+
+                Spacer()
+
+                // 模块进度圆点
+                let progress = viewModel.progress(for: module)
+                ProgressDots(total: 5, completed: progress)
+
+                // 模块得分
+                if let bestScore = viewModel.bestScore(for: ExerciseType.allCases.first { $0.module == module } ?? .singleNoteRecognition),
+                   bestScore > 0 {
+                    Text("\(bestScore) 分")
+                        .font(.caption)
+                        .foregroundStyle(AppColors.secondaryText)
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.caption2)
+                    .foregroundStyle(AppColors.tertiaryText)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(AppColors.pageBackground)
+        }
+        .buttonStyle(.plain)
+        .navigationDestination(item: $selectedModule) { module in
+            ModuleDetailView(module: module, viewModel: viewModel)
+        }
+    }
+
+    /// 模块内的练习列表 — 点击练习直接进入答题页
     private func moduleExercisesList(module: ExerciseModule) -> some View {
         VStack(spacing: 0) {
             ForEach(viewModel.exercises(for: module)) { exercise in
-                NavigationLink(value: module) {
+                Button {
+                    showingExercise = exercise
+                } label: {
                     exerciseRow(exercise: exercise)
                 }
                 .buttonStyle(.plain)

@@ -14,13 +14,8 @@ struct ModuleDetailView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                // 模块介绍卡片
-                moduleHeader
-
-                // 练习列表
-                exercisesList
-            }
+            exercisesList
+                .padding(.top, 8)
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(module.rawValue)
@@ -28,40 +23,6 @@ struct ModuleDetailView: View {
         .fullScreenCover(item: $showingExercise) { exercise in
             exerciseView(for: exercise)
         }
-    }
-
-    // MARK: - Module Header
-
-    private var moduleHeader: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 12) {
-                Image(systemName: module.iconName)
-                    .font(.title)
-                    .foregroundStyle(moduleColor)
-
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(module.rawValue)
-                        .font(.title2)
-                        .fontWeight(.bold)
-
-                    Text(module.description)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-            }
-
-            // 统计信息
-            HStack(spacing: 24) {
-                StatBadge(value: "\(viewModel.practiceCount(for: module))", label: "练习次数", icon: "clock")
-                if let bestScore = viewModel.bestScore(for: exercises.first ?? .singleNoteRecognition) {
-                    StatBadge(value: "\(bestScore)", label: "最高分", icon: "star")
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-        .padding(.bottom, 16)
     }
 
     private var moduleColor: Color {

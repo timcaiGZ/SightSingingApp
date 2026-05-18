@@ -210,13 +210,19 @@ struct RootNoteListeningView: View {
     }
 
     private var actionButtonsView: some View {
-        HStack {
+        HStack(spacing: 24) {
             Button { generateNewQuestion() } label: {
                 Label("新问题", systemImage: "shuffle")
                     .font(.body)
                     .foregroundStyle(AppColors.primary)
             }
-            Spacer()
+
+            Button { playArpeggio() } label: {
+                Label("分解", systemImage: "waveform")
+                    .font(.body)
+                    .foregroundStyle(AppColors.primary)
+            }
+
             Button { playQuestion() } label: {
                 Label("重听", systemImage: "arrow.counterclockwise")
                     .font(.body)
@@ -229,8 +235,6 @@ struct RootNoteListeningView: View {
     // MARK: - 音乐键盘
     private var musicKeyboardView: some View {
         VStack(spacing: 6) {
-            durationRow
-
             keyboardRow(
                 leftKeys: [("♮", { selectedAccidental = .natural })],
                 centerKeys: [("C", { selectNote("C") }), ("D", { selectNote("D") }), ("E", { selectNote("E") })],
@@ -276,20 +280,17 @@ struct RootNoteListeningView: View {
         .background(Color(.systemGray5))
     }
 
-    private var durationRow: some View {
-        HStack(spacing: 8) {
-            ForEach([("𝅝", "全音符"), ("𝅗𝅥", "二分音符"), ("𝅘𝅥", "四分音符"), ("𝅘𝅥𝅮", "八分音符"), ("𝅘𝅥𝅯", "十六分音符")], id: \.1) { symbol, _ in
-                Text(symbol)
-                    .font(.system(size: 16, weight: .medium))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-                    .background(Color(.systemGray4))
-                    .foregroundStyle(.secondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .opacity(0.5)
+    private func playArpeggio() {
+        Task {
+            await AudioEngineManager.shared.playMIDI(referenceNote, duration: 0.8)
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            for midi in allNotes.sorted() {
+                await AudioEngineManager.shared.playMIDI(midi, duration: 0.6)
+                try? await Task.sleep(nanoseconds: 300_000_000)
             }
         }
     }
+
 
     private func keyboardRow(
         leftKeys: [(String, () -> Void)],

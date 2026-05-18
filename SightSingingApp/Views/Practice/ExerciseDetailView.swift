@@ -30,6 +30,17 @@ struct ExerciseDetailView: View {
         let options: [String]
         let solfege: String
         let octave: Int
+        /// 需要按顺序播放的 MIDI 音符（如音程的两个音）
+        let midiNotes: [Int]?
+
+        init(question: String, answer: Int, options: [String], solfege: String, octave: Int, midiNotes: [Int]? = nil) {
+            self.question = question
+            self.answer = answer
+            self.options = options
+            self.solfege = solfege
+            self.octave = octave
+            self.midiNotes = midiNotes
+        }
     }
 
     private var questions: [QuestionItem] { loadQuestions() }
@@ -104,11 +115,20 @@ struct ExerciseDetailView: View {
 
             // 谱式展示区
             notationDisplayArea(for: current)
+                .padding(.horizontal, 24)
 
             // 播放按钮
             Button {
                 Task {
-                    await AudioEngineManager.shared.playSolfege(current.solfege, octave: current.octave)
+                    if let midiNotes = current.midiNotes, !midiNotes.isEmpty {
+                        // 按顺序播放多个音（如音程的两个音）
+                        for midi in midiNotes {
+                            await AudioEngineManager.shared.playMIDI(midi, duration: 0.8)
+                            try? await Task.sleep(nanoseconds: 200_000_000)
+                        }
+                    } else {
+                        await AudioEngineManager.shared.playSolfege(current.solfege, octave: current.octave)
+                    }
                 }
             } label: {
                 ZStack {
@@ -166,25 +186,61 @@ struct ExerciseDetailView: View {
         return AppColors.tertiaryText
     }
 
-    /// 谱式展示区（根据题目动态显示）
+    /// 谱式展示区（答题前不显示答案，根据练习类型展示不同提示）
+    @ViewBuilder
     private func notationDisplayArea(for current: QuestionItem) -> some View {
-        Group {
-            switch exercise.module {
-            case .rhythm:
-                // 节奏模块不显示固定谱式
-                EmptyView()
-            default:
-                // 显示当前题目对应的简谱音符
-                SolfegeView(
-                    notes: [SolfegeNote(solfege: current.solfege, octave: current.octave, duration: .quarter)],
-                    highlightedIndex: nil
-                )
+        switch exercise {
+        case .tablatureNoteReading:
+            // 六线谱识读：显示把位题目，不显示简谱答案
+            tablatureQuestionHint(question: current.question)
+        case .singleNoteRecognition, .openStringRecognition, .rootNoteRecognition,
+                .intervalRecognition, .fretboardIntervalComparison, .hammerPullInterval,
+                .commonChordRecognition, .chordQualityRecognition, .barreChordRecognition,
+                .scaleRecognition, .cagedSystemPractice, .commonTuningRecognition,
+                .tablatureMelodySinging, .guitarMelodyRecognition, .harmonicRecognition,
+                .intervalSinging:
+            // 听辨/识读类：答题前不显示简谱答案
+            listenHintView
+        case .strummingPattern, .arpeggioPattern, .metronomeStability, .syncopationRecognition,
+                .chordTransitionSpeed:
+            // 节奏类不显示谱式
+            EmptyView()
+        }
+    }
+
+    /// 六线谱识读提示
+    private func tablatureQuestionHint(question: String) -> some View {
+        VStack(spacing: 12) {
+            Text("识读题目")
+                .font(.caption)
+                .foregroundStyle(AppColors.secondaryText)
+
+            Text(question)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundStyle(AppColors.primaryText)
                 .padding()
+                .frame(maxWidth: .infinity)
                 .background(Color(.systemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
         }
-        .padding(.horizontal, 24)
+    }
+
+    /// 听辨提示（不显示答案）
+    private var listenHintView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "ear.fill")
+                .font(.system(size: 40))
+                .foregroundStyle(AppColors.primary.opacity(0.3))
+
+            Text("仔细聆听或阅读题目")
+                .font(.body)
+                .foregroundStyle(AppColors.secondaryText)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     /// 选项列表
@@ -368,6 +424,39 @@ struct ExerciseDetailView: View {
         state = .question
     }
 
+    // MARK: - Helpers
+
+    /// 将音程字符串（如 "C4-E4"）解析为两个 MIDI 音符
+    private func parseIntervalToMIDIs(_ intervalString: String) -> [Int] {
+        let parts = intervalString.split(separator: "-")
+        guard parts.count == 2 else { return [] }
+        return parts.compactMap { parseNoteToMIDI(String($0)) }
+    }
+
+    /// 将音符字符串（如 "C4"、"F#5"）解析为 MIDI note
+    private func parseNoteToMIDI(_ noteString: String) -> Int? {
+        let noteNames: [String: Int] = [
+            "C": 0, "C#": 1, "Db": 1, "D": 2, "D#": 3, "Eb": 3,
+            "E": 4, "F": 5, "F#": 6, "Gb": 6, "G": 7, "G#": 8, "Ab": 8,
+            "A": 9, "A#": 10, "Bb": 10, "B": 11
+        ]
+
+        // 提取音符名和八度
+        var noteName = ""
+        var octaveStr = ""
+        for char in noteString {
+            if char.isLetter || char == "#" || char == "b" {
+                noteName.append(char)
+            } else if char.isNumber || char == "-" {
+                octaveStr.append(char)
+            }
+        }
+
+        guard let semitone = noteNames[noteName],
+              let octave = Int(octaveStr) else { return nil }
+        return (octave + 1) * 12 + semitone
+    }
+
     // MARK: - Data Loading
 
     private func loadQuestions() -> [QuestionItem] {
@@ -399,12 +488,15 @@ struct ExerciseDetailView: View {
                 )
             }
         case .tablatureNoteReading:
+            // 六线谱音符识读：只包含有品位的题目（空弦音有专门的 openStringRecognition）
             let tabNotes = [
-                ("六弦0品", "E", "3", 3), ("五弦0品", "A", "6", 2),
-                ("四弦0品", "D", "2", 3), ("三弦0品", "G", "5", 3),
-                ("二弦0品", "B", "7", 3), ("一弦0品", "E", "3", 4),
                 ("五弦2品", "B", "7", 3), ("四弦2品", "E", "3", 3),
-                ("三弦2品", "A", "6", 3), ("二弦3品", "D", "2", 3)
+                ("三弦2品", "A", "6", 3), ("二弦3品", "D", "2", 3),
+                ("六弦3品", "G", "5", 3), ("五弦3品", "C", "1", 4),
+                ("四弦3品", "F", "4", 4), ("三弦3品", "B", "7", 3),
+                ("二弦1品", "C", "1", 4), ("一弦1品", "F", "4", 4),
+                ("六弦1品", "F", "4", 3), ("五弦1品", "A#", "#6", 2),
+                ("四弦1品", "D#", "#2", 3), ("三弦1品", "G#", "#5", 3)
             ]
             return tabNotes.shuffled().prefix(10).map { note in
                 let options = generateNoteNameOptions(correct: note.1)
@@ -432,11 +524,12 @@ struct ExerciseDetailView: View {
                 )
             }
         case .intervalRecognition, .fretboardIntervalComparison, .hammerPullInterval:
+            // 音程题库：(两个音的音符名, 正确答案音程度数)
             let intervals = [
-                ("C-E", "大三度", "1"), ("D-F", "小三度", "2"), ("C-G", "纯五度", "1"),
-                ("E-G", "小三度", "3"), ("F-A", "大三度", "4"), ("G-B", "大三度", "5"),
-                ("A-C", "小三度", "6"), ("C-F", "纯四度", "1"), ("D-G", "纯四度", "2"),
-                ("E-A", "纯四度", "3"), ("G-D", "纯五度", "5"), ("A-E", "纯五度", "6")
+                ("C4-E4", "大三度"), ("D4-F4", "小三度"), ("C4-G4", "纯五度"),
+                ("E4-G4", "小三度"), ("F4-A4", "大三度"), ("G4-B4", "大三度"),
+                ("A4-C5", "小三度"), ("C4-F4", "纯四度"), ("D4-G4", "纯四度"),
+                ("E4-A4", "纯四度"), ("G4-D5", "纯五度"), ("A4-E5", "纯五度")
             ]
             return intervals.shuffled().prefix(10).map { data in
                 let allIntervals = ["大二度", "小二度", "大三度", "小三度", "纯四度", "纯五度", "大六度", "小六度"]
@@ -447,12 +540,14 @@ struct ExerciseDetailView: View {
                     }
                 }
                 options.shuffle()
+                let midiNotes = parseIntervalToMIDIs(data.0)
                 return QuestionItem(
-                    question: "音程 \(data.0) 是多少度？",
+                    question: "听辨以下两个音的音程关系",
                     answer: options.firstIndex(of: data.1) ?? 0,
                     options: options,
-                    solfege: data.2,
-                    octave: 4
+                    solfege: "1",
+                    octave: 4,
+                    midiNotes: midiNotes
                 )
             }
         case .commonChordRecognition, .chordQualityRecognition, .barreChordRecognition, .chordTransitionSpeed:
