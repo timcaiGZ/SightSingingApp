@@ -1,9 +1,12 @@
 import SwiftUI
 
-/// 课程详情页（显示章节列表）
+/// 课程详情页（直接显示课时列表，点击进入练习）
 struct CourseDetailView: View {
     let course: Course
     let viewModel: CourseViewModel
+    
+    @State private var showingExercise = false
+    @State private var selectedLesson: Lesson?
 
     var body: some View {
         ScrollView {
@@ -11,15 +14,28 @@ struct CourseDetailView: View {
                 // 课程头部
                 courseHeader
 
-                // 章节列表
-                chaptersList
+                // 课时列表
+                lessonsList
             }
             .padding(.vertical, 16)
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle(course.title)
         .navigationBarTitleDisplayMode(.large)
-    }
+        .sheet(isPresented: $showingExercise) {
+            if let lesson = selectedLesson {
+                ExerciseContainerView(
+                    exercise: lesson.exercises.first ?? CourseExercise(
+                        id: lesson.id,
+                        title: lesson.title,
+                        type: .theory,
+                        difficulty: 1,
+                        description: lesson.content,
+                        content: lesson.content
+                    )
+                )
+            }
+        }
 
     // MARK: - 课程头部
 
@@ -66,28 +82,64 @@ struct CourseDetailView: View {
         .background(Color(.systemBackground))
     }
 
-    // MARK: - 章节列表
+    // MARK: - 课时列表
 
-    private var chaptersList: some View {
+    private var lessonsList: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("课程目录")
                 .font(.headline)
                 .padding(.horizontal, 16)
 
-            VStack(spacing: 0) {
-                ForEach(Array(course.chapters.enumerated()), id: \.element.id) { index, chapter in
-                    NavigationLink(value: chapter) {
-                        ChapterRow(chapter: chapter, index: index + 1, viewModel: viewModel)
+            VStack(spacing: 16) {
+                ForEach(Array(course.chapters.enumerated()), id: \.element.id) { chapterIndex, chapter in
+                    VStack(alignment: .leading, spacing: 0) {
+                        // 章节标题
+                        HStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(viewModel.iconColor(for: course).opacity(0.15))
+                                    .frame(width: 32, height: 32)
+                                
+                                Text("\(chapterIndex + 1)")
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundStyle(viewModel.iconColor(for: course))
+                            }
+                            
+                            Text(chapter.title)
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundStyle(AppColors.primaryText)
+                            
+                            Spacer()
+                            
+                            Text("\(chapter.lessons.count) 课时")
+                                .font(.caption)
+                                .foregroundStyle(AppColors.secondaryText)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color(.systemBackground))
+                        
+                        // 课时列表
+                        ForEach(Array(chapter.lessons.enumerated()), id: \.element.id) { lessonIndex, lesson in
+                            LessonRow(lesson: lesson, index: lessonIndex + 1)
+                                .onTapGesture {
+                                    selectedLesson = lesson
+                                    showingExercise = true
+                                }
+                            
+                            if lessonIndex < chapter.lessons.count - 1 {
+                                Divider()
+                                    .padding(.leading, 60)
+                            }
+                        }
                     }
-                    .buttonStyle(.plain)
-
-                    if index < course.chapters.count - 1 {
-                        Divider()
-                            .padding(.leading, 56)
-                    }
+                    .background(Color(.systemBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
             }
-            .background(Color(.systemBackground))
+            .padding(.horizontal, 16)
         }
     }
 }
@@ -112,65 +164,54 @@ struct StatItem: View {
     }
 }
 
-// MARK: - 章节行
+// MARK: - 课时行
 
-struct ChapterRow: View {
-    let chapter: Chapter
+struct LessonRow: View {
+    let lesson: Lesson
     let index: Int
-    let viewModel: CourseViewModel
-
-    var completedCount: Int {
-        chapter.lessons.filter { $0.isCompleted }.count
-    }
-
-    /// 获取章节所属课程的颜色
-    private var chapterColor: Color {
-        viewModel.iconColor(for: chapter)
-    }
 
     var body: some View {
-        HStack(spacing: 16) {
-            // 章节序号
+        HStack(spacing: 12) {
+            // 序号
+            Text("\(index)")
+                .font(.caption)
+                .foregroundStyle(AppColors.tertiaryText)
+                .frame(width: 20)
+            
+            // 课时状态图标
             ZStack {
                 Circle()
-                    .fill(chapterColor.opacity(0.15))
-                    .frame(width: 40, height: 40)
-
-                Text("\(index)")
-                    .font(.headline)
-                    .foregroundStyle(chapterColor)
-            }
-
-            // 章节信息
-            VStack(alignment: .leading, spacing: 2) {
-                Text(chapter.title)
+                    .fill(lesson.isCompleted ? Color.green.opacity(0.15) : Color.blue.opacity(0.15))
+                    .frame(width: 36, height: 36)
+                
+                Image(systemName: lesson.isCompleted ? "checkmark.circle.fill" : "play.circle.fill")
                     .font(.body)
-                    .foregroundStyle(.primary)
-
-                Text("\(chapter.lessons.count) 课时")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(lesson.isCompleted ? .green : .blue)
             }
-
-            Spacer()
-
-            // 进度
-            if completedCount > 0 {
-                Text("\(completedCount)/\(chapter.lessons.count)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.green.opacity(0.1))
-                    .clipShape(Capsule())
-            }
-
-            Image(systemName: "chevron.right")
+            
+            // 课时信息
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lesson.title)
+                    .font(.body)
+                    .foregroundStyle(AppColors.primaryText)
+                
+                HStack(spacing: 8) {
+                    Label("\(lesson.duration)分钟", systemImage: "clock")
+                    Label("\(lesson.exercises.count)练习", systemImage: "list.bullet")
+                }
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(AppColors.secondaryText)
+            }
+            
+            Spacer()
+            
+            // 进入练习
+            Image(systemName: "play.circle.fill")
+                .font(.title2)
+                .foregroundStyle(AppColors.accentBlue)
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.vertical, 12)
         .contentShape(Rectangle())
     }
 }

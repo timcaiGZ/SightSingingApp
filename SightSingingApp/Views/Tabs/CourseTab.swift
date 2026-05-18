@@ -21,12 +21,6 @@ struct CourseTab: View {
             .navigationDestination(for: Course.self) { course in
                 CourseDetailView(course: course, viewModel: viewModel)
             }
-            .navigationDestination(for: Chapter.self) { chapter in
-                CourseChapterView(chapter: chapter, viewModel: viewModel)
-            }
-            .navigationDestination(for: Lesson.self) { lesson in
-                CourseLessonView(lesson: lesson)
-            }
         }
     }
 
