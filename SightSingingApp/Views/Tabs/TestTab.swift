@@ -1,7 +1,7 @@
 import SwiftUI
 import SwiftData
 
-/// Tab 2 — 测试入口
+/// Tab 2 — 测试入口（增加诊断测试入口卡片样式）
 struct TestTab: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = TestViewModel()
@@ -9,13 +9,19 @@ struct TestTab: View {
 
     var body: some View {
         NavigationStack {
-            Group {
-                if viewModel.state == .idle || viewModel.state == .showingResult {
-                    testIdleView
-                } else if viewModel.state == .inProgress {
-                    DiagnosticTestView(viewModel: viewModel)
+            ScrollView {
+                VStack(spacing: 24) {
+                    // 测试入口卡片
+                    testEntryCard
+
+                    // 历史记录
+                    if !history.isEmpty {
+                        historySection
+                    }
                 }
+                .padding(.bottom, 24)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("测试")
         }
         .sheet(isPresented: $viewModel.showingTestIntro) {
@@ -28,74 +34,109 @@ struct TestTab: View {
         }
     }
 
-    private var testIdleView: some View {
-        ScrollView {
-            VStack(spacing: 24) {
-                // 开始测试大按钮
-                VStack(spacing: 12) {
-                    Image(systemName: "waveform.path.ecg")
-                        .font(.system(size: 48))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [AppColors.primary, AppColors.info],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+    // MARK: - Test Entry Card
 
-                    Text(AppConstants.appName)
-                        .font(.title2)
-                        .fontWeight(.bold)
+    private var testEntryCard: some View {
+        VStack(spacing: 20) {
+            // 图标
+            ZStack {
+                Circle()
+                    .fill(AppColors.primary.opacity(0.1))
+                    .frame(width: 80, height: 80)
 
-                    Text(AppConstants.testDescription)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-
-                    Button {
-                        viewModel.showingTestIntro = true
-                    } label: {
-                        Text("开始诊断测试")
-                            .font(.headline)
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(
-                                LinearGradient(
-                                    colors: [AppColors.primary, AppColors.info],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
-                    }
-                    .padding(.top, 8)
-                }
-                .padding(24)
-                .background(Color(.systemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 20))
-                .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 4)
-                .padding(.horizontal, 16)
-                .padding(.top, 16)
-
-                // 历史记录
-                if !history.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("测试历史")
-                            .font(.headline)
-                            .padding(.horizontal, 16)
-
-                        ForEach(history.prefix(5)) { record in
-                            TestHistoryRow(record: record)
-                        }
-                    }
-                }
-
-                Spacer()
+                Image(systemName: "waveform.path.ecg")
+                    .font(.system(size: 36))
+                    .foregroundStyle(AppColors.primary)
             }
-            .padding(.bottom, 24)
+
+            // 标题
+            VStack(spacing: 8) {
+                Text(AppConstants.appName)
+                    .font(.title2)
+                    .fontWeight(.bold)
+
+                Text("全面评估你的视唱练耳能力")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            // 特点列表
+            VStack(alignment: .leading, spacing: 12) {
+                FeatureRow(icon: "list.number", text: "30 道精选题目")
+                FeatureRow(icon: "clock", text: "约 5-10 分钟")
+                FeatureRow(icon: "chart.bar", text: "6 大维度分析")
+                FeatureRow(icon: "star", text: "个性化推荐")
+            }
+            .padding(.horizontal, 16)
+
+            // 开始按钮
+            Button {
+                viewModel.showingTestIntro = true
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "play.fill")
+                    Text("开始诊断测试")
+                }
+                .font(.headline)
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(AppColors.primary)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
         }
-        .background(Color(.systemGroupedBackground))
+        .padding(.vertical, 24)
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+
+    // MARK: - History Section
+
+    private var historySection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("测试历史")
+                .font(.headline)
+                .padding(.horizontal, 16)
+
+            VStack(spacing: 0) {
+                ForEach(history.prefix(5)) { record in
+                    TestHistoryRow(record: record)
+
+                    if record != history.prefix(5).last {
+                        Divider()
+                            .padding(.leading, 60)
+                    }
+                }
+            }
+            .background(Color(.systemBackground))
+        }
+    }
+}
+
+/// 特点行
+struct FeatureRow: View {
+    let icon: String
+    let text: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(AppColors.primary)
+                .frame(width: 24)
+
+            Text(text)
+                .font(.subheadline)
+                .foregroundStyle(.primary)
+
+            Spacer()
+        }
     }
 }
 
@@ -197,16 +238,20 @@ struct TestHistoryRow: View {
             Text("\(record.totalScore)")
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundStyle(AppColors.primary)
+                .foregroundStyle(scoreColor(record.totalScore))
 
             Text("分")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }
-        .padding(16)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    private func scoreColor(_ score: Int) -> Color {
+        if score >= 90 { return AppColors.success }
+        else if score >= 70 { return AppColors.warning }
+        else { return AppColors.error }
     }
 }
 

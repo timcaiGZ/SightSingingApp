@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ContentView: View {
     @AppStorage("colorScheme") private var colorScheme: Int = 0
-    // 0 = system, 1 = light, 2 = dark
 
     var body: some View {
         TabView {
@@ -11,14 +10,14 @@ struct ContentView: View {
                     Label("练习", systemImage: "music.note.list")
                 }
 
-            TestTab()
-                .tabItem {
-                    Label("测试", systemImage: "waveform.path.ecg")
-                }
-
             TheoryTab()
                 .tabItem {
-                    Label("乐理", systemImage: "book.closed")
+                    Label("课程", systemImage: "book.closed")
+                }
+
+            TestTab()
+                .tabItem {
+                    Label("乐理", systemImage: "book")
                 }
 
             ProfileTab()

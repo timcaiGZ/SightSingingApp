@@ -1,116 +1,334 @@
 import SwiftUI
+import Charts
 
-/// Tab 4 — 我的
+/// Tab 4 — 我的（增加学习统计可视化）
 struct ProfileTab: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel = ProfileViewModel()
 
     var body: some View {
         NavigationStack {
-            List {
-                // 学习概览
-                Section {
-                    StatsOverviewSection(viewModel: viewModel)
-                }
+            ScrollView {
+                VStack(spacing: 20) {
+                    // 学习概览卡片
+                    statsOverviewCard
 
-                // 模块得分趋势
-                Section("各模块得分趋势") {
-                    ForEach(ExerciseModule.allCases.prefix(3)) { module in
-                        NavigationLink {
-                            ScoreTrendView(module: module, viewModel: viewModel)
-                        } label: {
-                            HStack {
-                                Image(systemName: module.iconName)
-                                    .foregroundStyle(module.gradientStart)
-                                    .frame(width: 24)
-                                Text(module.rawValue)
-                                Spacer()
-                                Text("\(viewModel.moduleScoreTrend(module: module).last?.score ?? 0) 分")
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
-                }
+                    // 各模块得分趋势
+                    moduleScoresCard
 
-                // 设置
-                Section("设置") {
-                    NavigationLink {
-                        SettingsView(viewModel: viewModel)
-                    } label: {
-                        Label("深色/浅色主题", systemImage: "circle.lefthalf.filled")
-                    }
+                    // 快速入口
+                    quickActionsCard
+
+                    // 设置
+                    settingsSection
                 }
+                .padding(.bottom, 24)
             }
+            .background(Color(.systemGroupedBackground))
             .navigationTitle("我的")
         }
         .onAppear {
             viewModel.setModelContext(modelContext)
         }
     }
-}
 
-/// 学习概览卡片
-struct StatsOverviewSection: View {
-    let viewModel: ProfileViewModel
-    @State private var overview: [ProfileViewModel.WeekOverview] = []
+    // MARK: - Stats Overview Card
 
-    var body: some View {
-        VStack(spacing: 12) {
+    private var statsOverviewCard: some View {
+        VStack(spacing: 20) {
+            // 标题
+            HStack {
+                Text("学习概览")
+                    .font(.headline)
+                Spacer()
+            }
+
             // 统计数字
             let stats = viewModel.totalStats()
             HStack(spacing: 0) {
-                StatItem(value: "\(stats.totalPracticeMinutes)", label: "练习分钟")
-                Divider().frame(height: 40)
-                StatItem(value: "\(stats.totalPracticeCount)", label: "练习次数")
-                Divider().frame(height: 40)
-                StatItem(value: "\(stats.averageScore)", label: "平均得分")
-                Divider().frame(height: 40)
-                StatItem(value: "\(stats.testCount)", label: "测试次数")
+                CompactStatItem(value: "\(stats.totalPracticeMinutes)", label: "练习分钟", icon: "clock")
+                Divider().frame(height: 50)
+                CompactStatItem(value: "\(stats.totalPracticeCount)", label: "练习次数", icon: "play")
+                Divider().frame(height: 50)
+                CompactStatItem(value: "\(stats.averageScore)", label: "平均得分", icon: "star")
             }
 
             Divider()
 
             // 最近7天柱状图
-            if !overview.isEmpty {
-                HStack(alignment: .bottom, spacing: 4) {
-                    ForEach(overview, id: \.date) { day in
-                        VStack(spacing: 2) {
-                            RoundedRectangle(cornerRadius: 3)
-                                .fill(AppColors.primary.opacity(day.practiceMinutes > 0 ? 0.3 + Double(day.practiceMinutes) / 30.0 * 0.7 : 0.1))
-                                .frame(width: 28, height: max(4, CGFloat(day.practiceMinutes) * 2))
+            weekOverviewChart
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 16)
+        .padding(.top, 16)
+    }
 
-                            Text(day.date, format: .dateTime.weekday(.narrow))
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+    private var weekOverviewChart: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("本周练习")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            let overview = viewModel.weekOverview()
+
+            if overview.isEmpty {
+                Text("暂无练习数据")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(height: 80)
+            } else {
+                Chart {
+                    ForEach(overview, id: \.date) { day in
+                        BarMark(
+                            x: .value("日期", day.date, unit: .day),
+                            y: .value("分钟", day.practiceMinutes)
+                        )
+                        .foregroundStyle(AppColors.primary.gradient)
+                        .cornerRadius(4)
+                    }
+                }
+                .frame(height: 80)
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: .day)) { value in
+                        if let date = value.as(Date.self) {
+                            AxisValueLabel {
+                                Text(date, format: .dateTime.weekday(.narrow))
+                                    .font(.caption2)
+                            }
                         }
                     }
                 }
-                .frame(height: 60)
-                .padding(.top, 4)
+                .chartYAxis(.hidden)
             }
         }
-        .padding(.vertical, 8)
         .onAppear {
-            overview = viewModel.weekOverview()
+            _ = viewModel.weekOverview()
+        }
+    }
+
+    // MARK: - Module Scores Card
+
+    private var moduleScoresCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("模块得分趋势")
+                    .font(.headline)
+                Spacer()
+            }
+
+            ForEach(ExerciseModule.allCases.prefix(3)) { module in
+                NavigationLink {
+                    ScoreTrendView(module: module, viewModel: viewModel)
+                } label: {
+                    ModuleScoreRow(module: module, viewModel: viewModel)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 16)
+    }
+
+    // MARK: - Quick Actions Card
+
+    private var quickActionsCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("快捷操作")
+                    .font(.headline)
+                Spacer()
+            }
+
+            HStack(spacing: 12) {
+                QuickActionButton(icon: "star.fill", title: "测试", color: AppColors.warning) {
+                    // 导航到测试
+                }
+
+                QuickActionButton(icon: "book.fill", title: "乐理", color: AppColors.info) {
+                    // 导航到乐理
+                }
+
+                QuickActionButton(icon: "gear", title: "设置", color: AppColors.secondaryText) {
+                    // 导航到设置
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 16)
+    }
+
+    // MARK: - Settings Section
+
+    private var settingsSection: some View {
+        VStack(spacing: 0) {
+            // 主题设置
+            NavigationLink {
+                ThemeSettingsView(viewModel: viewModel)
+            } label: {
+                SettingsRow(icon: "circle.lefthalf.filled", title: "外观", value: themeName(viewModel.colorScheme))
+            }
+
+            Divider()
+                .padding(.leading, 56)
+
+            // 关于
+            NavigationLink {
+                AboutView()
+            } label: {
+                SettingsRow(icon: "info.circle", title: "关于", value: nil)
+            }
+
+            Divider()
+                .padding(.leading, 56)
+        }
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 16)
+    }
+
+    private func themeName(_ scheme: ColorScheme?) -> String {
+        switch scheme {
+        case .light: return "浅色"
+        case .dark: return "深色"
+        default: return "跟随系统"
         }
     }
 }
 
-struct StatItem: View {
+/// 紧凑统计项
+struct CompactStatItem: View {
     let value: String
     let label: String
+    let icon: String
 
     var body: some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundStyle(AppColors.primary)
+        VStack(spacing: 4) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.caption)
+                    .foregroundStyle(AppColors.primary)
+                Text(value)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundStyle(AppColors.primary)
+            }
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+/// 模块得分行
+struct ModuleScoreRow: View {
+    let module: ExerciseModule
+    let viewModel: ProfileViewModel
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: module.iconName)
+                .font(.title3)
+                .foregroundStyle(moduleColor)
+                .frame(width: 32)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(module.rawValue)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+
+                if let lastScore = viewModel.moduleScoreTrend(module: module).last?.score, lastScore > 0 {
+                    Text("最近得分: \(lastScore)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 4)
+    }
+
+    private var moduleColor: Color {
+        switch module {
+        case .noteName: return AppColors.noteName
+        case .interval: return AppColors.interval
+        case .chord: return AppColors.chord
+        case .scale: return AppColors.scale
+        case .rhythm: return AppColors.rhythm
+        case .melody: return AppColors.melody
+        }
+    }
+}
+
+/// 快捷操作按钮
+struct QuickActionButton: View {
+    let icon: String
+    let title: String
+    let color: Color
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .foregroundStyle(color)
+
+                Text(title)
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(color.opacity(0.1))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// 设置行
+struct SettingsRow: View {
+    let icon: String
+    let title: String
+    let value: String?
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(AppColors.primary)
+                .frame(width: 24)
+
+            Text(title)
+                .font(.body)
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            if let value = value {
+                Text(value)
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+            }
+
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
 }
 
@@ -130,20 +348,19 @@ struct ScoreTrendView: View {
                     description: Text("完成练习后即可查看趋势")
                 )
             } else {
-                // 简单折线图
                 Chart {
                     ForEach(trend, id: \.date) { item in
                         LineMark(
                             x: .value("日期", item.date),
                             y: .value("得分", item.score)
                         )
-                        .foregroundStyle(module.gradientStart)
+                        .foregroundStyle(moduleColor)
 
                         PointMark(
                             x: .value("日期", item.date),
                             y: .value("得分", item.score)
                         )
-                        .foregroundStyle(module.gradientStart)
+                        .foregroundStyle(moduleColor)
                     }
                 }
                 .frame(height: 200)
@@ -152,24 +369,32 @@ struct ScoreTrendView: View {
         }
         .navigationTitle("\(module.rawValue) 得分趋势")
     }
+
+    private var moduleColor: Color {
+        switch module {
+        case .noteName: return AppColors.noteName
+        case .interval: return AppColors.interval
+        case .chord: return AppColors.chord
+        case .scale: return AppColors.scale
+        case .rhythm: return AppColors.rhythm
+        case .melody: return AppColors.melody
+        }
+    }
 }
 
-/// 设置页面
-struct SettingsView: View {
+/// 主题设置页面
+struct ThemeSettingsView: View {
     @Bindable var viewModel: ProfileViewModel
 
     var body: some View {
         List {
-            Section("外观") {
+            Section {
                 ForEach(["跟随系统", "浅色模式", "深色模式"], id: \.self) { option in
                     Button {
                         switch option {
-                        case "浅色模式":
-                            viewModel.colorScheme = .light
-                        case "深色模式":
-                            viewModel.colorScheme = .dark
-                        default:
-                            viewModel.colorScheme = nil
+                        case "浅色模式": viewModel.colorScheme = .light
+                        case "深色模式": viewModel.colorScheme = .dark
+                        default: viewModel.colorScheme = nil
                         }
                     } label: {
                         HStack {
@@ -184,19 +409,16 @@ struct SettingsView: View {
                     .foregroundStyle(.primary)
                 }
             }
+        }
+        .navigationTitle("外观")
+    }
+}
 
-            Section("音频") {
-                Toggle("节拍器", isOn: $viewModel.metronomeEnabled)
-
-                if viewModel.metronomeEnabled {
-                    HStack {
-                        Text("节拍音量")
-                        Slider(value: $viewModel.metronomeVolume, in: 0...1)
-                    }
-                }
-            }
-
-            Section("关于") {
+/// 关于页面
+struct AboutView: View {
+    var body: some View {
+        List {
+            Section {
                 HStack {
                     Text("版本")
                     Spacer()
@@ -205,11 +427,9 @@ struct SettingsView: View {
                 }
             }
         }
-        .navigationTitle("设置")
+        .navigationTitle("关于")
     }
 }
-
-import Charts
 
 #Preview {
     ProfileTab()

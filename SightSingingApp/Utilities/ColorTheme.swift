@@ -1,6 +1,40 @@
 import SwiftUI
 
-// MARK: - 颜色主题系统
+// MARK: - iOS 原生色板（简化版）
+
+/// iOS 系统色
+struct AppColors {
+    // MARK: 功能色
+    static let primary = Color(hex: "007AFF")     // iOS 蓝
+    static let success = Color(hex: "34C759")     // iOS 绿
+    static let warning = Color(hex: "FF9500")     // iOS 橙
+    static let error = Color(hex: "FF3B30")       // iOS 红
+    static let info = Color(hex: "5856D6")        // iOS 紫
+
+    // MARK: 背景色
+    static let background = Color(.systemBackground)       // 纯白 / 深色
+    static let groupedBackground = Color(.systemGroupedBackground) // 系统灰背景
+    static let secondaryBackground = Color(.secondarySystemGroupedBackground)
+
+    // MARK: 文字色
+    static let primaryText = Color(.label)         // 主文字
+    static let secondaryText = Color(.secondaryLabel) // 次要文字
+    static let tertiaryText = Color(.tertiaryLabel)   // 占位符文字
+
+    // MARK: 分隔线
+    static let separator = Color(.separator)
+    static let opaqueSeparator = Color(.opaqueSeparator)
+
+    // MARK: 吉他模块颜色（用于图表和标识）
+    static let noteName = Color(hex: "007AFF")     // 蓝色
+    static let interval = Color(hex: "34C759")      // 绿色
+    static let chord = Color(hex: "FF3B30")        // 红色
+    static let scale = Color(hex: "5856D6")        // 紫色
+    static let rhythm = Color(hex: "FF9500")       // 橙色
+    static let melody = Color(hex: "00C7BE")       // 青色
+}
+
+// MARK: - Color 扩展
 
 extension Color {
     /// 从十六进制初始化颜色
@@ -29,70 +63,19 @@ extension Color {
     }
 }
 
-// MARK: - 深色/浅色主题颜色
+// MARK: - View 扩展
 
-struct AppColors {
-    // 深色模式
-    static let darkBackground = Color(hex: "000000")
-    static let darkCard = Color(hex: "1C1C1E")
-    static let darkSecondaryCard = Color(hex: "2C2C2E")
-    static let darkText = Color(hex: "FFFFFF")
-    static let darkSecondaryText = Color(hex: "8E8E93")
-
-    // 浅色模式
-    static let lightBackground = Color(hex: "F2F2F7")
-    static let lightCard = Color(hex: "FFFFFF")
-    static let lightSecondaryCard = Color(hex: "F9F9F9")
-    static let lightText = Color(hex: "000000")
-    static let lightSecondaryText = Color(hex: "8E8E93")
-
-    // 功能色
-    static let primary = Color(hex: "007AFF")
-    static let success = Color(hex: "34C759")
-    static let error = Color(hex: "FF3B30")
-    static let warning = Color(hex: "FF9500")
-    static let info = Color(hex: "5856D6")
-
-    // 渐变色预设
-    static let noteNameGradient = [Color(hex: "4A90E2"), Color(hex: "357ABD")]
-    static let intervalGradient = [Color(hex: "50C878"), Color(hex: "2ECC71")]
-    static let chordGradient = [Color(hex: "FF6B6B"), Color(hex: "E74C3C")]
-    static let scaleGradient = [Color(hex: "9B59B6"), Color(hex: "8E44AD")]
-    static let rhythmGradient = [Color(hex: "F39C12"), Color(hex: "E67E22")]
-    static let melodyGradient = [Color(hex: "1ABC9C"), Color(hex: "16A085")]
-}
-
-// MARK: - 环境感知颜色
-
-/// 环境感知颜色管理器
-final class ThemedColors: ObservableObject {
-    /// 当前颜色方案
-    @Published var colorScheme: ColorScheme = .light
-
-    init() {}
-
-    /// 从环境注入颜色方案
-    func inject(from environment: EnvironmentValues) {
-        self.colorScheme = environment.colorScheme ?? .light
+extension View {
+    /// 应用 iOS 原生卡片样式
+    func cardStyle() -> some View {
+        self
+            .padding()
+            .background(Color(.systemBackground))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    var background: Color {
-        colorScheme == .dark ? AppColors.darkBackground : AppColors.lightBackground
-    }
-
-    var card: Color {
-        colorScheme == .dark ? AppColors.darkCard : AppColors.lightCard
-    }
-
-    var secondaryCard: Color {
-        colorScheme == .dark ? AppColors.darkSecondaryCard : AppColors.lightSecondaryCard
-    }
-
-    var primaryText: Color {
-        colorScheme == .dark ? AppColors.darkText : AppColors.lightText
-    }
-
-    var secondaryText: Color {
-        colorScheme == .dark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText
+    /// 应用分组列表背景
+    func groupedBackground() -> some View {
+        self.background(Color(.systemGroupedBackground))
     }
 }

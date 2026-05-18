@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 练习模块详情页
+/// 练习模块详情页（优化模块内练习列表布局）
 struct ModuleDetailView: View {
     let module: ExerciseModule
     let viewModel: PracticeViewModel
@@ -13,143 +13,226 @@ struct ModuleDetailView: View {
     }
 
     var body: some View {
-        List {
-            // 模块介绍
-            Section {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Image(systemName: module.iconName)
-                            .font(.title)
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [module.gradientStart, module.gradientEnd],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                        Text(module.rawValue)
-                            .font(.title2)
-                            .fontWeight(.bold)
-                    }
+        ScrollView {
+            VStack(spacing: 0) {
+                // 模块介绍卡片
+                moduleHeader
+
+                // 练习列表
+                exercisesList
+            }
+        }
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle(module.rawValue)
+        .navigationBarTitleDisplayMode(.large)
+        .fullScreenCover(item: $showingExercise) { exercise in
+            exerciseView(for: exercise)
+        }
+    }
+
+    // MARK: - Module Header
+
+    private var moduleHeader: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: module.iconName)
+                    .font(.title)
+                    .foregroundStyle(moduleColor)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(module.rawValue)
+                        .font(.title2)
+                        .fontWeight(.bold)
 
                     Text(module.description)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
+                        .lineLimit(2)
                 }
-                .padding(.vertical, 4)
             }
 
-            // 练习列表（按难度分组）
-            ForEach(Difficulty.allCases, id: \.self) { difficulty in
-                let difficultyExercises = exercises.filter { $0.difficulty == difficulty }
-                if !difficultyExercises.isEmpty {
-                    Section(difficulty.rawValue) {
-                        ForEach(difficultyExercises) { exercise in
-                            ExerciseCard(
-                                exercise: exercise,
-                                bestScore: viewModel.bestScore(for: exercise),
-                                practiceCount: viewModel.practiceCount(for: exercise)
-                            ) {
-                                showingExercise = exercise
-                            }
-                        }
-                    }
+            // 统计信息
+            HStack(spacing: 24) {
+                StatBadge(value: "\(viewModel.practiceCount(for: module))", label: "练习次数", icon: "clock")
+                if let bestScore = viewModel.bestScore(for: exercises.first ?? .singleNoteRecognition) {
+                    StatBadge(value: "\(bestScore)", label: "最高分", icon: "star")
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .navigationTitle(module.rawValue)
-        .navigationDestination(for: ExerciseType.self) { exercise in
-            ExerciseDetailView(exercise: exercise, module: module, viewModel: viewModel)
-        }
-        .fullScreenCover(item: $showingExercise) { exercise in
-            switch exercise {
-            case .singleNoteRecognition:
-                SingleNoteListeningView(module: module, viewModel: viewModel)
-            case .rootNoteRecognition:
-                RootNoteListeningView(module: module, viewModel: viewModel)
-            default:
-                ExerciseDetailView(exercise: exercise, module: module, viewModel: viewModel)
-            }
+        .padding()
+        .background(Color(.systemBackground))
+        .padding(.bottom, 16)
+    }
+
+    private var moduleColor: Color {
+        switch module {
+        case .noteName: return AppColors.noteName
+        case .interval: return AppColors.interval
+        case .chord: return AppColors.chord
+        case .scale: return AppColors.scale
+        case .rhythm: return AppColors.rhythm
+        case .melody: return AppColors.melody
         }
     }
-}
 
-/// 单个练习入口卡片
-struct ExerciseCard: View {
-    let exercise: ExerciseType
-    let bestScore: Int?
-    let practiceCount: Int
-    let onStart: () -> Void
+    // MARK: - Exercises List
 
-    var body: some View {
-        Button(action: onStart) {
-            HStack {
+    private var exercisesList: some View {
+        VStack(spacing: 0) {
+            ForEach(exercises) { exercise in
+                exerciseRow(exercise: exercise)
+
+                if exercise != exercises.last {
+                    Divider()
+                        .padding(.leading, 60)
+                }
+            }
+        }
+        .background(Color(.systemBackground))
+    }
+
+    private func exerciseRow(exercise: ExerciseType) -> some View {
+        Button {
+            showingExercise = exercise
+        } label: {
+            HStack(spacing: 12) {
+                // 图标
+                Image(systemName: exerciseIcon(for: exercise))
+                    .font(.title3)
+                    .foregroundStyle(moduleColor)
+                    .frame(width: 32)
+
+                // 内容
                 VStack(alignment: .leading, spacing: 4) {
                     Text(exercise.rawValue)
                         .font(.body)
                         .fontWeight(.medium)
-                        .foregroundStyle(.primary)
+                        .foregroundStyle(AppColors.primaryText)
 
-                    HStack(spacing: 12) {
-                        if let score = bestScore, score > 0 {
-                            Label("\(score) 分", systemImage: "star.fill")
-                                .font(.caption)
-                                .foregroundStyle(.orange)
-                        }
+                    HStack(spacing: 8) {
+                        // 难度标签
+                        difficultyBadge(exercise.difficulty)
 
-                        if practiceCount > 0 {
-                            Label("\(practiceCount) 次", systemImage: "clock")
+                        // 练习次数
+                        if viewModel.practiceCount(for: exercise) > 0 {
+                            Label("\(viewModel.practiceCount(for: exercise)) 次", systemImage: "clock")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-
-                        // 难度标签
-                        Text(exercise.difficulty.rawValue)
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(difficultyColor)
-                            .clipShape(Capsule())
                     }
                 }
 
                 Spacer()
 
+                // 得分
+                if let score = viewModel.bestScore(for: exercise), score > 0 {
+                    Text("\(score)")
+                        .font(.headline)
+                        .foregroundStyle(scoreColor(score))
+                }
+
                 Image(systemName: "play.circle.fill")
                     .font(.title2)
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [module.gradientStart, module.gradientEnd],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .foregroundStyle(moduleColor)
             }
-            .padding(.vertical, 4)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
         }
         .buttonStyle(.plain)
     }
 
-    private var difficultyColor: Color {
-        switch exercise.difficulty {
+    private func difficultyBadge(_ difficulty: Difficulty) -> some View {
+        Text(difficulty.rawValue)
+            .font(.caption2)
+            .fontWeight(.medium)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(difficultyColor(difficulty))
+            .clipShape(Capsule())
+    }
+
+    private func difficultyColor(_ difficulty: Difficulty) -> Color {
+        switch difficulty {
         case .easy: return AppColors.success
         case .medium: return AppColors.warning
         case .hard: return AppColors.error
         }
     }
 
-    private var module: ExerciseModule {
-        exercise.module
+    private func scoreColor(_ score: Int) -> Color {
+        if score >= 90 { return AppColors.success }
+        else if score >= 70 { return AppColors.warning }
+        else { return AppColors.error }
+    }
+
+    private func exerciseIcon(for exercise: ExerciseType) -> String {
+        switch exercise {
+        case .singleNoteRecognition: return "music.note"
+        case .openStringRecognition: return "guitars"
+        case .rootNoteRecognition: return "music.note.list"
+        case .tablatureNoteReading: return "text.alignleft"
+        case .intervalRecognition, .fretboardIntervalComparison: return "music.note"
+        case .intervalSinging: return "mic.fill"
+        case .fretboardIntervalComparison: return "square.grid.3x3"
+        case .hammerPullInterval: return "hand.tap"
+        case .barreChordRecognition, .chordQualityRecognition: return "rectangle.3.group"
+        case .chordTransitionSpeed: return "arrow.left.arrow.right"
+        case .commonChordRecognition: return "rectangle.3.group.fill"
+        case .scaleRecognition: return "music.quarternote.3"
+        case .cagedSystemPractice: return "square.grid.2x2"
+        case .commonTuningRecognition: return "tuningfork"
+        case .strummingPattern: return "waveform"
+        case .arpeggioPattern: return "waveform.path"
+        case .metronomeStability: return "metronome"
+        case .syncopationRecognition: return "music.note.list"
+        case .tablatureMelodySinging, .guitarMelodyRecognition: return "music.mic"
+        case .harmonicRecognition: return "waveform.path.ecg"
+        }
+    }
+
+    @ViewBuilder
+    private func exerciseView(for exercise: ExerciseType) -> some View {
+        switch exercise {
+        case .singleNoteRecognition:
+            SingleNoteListeningView(module: module, viewModel: viewModel)
+        case .rootNoteRecognition:
+            RootNoteListeningView(module: module, viewModel: viewModel)
+        case .intervalSinging:
+            SightSingingView(exercise: exercise, module: module, viewModel: viewModel)
+        default:
+            ExerciseDetailView(exercise: exercise, module: module, viewModel: viewModel)
+        }
+    }
+}
+
+/// 统计徽章
+struct StatBadge: View {
+    let value: String
+    let label: String
+    let icon: String
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Text(value)
+                .font(.headline)
+                .fontWeight(.semibold)
+
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 }
 
 #Preview {
     NavigationStack {
         ModuleDetailView(
-            module: .chord,
+            module: .noteName,
             viewModel: PracticeViewModel()
         )
     }

@@ -266,19 +266,3 @@ private enum ScoreGrade {
         }
     }
 }
-
-#Preview {
-    SightSingingResultView(
-        pitchScore: 85,
-        rhythmScore: 100,
-        noteScores: [90, 80, 85, 90],
-        melody: [
-            MelodyNote(solfege: "5", octave: 4, duration: 1.0),
-            MelodyNote(solfege: "6", octave: 4, duration: 1.0),
-            MelodyNote(solfege: "7", octave: 4, duration: 1.0),
-            MelodyNote(solfege: "1", octave: 5, duration: 2.0),
-        ],
-        onRetry: {},
-        onSave: {}
-    )
-}
