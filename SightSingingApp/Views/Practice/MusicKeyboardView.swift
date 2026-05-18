@@ -2,7 +2,7 @@ import SwiftUI
 
 /// 音符输入键盘（参考 Solfeggio 设计）
 struct MusicKeyboardView: View {
-    @Binding var inputText: String
+    let onNoteSelected: (String) -> Void
     
     @State private var isSharpActive = false
     @State private var isFlatActive = false
@@ -17,12 +17,14 @@ struct MusicKeyboardView: View {
             // 主键盘
             HStack(spacing: 8) {
                 ForEach(naturalNotes, id: \.self) { note in
-                    NoteKeyButton(note: note, inputText: $inputText)
+                    NoteKeyButton(note: note) { selectedNote in
+                        let finalNote = applyAccidental(to: selectedNote)
+                        onNoteSelected(finalNote)
+                        isSharpActive = false
+                        isFlatActive = false
+                    }
                 }
             }
-            
-            // 功能按钮
-            functionButtons
         }
         .padding()
         .background(Color(.systemGray6))
@@ -62,63 +64,17 @@ struct MusicKeyboardView: View {
             .buttonStyle(.plain)
             
             Spacer()
-            
-            // 当前输入预览
-            if !inputText.isEmpty {
-                Text(inputText)
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundStyle(AppColors.accentBlue)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-            }
         }
     }
     
-    // MARK: - 功能按钮
-    
-    private var functionButtons: some View {
-        HStack(spacing: 12) {
-            // 清空按钮
-            Button {
-                inputText = ""
-                isSharpActive = false
-                isFlatActive = false
-            } label: {
-                HStack {
-                    Image(systemName: "trash")
-                    Text("清空")
-                }
-                .font(.subheadline)
-                .foregroundStyle(AppColors.error)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(AppColors.error.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-            .buttonStyle(.plain)
-            
-            // 确认按钮
-            Button {
-                // 确认输入
-            } label: {
-                HStack {
-                    Image(systemName: "checkmark")
-                    Text("确认")
-                }
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(inputText.isEmpty ? Color(.systemGray4) : AppColors.accentBlue)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-            .buttonStyle(.plain)
-            .disabled(inputText.isEmpty)
+    /// 应用升降号
+    private func applyAccidental(to note: String) -> String {
+        if isSharpActive {
+            return note + "♯"
+        } else if isFlatActive {
+            return note + "♭"
         }
+        return note
     }
 }
 
@@ -126,21 +82,19 @@ struct MusicKeyboardView: View {
 
 struct NoteKeyButton: View {
     let note: String
-    @Binding var inputText: String
-    
-    private let isBlackKey: Bool = false
+    let onTap: (String) -> Void
     
     var body: some View {
         Button {
-            inputText = note
+            onTap(note)
         } label: {
             Text(note)
                 .font(.title3)
                 .fontWeight(.semibold)
-                .foregroundStyle(inputText == note ? .white : AppColors.primaryText)
+                .foregroundStyle(AppColors.primaryText)
                 .frame(maxWidth: .infinity)
                 .frame(height: 56)
-                .background(inputText == note ? AppColors.accentBlue : Color(.systemBackground))
+                .background(Color(.systemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
@@ -239,7 +193,9 @@ struct SingingKeyboard: View {
 
 #Preview {
     VStack {
-        MusicKeyboardView(inputText: .constant(""))
+        MusicKeyboardView { note in
+            print("Selected: \(note)")
+        }
         
         Divider()
         

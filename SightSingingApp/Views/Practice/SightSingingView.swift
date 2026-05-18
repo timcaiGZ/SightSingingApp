@@ -23,7 +23,6 @@ struct SightSingingView: View {
     @State private var singingTimer: Timer?
 
     @State private var melody: [MelodyNote] = []
-    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
 
     private let pitchDetector = PitchDetector.shared
 
@@ -149,35 +148,20 @@ struct SightSingingView: View {
         }
     }
 
-    /// 谱式展示
+    /// 谱式展示（仅六线谱+简谱）
     private var notationDisplay: some View {
-        VStack(spacing: 16) {
-            // 谱式切换器
-            CompactNotationSwitcher(selectedNotation: $selectedNotation, availableNotations: NotationType.allCases)
-                .frame(width: 200)
-
-            // 谱式内容
-            Group {
-                switch selectedNotation {
-                case .tabWithSolfege:
-                    // 六线谱+简谱组合视图
-                    VStack(spacing: 12) {
-                        GuitarTablatureView(
-                            notes: guitarNotesForCurrent,
-                            fretRange: 0...5
-                        )
-                        Divider()
-                        SolfegeView(
-                            notes: melody.map { SolfegeNote(solfege: $0.solfege, octave: $0.octave, duration: .quarter) },
-                            highlightedIndex: currentNoteIndex
-                        )
-                    }
-                case .staff:
-                    StaffNotationView(notes: staffNotesForCurrent)
-                }
-            }
-            .padding(.horizontal, 24)
+        VStack(spacing: 12) {
+            GuitarTablatureView(
+                notes: guitarNotesForCurrent,
+                fretRange: 0...5
+            )
+            Divider()
+            SolfegeView(
+                notes: melody.map { SolfegeNote(solfege: $0.solfege, octave: $0.octave, duration: .quarter) },
+                highlightedIndex: currentNoteIndex
+            )
         }
+        .padding(.horizontal, 24)
     }
 
     private var guitarNotesForCurrent: [GuitarTabNote] {

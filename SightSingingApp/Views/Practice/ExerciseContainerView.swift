@@ -32,7 +32,6 @@ struct ExerciseContainerView: View {
     @State private var score: Int = 0
     @State private var correctCount: Int = 0
     @State private var selectedAnswer: Int?
-    @State private var keyboardInput: String = ""
     @State private var showFeedback: Bool = false
     @State private var isCorrect: Bool = false
     @State private var exerciseMode: ExerciseMode = .multipleChoice
@@ -93,11 +92,6 @@ struct ExerciseContainerView: View {
                     .foregroundStyle(AppColors.accentBlue)
             }
             .padding()
-            
-            // 谱式切换器（如果有）
-            CompactNotationSwitcher(selectedNotation: .constant(.staff), availableNotations: [.staff, .tabWithSolfege])
-                .padding(.horizontal)
-                .padding(.bottom, 12)
         }
         .background(Color(.systemBackground))
     }
@@ -216,11 +210,10 @@ struct ExerciseContainerView: View {
         ]
     }
     
+    /// 当前题目的六线谱音符（五弦2品 = B音）
     private var sampleTabNotes: [GuitarTabNote] {
         [
-            GuitarTabNote(string: 6, fret: 0, technique: nil),
-            GuitarTabNote(string: 5, fret: 2, technique: nil),
-            GuitarTabNote(string: 4, fret: 3, technique: nil),
+            GuitarTabNote(string: 5, fret: 2, technique: nil)
         ]
     }
     
@@ -302,33 +295,37 @@ struct ExerciseContainerView: View {
         return Color(.systemBackground)
     }
     
-    /// 键盘输入视图
+    /// 键盘输入视图（选择即提交，不显示答案）
     private var keyboardInputView: some View {
         VStack(spacing: 16) {
-            // 当前输入显示
-            HStack {
-                Text(keyboardInput.isEmpty ? "请输入" : keyboardInput)
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundStyle(keyboardInput.isEmpty ? AppColors.tertiaryText : AppColors.primaryText)
-                
-                Spacer()
-                
-                if !keyboardInput.isEmpty {
-                    Button {
-                        keyboardInput = ""
-                    } label: {
-                        Image(systemName: "delete.left")
-                            .foregroundStyle(AppColors.error)
-                    }
-                }
-            }
-            .padding()
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            
             // 钢琴键盘
-            MusicKeyboardView(inputText: $keyboardInput)
+            MusicKeyboardView { selectedNote in
+                checkKeyboardAnswer(selectedNote)
+            }
+        }
+    }
+    
+    /// 检查键盘输入答案
+    private func checkKeyboardAnswer(_ note: String) {
+        // 当前题目正确答案（五弦2品 = B音）
+        let correctAnswer = "B"
+        let isAnswerCorrect = note == correctAnswer
+        
+        showFeedback = true
+        isCorrect = isAnswerCorrect
+        
+        if isAnswerCorrect {
+            correctCount += 1
+            score = Int(Double(correctCount) / Double(currentQuestion + 1) * 100)
+        }
+        
+        let generator = UIImpactFeedbackGenerator(style: isAnswerCorrect ? .medium : .heavy)
+        generator.impactOccurred()
+        
+        // 延迟后进入下一题
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            nextQuestion()
         }
     }
     
@@ -416,8 +413,10 @@ struct ExerciseContainerView: View {
     
     private func determineExerciseMode() {
         switch exercise.type {
-        case .theory, .earTraining:
+        case .theory:
             exerciseMode = .multipleChoice
+        case .earTraining:
+            exerciseMode = .keyboardInput
         case .singing:
             exerciseMode = .sightSinging
         }
@@ -461,7 +460,6 @@ struct ExerciseContainerView: View {
             currentQuestion += 1
             selectedAnswer = nil
             showFeedback = false
-            keyboardInput = ""
         }
     }
     

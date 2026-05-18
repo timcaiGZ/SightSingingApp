@@ -39,7 +39,7 @@ targets:
     info:
       path: SightSingingApp/Info.plist
       properties:
-        CFBundleDisplayName: 视唱练耳
+        CFBundleDisplayName: 轻唱
         CFBundleShortVersionString: "1.0.0"
         CFBundleVersion: "1"
         UILaunchScreen:

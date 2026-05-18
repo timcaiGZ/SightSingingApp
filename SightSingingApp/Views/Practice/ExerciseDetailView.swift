@@ -17,7 +17,6 @@ struct ExerciseDetailView: View {
     @State private var selectedAnswer: Int?
     @State private var isCorrect: Bool?
     @State private var startTime: Date = Date()
-    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
 
     enum ExerciseState {
         case question
@@ -72,10 +71,7 @@ struct ExerciseDetailView: View {
             }
             .padding()
 
-            // 谱式切换器
-            NotationSwitcher(selectedNotation: $selectedNotation)
-                .padding(.horizontal)
-                .padding(.bottom, 12)
+
         }
         .background(Color(.systemBackground))
     }
@@ -170,36 +166,26 @@ struct ExerciseDetailView: View {
         return AppColors.tertiaryText
     }
 
-    /// 谱式展示区
+    /// 谱式展示区（仅六线谱+简谱）
     private var notationDisplayArea: some View {
-        Group {
-            switch selectedNotation {
-            case .tabWithSolfege:
-                // 六线谱+简谱组合视图
-                VStack(spacing: 12) {
-                    GuitarTablatureView(
-                        notes: tabNotesForCurrent,
-                        fretRange: 0...5
-                    )
-                    Divider()
-                    SolfegeView(
-                        notes: solfegeNotesForCurrent,
-                        highlightedIndex: 0
-                    )
-                }
-            case .staff:
-                StaffNotationView(notes: staffNotesForCurrent)
-            }
+        VStack(spacing: 12) {
+            GuitarTablatureView(
+                notes: tabNotesForCurrent,
+                fretRange: 0...5
+            )
+            Divider()
+            SolfegeView(
+                notes: solfegeNotesForCurrent,
+                highlightedIndex: 0
+            )
         }
         .padding(.horizontal, 24)
     }
 
-    /// 六线谱音符
+    /// 六线谱音符（五弦2品 = B音）
     private var tabNotesForCurrent: [GuitarTabNote] {
         [
-            GuitarTabNote(string: 1, fret: 0, technique: nil),
-            GuitarTabNote(string: 2, fret: 1, technique: nil),
-            GuitarTabNote(string: 3, fret: 2, technique: nil),
+            GuitarTabNote(string: 5, fret: 2, technique: nil)
         ]
     }
 
