@@ -10,12 +10,12 @@ struct ContentView: View {
                     Label("练习", systemImage: "music.note.list")
                 }
 
-            TheoryTab()
+            CourseTab()
                 .tabItem {
                     Label("课程", systemImage: "book.closed")
                 }
 
-            TestTab()
+            TheoryTab()
                 .tabItem {
                     Label("乐理", systemImage: "book")
                 }
