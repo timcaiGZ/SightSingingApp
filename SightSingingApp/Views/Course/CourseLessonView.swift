@@ -5,6 +5,13 @@ struct CourseLessonView: View {
     let lesson: Lesson
     @State private var showingExercise = false
     @State private var selectedExercise: CourseExercise?
+    @State private var selectedFilter: CourseExerciseCategory?
+
+    /// 根据筛选条件过滤练习
+    private var filteredExercises: [CourseExercise] {
+        guard let filter = selectedFilter else { return lesson.exercises }
+        return lesson.exercises.filter { $0.type == filter }
+    }
 
     var body: some View {
         ScrollView {
@@ -15,8 +22,14 @@ struct CourseLessonView: View {
                 // 课时内容
                 contentSection
 
+                // 练习类型筛选
+                exerciseFilterSection
+
                 // 练习列表
                 exercisesSection
+
+                // 快速开始按钮
+                quickStartSection
             }
             .padding(.vertical, 16)
         }
@@ -98,29 +111,148 @@ struct CourseLessonView: View {
         }
     }
 
+    // MARK: - 练习类型筛选
+
+    private var exerciseFilterSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("练习类型")
+                .font(.headline)
+                .padding(.horizontal, 16)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    // 全部
+                    FilterChip(
+                        title: "全部",
+                        icon: "square.grid.2x2",
+                        isSelected: selectedFilter == nil
+                    ) {
+                        selectedFilter = nil
+                    }
+
+                    // 乐理
+                    FilterChip(
+                        title: "乐理",
+                        icon: "book.fill",
+                        isSelected: selectedFilter == .theory
+                    ) {
+                        selectedFilter = .theory
+                    }
+
+                    // 视唱
+                    FilterChip(
+                        title: "视唱",
+                        icon: "mic.fill",
+                        isSelected: selectedFilter == .singing
+                    ) {
+                        selectedFilter = .singing
+                    }
+
+                    // 听力
+                    FilterChip(
+                        title: "听力",
+                        icon: "ear.fill",
+                        isSelected: selectedFilter == .earTraining
+                    ) {
+                        selectedFilter = .earTraining
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+        }
+    }
+
     // MARK: - 练习列表
 
     private var exercisesSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("练习")
-                .font(.headline)
-                .padding(.horizontal, 16)
+            HStack {
+                Text("练习")
+                    .font(.headline)
 
-            VStack(spacing: 0) {
-                ForEach(Array(lesson.exercises.enumerated()), id: \.element.id) { index, exercise in
-                    ExerciseRow(exercise: exercise, index: index + 1)
-                        .onTapGesture {
-                            selectedExercise = exercise
-                            showingExercise = true
+                Spacer()
+
+                Text("\(filteredExercises.count) 项")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 16)
+
+            if filteredExercises.isEmpty {
+                // 空状态
+                VStack(spacing: 12) {
+                    Image(systemName: "tray")
+                        .font(.title2)
+                        .foregroundStyle(.tertiary)
+                    Text("该类型暂无练习")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 32)
+                .background(Color(.systemBackground))
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(filteredExercises.enumerated()), id: \.element.id) { index, exercise in
+                        ExerciseRow(exercise: exercise, index: index + 1)
+                            .onTapGesture {
+                                selectedExercise = exercise
+                                showingExercise = true
+                            }
+
+                        if index < filteredExercises.count - 1 {
+                            Divider()
+                                .padding(.leading, 60)
                         }
-
-                    if index < lesson.exercises.count - 1 {
-                        Divider()
-                            .padding(.leading, 60)
                     }
                 }
+                .background(Color(.systemBackground))
             }
-            .background(Color(.systemBackground))
+        }
+    }
+
+    // MARK: - 快速开始
+
+    private var quickStartSection: some View {
+        VStack(spacing: 12) {
+            if let firstExercise = lesson.exercises.first {
+                Button {
+                    selectedExercise = firstExercise
+                    showingExercise = true
+                } label: {
+                    HStack {
+                        Image(systemName: "play.fill")
+                        Text(lesson.isCompleted ? "重新练习" : "开始练习")
+                            .font(.headline)
+                    }
+                    .foregroundStyle(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 16)
+                    .background(AppColors.accentBlue)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .padding(.horizontal, 16)
+            }
+
+            if lesson.exercises.count > 1, !lesson.isCompleted {
+                Button {
+                    // 顺序练习：从第一个练习开始
+                    selectedExercise = lesson.exercises.first
+                    showingExercise = true
+                } label: {
+                    HStack {
+                        Image(systemName: "list.number")
+                        Text("顺序练习（共\(lesson.exercises.count)项）")
+                            .font(.subheadline)
+                    }
+                    .foregroundStyle(AppColors.accentBlue)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(AppColors.accentBlue.opacity(0.1))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .padding(.horizontal, 16)
+            }
         }
     }
 }
@@ -385,6 +517,32 @@ struct ExercisePracticeView: View {
         .padding(.vertical, 16)
         .background(Color.green.opacity(0.1))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+// MARK: - 筛选标签
+
+struct FilterChip: View {
+    let title: String
+    let icon: String
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption)
+                Text(title)
+                    .font(.subheadline)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .foregroundStyle(isSelected ? .white : AppColors.accentBlue)
+            .background(isSelected ? AppColors.accentBlue : AppColors.accentBlue.opacity(0.1))
+            .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 }
 

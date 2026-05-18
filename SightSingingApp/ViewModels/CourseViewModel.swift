@@ -17,6 +17,7 @@ final class CourseViewModel {
         case "green": return .green
         case "orange": return .orange
         case "purple": return .purple
+        case "violet": return Color(hex: "8B5CF6")
         case "red": return .red
         default: return .blue
         }
