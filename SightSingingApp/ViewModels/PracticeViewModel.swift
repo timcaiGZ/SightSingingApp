@@ -71,6 +71,8 @@ final class PracticeViewModel {
             durationSeconds: durationSeconds
         )
         context.insert(record)
-        try? context.save()
+        if !AppLogger.saveContext(context) {
+            AppLogger.error("保存练习记录失败", category: .database)
+        }
     }
 }

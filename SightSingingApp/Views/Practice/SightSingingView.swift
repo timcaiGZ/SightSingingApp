@@ -17,18 +17,23 @@ struct SightSingingView: View {
     @State private var rhythmScore: Int = 0
     @State private var totalScore: Int = 0
     @State private var noteScores: [Int] = []
+    @State private var rhythmScores: [Int] = []  // 每个音符的节奏得分
     @State private var startTime: Date = Date()
     @State private var permissionDenied: Bool = false
+    @State private var singingTimer: Timer?  // 修复: 存储 Timer 引用以支持生命周期管理
 
-    // 视唱旋律数据（简谱 + 时值）
-    let melody: [MelodyNote] = [
-        MelodyNote(solfege: "5", octave: 4, duration: 1.0),
-        MelodyNote(solfege: "6", octave: 4, duration: 1.0),
-        MelodyNote(solfege: "7", octave: 4, duration: 1.0),
-        MelodyNote(solfege: "1", octave: 5, duration: 2.0),
-    ]
+    // 视唱旋律数据（根据 exercise 类型动态生成）
+    @State private var melody: [MelodyNote] = []
 
     private let pitchDetector = PitchDetector.shared
+
+    // MARK: - 初始化
+    init(exercise: ExerciseType, module: ExerciseModule, viewModel: PracticeViewModel) {
+        self.exercise = exercise
+        self.module = module
+        self.viewModel = viewModel
+        _melody = State(initialValue: generateMelody(for: exercise))
+    }
 
     var body: some View {
         ZStack {
@@ -57,6 +62,9 @@ struct SightSingingView: View {
         }
         .onAppear {
             viewModel.setModelContext(modelContext)
+        }
+        .onDisappear {
+            cleanup()
         }
     }
 
@@ -211,6 +219,9 @@ struct SightSingingView: View {
 
     // MARK: - 演唱中视图
 
+    @State private var detectedFrequency: Double = 0
+    @State private var centsDeviation: Double = 0
+
     private var singingView: some View {
         VStack(spacing: 0) {
             // 顶部进度
@@ -232,11 +243,11 @@ struct SightSingingView: View {
             VStack(spacing: 32) {
                 SolfegeDisplayView(melody: melody, currentIndex: currentNoteIndex, isPlaying: false)
 
-                // 实时音高指示器
+                // 实时音高指示器（使用 @State 变量确保线程安全）
                 PitchIndicatorView(
-                    detectedFrequency: pitchDetector.detectedFrequency,
+                    detectedFrequency: detectedFrequency,
                     targetFrequency: targetFrequency,
-                    centsDeviation: pitchDetector.centsDeviation
+                    centsDeviation: centsDeviation
                 )
 
                 // 当前目标音
@@ -293,65 +304,150 @@ struct SightSingingView: View {
     private func playDemoMelody() {
         var delay: Double = 0
         for (index, note) in melody.enumerated() {
-            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                 self.currentNoteIndex = index
-                AudioEngine.shared.playSolfege(note.solfege, octave: note.octave)
+                await AudioEngineManager.shared.playSolfege(note.solfege, octave: note.octave)
             }
             delay += note.duration
         }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + delay + 0.5) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: UInt64((delay + 0.5) * 1_000_000_000))
             self.state = .waitingToSing
             self.currentNoteIndex = 0
         }
     }
 
-    // MARK: - 开始演唱
+    // MARK: - 演唱计时
+    @State private var singingStartTime: Date = Date()
+    @State private var currentNoteStartTime: Date = Date()
 
     private func startSinging() {
         pitchDetector.startDetection()
         state = .singing
         startTime = Date()
+        singingStartTime = Date()
         currentNoteIndex = 0
+        currentNoteStartTime = Date()
         noteScores = []
+        rhythmScores = []
 
-        // 实时更新音高指示器
-        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { timer in
+        // 实时更新音高指示器和音索引
+        singingTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [self] timer in
             guard self.state == .singing else {
                 timer.invalidate()
                 return
             }
 
-            // 更新当前音索引（简化：手动或按检测到的音量切换）
-            // 实际应根据音高检测自动切换
+            // 自动切换到下一个音（根据当前音的时值）
             let currentNote = self.melody[self.currentNoteIndex]
-            self.pitchDetector.setTarget(solfege: currentNote.solfege, octave: currentNote.octave)
+            let elapsedTime = Date().timeIntervalSince(self.currentNoteStartTime)
 
-            // 记录当前音分数
-            let score = self.pitchDetector.currentScore
-            self.noteScores.append(score)
+            // 如果当前音时值到期，自动切换到下一个
+            if elapsedTime >= currentNote.duration {
+                // 计算当前音符的节奏得分（实际时长与预期时值的偏差）
+                let rhythmDeviation = abs(elapsedTime - currentNote.duration)
+                let rhythmNoteScore = self.calculateRhythmScore(
+                    actualDuration: elapsedTime,
+                    expectedDuration: currentNote.duration
+                )
+                self.rhythmScores.append(rhythmNoteScore)
+
+                if self.currentNoteIndex < self.melody.count - 1 {
+                    self.currentNoteIndex += 1
+                    self.currentNoteStartTime = Date()
+                } else {
+                    // 所有音符演唱完成，自动停止
+                    timer.invalidate()
+                    DispatchQueue.main.async {
+                        self.stopSinging()
+                    }
+                    return
+                }
+            }
+
+            // 更新目标音
+            let note = self.melody[self.currentNoteIndex]
+            self.pitchDetector.setTarget(solfege: note.solfege, octave: note.octave)
+
+            // 主线程安全地获取检测结果
+            DispatchQueue.main.async {
+                self.detectedFrequency = self.pitchDetector.detectedFrequency
+                self.centsDeviation = self.pitchDetector.centsDeviation
+                self.noteScores.append(self.pitchDetector.currentScore)
+            }
         }
     }
 
     // MARK: - 停止演唱 → 计算结果
 
     private func stopSinging() {
+        singingTimer?.invalidate()
+        singingTimer = nil
         pitchDetector.stopDetection()
 
-        // 计算总分
+        // 计算音准分
         let avgPitchScore = noteScores.isEmpty ? 0 : noteScores.reduce(0, +) / noteScores.count
         pitchScore = avgPitchScore
-        rhythmScore = 100 // 简化：节奏暂不检测
+
+        // 计算节奏分（根据最后一个音符的实际演唱时长）
+        let currentNote = melody[currentNoteIndex]
+        let elapsedTime = Date().timeIntervalSince(currentNoteStartTime)
+        let finalRhythmScore = calculateRhythmScore(
+            actualDuration: elapsedTime,
+            expectedDuration: currentNote.duration
+        )
+        rhythmScores.append(finalRhythmScore)
+        rhythmScore = rhythmScores.isEmpty ? 100 : rhythmScores.reduce(0, +) / rhythmScores.count
+
+        // 计算总分
         totalScore = Int(Double(pitchScore) * 0.7 + Double(rhythmScore) * 0.3)
 
         state = .result
     }
 
+    /// 根据实际时长和预期时值计算节奏得分
+    /// - Parameters:
+    ///   - actualDuration: 用户演唱的实际持续时间
+    ///   - expectedDuration: 预期的标准时值
+    /// - Returns: 0-100 的节奏得分
+    private func calculateRhythmScore(actualDuration: Double, expectedDuration: Double) -> Int {
+        guard expectedDuration > 0 else { return 100 }
+
+        let deviation = abs(actualDuration - expectedDuration) / expectedDuration
+
+        // 偏差阈值评分
+        if deviation <= 0.1 {  // ±10% 偏差内满分
+            return 100
+        } else if deviation <= 0.2 {  // ±20% 偏差内良好
+            return 85
+        } else if deviation <= 0.3 {  // ±30% 偏差内及格
+            return 70
+        } else if deviation <= 0.5 {  // ±50% 偏差内较差
+            return 50
+        } else {
+            return 30
+        }
+    }
+
+    // MARK: - 资源清理
+
+    private func cleanup() {
+        singingTimer?.invalidate()
+        singingTimer = nil
+        pitchDetector.stopDetection()
+        pitchDetector.reset()
+    }
+
     // MARK: - 重置
 
     private func resetPractice() {
+        singingTimer?.invalidate()
+        singingTimer = nil
         pitchDetector.reset()
         noteScores = []
+        rhythmScores = []
         currentNoteIndex = 0
         pitchScore = 0
         rhythmScore = 0
@@ -388,6 +484,145 @@ struct SightSingingView: View {
         case 2.0: return "两拍"
         default: return "\(duration)拍"
         }
+    }
+
+    // MARK: - 旋律生成
+
+    /// 根据 exercise 类型动态生成旋律（从题库随机抽取）
+    private func generateMelody(for exercise: ExerciseType) -> [MelodyNote] {
+        switch exercise {
+        case .intervalSinging:
+            // 音程视唱：选一个音程，随机上行或下行
+            if let intervalQ = QuestionBank.intervalQuestions.randomElement() {
+                let semitones = intervalQ.semitones
+                let rootMIDI = 60 // C4
+                let targetMIDI = rootMIDI + semitones
+                let (targetSolfege, targetOctave) = midiToSolfege(targetMIDI)
+                let (rootSolfege, rootOctave) = midiToSolfege(rootMIDI)
+                let isUpward = Bool.random()
+                if isUpward {
+                    return [
+                        MelodyNote(solfege: rootSolfege, octave: rootOctave, duration: 1.0),
+                        MelodyNote(solfege: targetSolfege, octave: targetOctave, duration: 2.0),
+                    ]
+                } else {
+                    return [
+                        MelodyNote(solfege: targetSolfege, octave: targetOctave, duration: 1.0),
+                        MelodyNote(solfege: rootSolfege, octave: rootOctave, duration: 2.0),
+                    ]
+                }
+            }
+            return defaultMelody()
+
+        case .tablatureMelodySinging, .guitarMelodyRecognition, .harmonicRecognition:
+            // 旋律视唱：从题库随机抽取旋律片段
+            if let melodyQ = QuestionBank.melodyQuestions.randomElement() {
+                let notes = melodyQ.solfege.split(separator: " ").map { String($0) }
+                let octaves = guessOctaves(for: melodyQ.difficulty)
+                return notes.enumerated().map { index, solfege in
+                    let oct = octaves.count > index ? octaves[index] : 4
+                    let isLast = index == notes.count - 1
+                    return MelodyNote(
+                        solfege: solfege,
+                        octave: oct,
+                        duration: isLast ? 2.0 : 1.0
+                    )
+                }
+            }
+            return defaultMelody()
+
+        case .strummingPattern, .arpeggioPattern, .syncopationRecognition:
+            // 节奏练习：从节奏题库取节奏型
+            if let rhythmQ = QuestionBank.rhythmQuestions.randomElement() {
+                // 根据节拍数生成对应音符
+                return generateRhythmNotes(beats: rhythmQ.beats)
+            }
+            return [
+                MelodyNote(solfege: "1", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "2", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "3", octave: 4, duration: 1.0),
+                MelodyNote(solfege: "4", octave: 4, duration: 1.0),
+                MelodyNote(solfege: "5", octave: 4, duration: 2.0),
+            ]
+
+        default:
+            return defaultMelody()
+        }
+    }
+
+    /// MIDI → (简谱, 八度)
+    private func midiToSolfege(_ midi: Int) -> (String, Int) {
+        let octave = (midi / 12) - 1
+        let noteInOctave = midi % 12
+        let mapping: [Int: String] = [
+            0: "1", 1: "#1", 2: "2", 3: "#2", 4: "3",
+            5: "4", 6: "#4", 7: "5", 8: "#5", 9: "6", 10: "#6", 11: "7"
+        ]
+        return (mapping[noteInOctave] ?? "1", octave)
+    }
+
+    /// 根据难度猜测音符八度（民谣吉他常用范围）
+    private func guessOctaves(for difficulty: Difficulty) -> [Int] {
+        switch difficulty {
+        case .easy:   return [4, 4, 4, 4, 5]  // C4-G5 范围
+        case .medium: return [3, 4, 4, 4, 5, 5] // G3-A5 范围
+        case .hard:   return [3, 3, 4, 4, 5, 5, 6] // E3-C6 范围
+        }
+    }
+
+    /// 根据节拍数生成节奏旋律
+    private func generateRhythmNotes(beats: Int) -> [MelodyNote] {
+        switch beats {
+        case 4:
+            return [
+                MelodyNote(solfege: "1", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "2", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "3", octave: 4, duration: 1.0),
+                MelodyNote(solfege: "4", octave: 4, duration: 1.0),
+                MelodyNote(solfege: "5", octave: 4, duration: 2.0),
+            ]
+        case 3:
+            return [
+                MelodyNote(solfege: "1", octave: 4, duration: 1.0),
+                MelodyNote(solfege: "3", octave: 4, duration: 1.0),
+                MelodyNote(solfege: "5", octave: 4, duration: 2.0),
+            ]
+        case 6:
+            return [
+                MelodyNote(solfege: "1", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "2", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "3", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "4", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "5", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "6", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "7", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "1", octave: 5, duration: 0.5),
+                MelodyNote(solfege: "2", octave: 5, duration: 0.5),
+                MelodyNote(solfege: "3", octave: 5, duration: 1.5),
+            ]
+        case 5, 7, 12:
+            return [
+                MelodyNote(solfege: "1", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "2", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "3", octave: 4, duration: 1.0),
+                MelodyNote(solfege: "5", octave: 4, duration: 1.0),
+                MelodyNote(solfege: "6", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "7", octave: 4, duration: 0.5),
+                MelodyNote(solfege: "1", octave: 5, duration: 2.0),
+            ]
+        default:
+            return defaultMelody()
+        }
+    }
+
+    /// 默认旋律
+    private func defaultMelody() -> [MelodyNote] {
+        return [
+            MelodyNote(solfege: "1", octave: 4, duration: 1.0),
+            MelodyNote(solfege: "2", octave: 4, duration: 1.0),
+            MelodyNote(solfege: "3", octave: 4, duration: 1.0),
+            MelodyNote(solfege: "5", octave: 4, duration: 2.0),
+        ]
     }
 }
 

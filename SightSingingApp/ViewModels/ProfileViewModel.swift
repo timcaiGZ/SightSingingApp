@@ -13,23 +13,34 @@ final class ProfileViewModel {
 
     // MARK: - 主题设置
 
-    var colorScheme: Int {
-        get { UserDefaults.standard.integer(forKey: "colorScheme") }
-        set { UserDefaults.standard.set(newValue, forKey: "colorScheme") }
-    }
-    // 0 = system, 1 = light, 2 = dark
-
-    var themeDisplayName: String {
-        switch colorScheme {
-        case 0: return "跟随系统"
-        case 1: return "浅色模式"
-        case 2: return "深色模式"
-        default: return "跟随系统"
+    var colorScheme: ColorScheme? {
+        get {
+            let rawValue = UserDefaults.standard.integer(forKey: "colorScheme")
+            switch rawValue {
+            case 1: return .light
+            case 2: return .dark
+            default: return nil
+            }
+        }
+        set {
+            let rawValue: Int
+            switch newValue {
+            case .light: rawValue = 1
+            case .dark: rawValue = 2
+            case nil: rawValue = 0
+            @unknown default: rawValue = 0
+            }
+            UserDefaults.standard.set(rawValue, forKey: "colorScheme")
         }
     }
 
-    func setTheme(_ value: Int) {
-        colorScheme = value
+    var themeDisplayName: String {
+        switch colorScheme {
+        case .light: return "浅色模式"
+        case .dark: return "深色模式"
+        case nil: return "跟随系统"
+        @unknown default: return "跟随系统"
+        }
     }
 
     // MARK: - 音频设置

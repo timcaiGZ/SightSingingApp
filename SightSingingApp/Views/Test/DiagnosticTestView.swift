@@ -103,13 +103,40 @@ struct DiagnosticTestView: View {
     }
 
     private func playAudio(for question: TestQuestion) {
-        // 根据题目类型播放不同音频
-        switch question.questionTypeValue {
-        case .recognition:
-            // 播放音符/和弦音频
-            AudioEngine.shared.playSolfege(question.audioNote, octave: 4)
-        default:
-            AudioEngine.shared.playSolfege("1", octave: 4)
+        Task {
+            switch question.questionTypeValue {
+            case .recognition:
+                // 播放音符音频
+                await AudioEngineManager.shared.playSolfege(question.audioNote, octave: 4)
+            case .comparison:
+                // 播放音程（两个音符）
+                if let firstNote = question.audioNote.split(separator: "-").first,
+                   let secondNote = question.audioNote.split(separator: "-").last {
+                    await AudioEngineManager.shared.playSolfege(String(firstNote), octave: 4)
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                    await AudioEngineManager.shared.playSolfege(String(secondNote), octave: 4)
+                } else {
+                    await AudioEngineManager.shared.playSolfege(question.audioNote, octave: 4)
+                }
+            case .singing:
+                // 播放和弦
+                let notes = question.audioNote.split(separator: "-").map { String($0) }
+                let chordNotes: [(solfege: String, octave: Int)] = notes.map { ($0, 4) }
+                await AudioEngineManager.shared.playChord(chordNotes)
+            case .identification:
+                // 播放节奏型（简化的节拍音）
+                await AudioEngineManager.shared.playNote(frequency: 440, duration: 0.3)
+            case .none, .some:
+                // 播放旋律（多个音符）
+                let notes = question.audioNote.split(separator: "-").map { String($0) }
+                for (index, note) in notes.enumerated() {
+                    let delay = Double(index) * 0.5
+                    Task {
+                        try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                        await AudioEngineManager.shared.playSolfege(note, octave: 4)
+                    }
+                }
+            }
         }
     }
 }

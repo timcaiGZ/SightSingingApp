@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>视唱练耳 App 需求规格说明书</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+            font-size: 16px;
+            line-height: 1.8;
+            color: #000;
+            background: #fff;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin: 30px 0 10px;
+            color: #000;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #8E8E93;
+            font-size: 14px;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #C6C6C8;
+        }
+        
+        .toc {
+            background: #F2F2F7;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+        
+        .toc-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #000;
+        }
+        
+        .toc a {
+            color: #007AFF;
+            text-decoration: none;
+            display: block;
+            padding: 4px 0;
+        }
+        
+        h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 35px 0 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #007AFF;
+            color: #000;
+        }
+        
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 25px 0 12px;
+            color: #000;
+        }
+        
+        h4 {
+            font-size: 16px;
+            font-weight: 600;
+            margin: 20px 0 10px;
+            color: #333;
+        }
+        
+        p {
+            margin: 12px 0;
+            color: #333;
+        }
+        
+        ul, ol {
+            margin: 12px 0 12px 25px;
+        }
+        
+        li {
+            margin: 6px 0;
+            color: #333;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+        
+        th, td {
+            border: 1px solid #C6C6C8;
+            padding: 10px 12px;
+            text-align: left;
+        }
+        
+        th {
+            background: #F2F2F7;
+            font-weight: 600;
+        }
+        
+        code {
+            background: #F2F2F7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "SF Mono", monospace;
+            font-size: 14px;
+        }
+        
+        pre {
+            background: #F2F2F7;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .diagram {
+            background: #F9F9F9;
+            border: 1px solid #E5E5EA;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: "SF Mono", monospace;
+            font-size: 12px;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .highlight-box {
+            background: linear-gradient(135deg, #007AFF10, #007AFF05);
+            border-left: 4px solid #007AFF;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .priority {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .priority-p0 { background: #FF3B30; color: #fff; }
+        .priority-p1 { background: #FF9500; color: #fff; }
+        .priority-p2 { background: #007AFF; color: #fff; }
+        
+        .checkmark { color: #34C759; font-weight: bold; }
+        .crossmark { color: #FF3B30; font-weight: bold; }
+        
+        hr {
+            border: none;
+            height: 1px;
+            background: #C6C6C8;
+            margin: 30px 0;
+        }
+        
+        .footer {
+            text-align: center;
+            color: #8E8E93;
+            font-size: 13px;
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #C6C6C8;
+        }
+        
+        /* 深色模式适配 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #1C1C1E;
+                color: #fff;
+            }
+            h1, h2, h3, h4, p, li, th, td { color: #fff; }
+            .toc, pre, code { background: #2C2C2E; }
+            .toc, pre code, .diagram { background: #2C2C2E; }
+            th { background: #2C2C2E; }
+            table, th, td { border-color: #48484A; }
+            hr { background: #48484A; }
+        }
+    </style>
+</head>
+<body>
+
+<h1>视唱练耳 App<br>需求规格说明书</h1>
+
+<div class="subtitle">
+    <strong>版本</strong>: V1.0 &nbsp;|&nbsp; <strong>日期</strong>: 2026年5月18日<br>
+    <strong>作者</strong>: TC &nbsp;|&nbsp; <strong>指导老师</strong>: 小艾
+</div>
+
+<div class="toc">
+    <div class="toc-title">📑 目录</div>
+    <a href="#1">1. 引言</a>
+    <a href="#2">2. 总体描述</a>
+    <a href="#3">3. 功能需求</a>
+    <a href="#4">4. 非功能需求</a>
+    <a href="#5">5. 界面设计规范</a>
+    <a href="#6">6. 页面详细设计</a>
+    <a href="#7">7. 技术架构</a>
+    <a href="#8">8. 接口需求</a>
+    <a href="#9">9. 实施计划</a>
+    <a href="#10">10. 验收标准</a>
+    <a href="#11">11. 附录</a>
+</div>
+
+---
+
+<h2 id="1">1. 引言</h2>
+
+<h3>1.1 目的</h3>
+<p>本文档定义面向民谣吉他进阶学习者的视唱练耳移动应用的功能需求和非功能需求，作为开发团队与指导老师之间的沟通桥梁，明确项目范围、功能边界和质量要求。</p>
+
+<h3>1.2 范围</h3>
+<p>本项目是一款 iOS 原生应用，名为 <strong>SightSingingApp</strong>，核心功能包括：</p>
+<ul>
+    <li>三种谱式（五线谱、六线谱、简谱）的展示与切换</li>
+    <li>听力训练（单音、音程、和弦、调式、节奏、旋律）</li>
+    <li>视唱练习与实时音准检测</li>
+    <li>结构化课程学习路径</li>
+    <li>学习进度统计与分析</li>
+</ul>
+
+<h3>1.3 定义与缩写</h3>
+<table>
+    <tr><th>术语</th><th>定义</th></tr>
+    <tr><td>视唱</td><td>根据乐谱演唱的技能</td></tr>
+    <tr><td>练耳</td><td>通过听觉识别音高、节奏等的技能</td></tr>
+    <tr><td>六线谱</td><td>吉他专用谱表，展示弦号和品位</td></tr>
+    <tr><td>简谱</td><td>用数字1-7表示音高的记谱法</td></tr>
+    <tr><td>音分</td><td>音高最小计量单位，1半音=100音分</td></tr>
+    <tr><td>音准偏差</td><td>演唱音高与目标音高的音分数差异</td></tr>
+</table>
+
+<h3>1.4 参考资料</h3>
+<table>
+    <tr><th>资料</th><th>说明</th></tr>
+    <tr><td>Solfeggio（练耳大师）</td><td>App Store 参考应用，通用视唱练耳工具</td></tr>
+    <tr><td>Apple Human Interface Guidelines</td><td>iOS 设计规范</td></tr>
+    <tr><td>SwiftUI 官方文档</td><td>框架技术文档</td></tr>
+</table>
+
+---
+
+<h2 id="2">2. 总体描述</h2>
+
+<h3>2.1 产品定位</h3>
+<div class="highlight-box">
+    <strong>一款面向民谣吉他进阶学习者的视唱练耳App</strong><br><br>
+    <strong>差异化定位：</strong><br>
+    • 参考 Solfeggio 极简 iOS 设计风格<br>
+    • 差异化支持六线谱 + 简谱双谱式展示<br>
+    • 填补市场空白（现有练耳App无吉他谱支持）
+</div>
+
+<h3>2.2 参考应用对比</h3>
+<table>
+    <tr><th>维度</th><th>Solfeggio（参考）</th><th>SightSingingApp（本项目）</th></tr>
+    <tr><td>目标用户</td><td>通用音乐学习者</td><td>民谣吉他进阶学习者</td></tr>
+    <tr><td>默认谱式</td><td>仅五线谱</td><td>六线谱 + 简谱</td></tr>
+    <tr><td>六线谱支持</td><td>无</td><td>真实吉他谱（弦号+品位+指法）</td></tr>
+    <tr><td>Tab结构</td><td>自由练习/课程/乐理/我的</td><td>对齐参考应用</td></tr>
+    <tr><td>课程结构</td><td>4层深度</td><td>对齐，内容适配吉他场景</td></tr>
+</table>
+
+<h3>2.3 参考应用核心设计亮点</h3>
+<ol>
+    <li><strong>统一练习容器</strong> — 所有题型共用同一页面结构，减少认知负担</li>
+    <li><strong>三种交互模式</strong> — 选择题/键盘输入/视唱，各司其职</li>
+    <li><strong>课程体系</strong> — 4层深度结构化学习路径</li>
+    <li><strong>极简视觉</strong> — 纯白背景、灰色分隔线、iOS HIG规范</li>
+    <li><strong>进度圆点</strong> — ●○○○○ 简洁直观</li>
+</ol>
+
+<h3>2.4 目标用户</h3>
+<table>
+    <tr><th>用户画像</th><th>特征描述</th></tr>
+    <tr><td>吉他学习者</td><td>已掌握基础和弦转换，有进阶视唱练耳需求</td></tr>
+    <tr><td>音乐爱好者</td><td>希望系统学习音乐听力，提升音乐素养</td></tr>
+    <tr><td>艺考备考生</td><td>需要视唱练耳专项训练</td></tr>
+</table>
+
+<h3>2.5 技术约束</h3>
+<ul>
+    <li><strong>平台</strong>: iOS 17+</li>
+    <li><strong>框架</strong>: SwiftUI</li>
+    <li><strong>数据存储</strong>: SwiftData</li>
+    <li><strong>音频处理</strong>: AVFoundation</li>
+    <li><strong>图表</strong>: SwiftUI Charts</li>
+    <li><strong>图标</strong>: SF Symbols（线条风格）</li>
+    <li><strong>主题</strong>: 浅色优先，支持深色模式</li>
+</ul>
+
+---
+
+<h2 id="3">3. 功能需求</h2>
+
+<h3>3.1 功能概览</h3>
+<div class="diagram">┌─────────────────────────────────────────────────────────────┐
+│                    SightSingingApp 功能架构                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐         │
+│  │  练习   │  │  课程   │  │  乐理   │  │   我的  │         │
+│  │  Tab   │  │  Tab   │  │  Tab   │  │  Tab   │         │
+│  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘         │
+│       │            │            │            │               │
+│       ▼            ▼            ▼            ▼               │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐         │
+│  │自由练习 │  │课程学习 │  │知识卡片 │  │学习统计 │         │
+│  │ 入口    │  │  路径   │  │  列表   │  │  +设置  │         │
+│  └────┬────┘  └────┬────┘  └─────────┘  └─────────┘         │
+│       │            │                                          │
+│       ▼            ▼                                          │
+│  ┌─────────────────────────────────────────┐                   │
+│  │          统一练习容器（核心）              │                   │
+│  │  ┌─────────┬─────────┬───────────────┐ │                   │
+│  │  │选择题模式│键盘输入 │ 视唱模式      │ │                   │
+│  │  └─────────┴─────────┴───────────────┘ │                   │
+│  └─────────────────────────────────────────┘                   │
+└─────────────────────────────────────────────────────────────┘</div>
+
+<h3>3.2 Tab 模块需求</h3>
+
+<h4>3.2.1 练习 Tab</h4>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F1.1</td><td>显示听力训练分类（单音/音程/和弦/调式/节奏/旋律）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F1.2</td><td>显示各练习项的进度（完成度、得分）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F1.3</td><td>支持按类别筛选练习</td><td><span class="priority priority-p1">P1</span></td></tr>
+    <tr><td>F1.4</td><td>点击进入统一练习容器</td><td><span class="priority priority-p0">P0</span></td></tr>
+</table>
+
+<h4>3.2.2 课程 Tab（新增）</h4>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F2.1</td><td>显示课程分类（单音/音程/和弦/调式）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F2.2</td><td>显示课程进度（已完成/进行中/未开始）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F2.3</td><td>课程详情页显示章节列表</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F2.4</td><td>支持小节回顾和课程测试</td><td><span class="priority priority-p1">P1</span></td></tr>
+</table>
+
+<h4>3.2.3 乐理 Tab</h4>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F3.1</td><td>乐理知识卡片列表</td><td><span class="priority priority-p1">P1</span></td></tr>
+    <tr><td>F3.2</td><td>知识点分类（音程/和弦/音阶/节奏/调式）</td><td><span class="priority priority-p1">P1</span></td></tr>
+</table>
+
+<h4>3.2.4 我的 Tab</h4>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F4.1</td><td>学习统计数据（总练习时长、准确率趋势）</td><td><span class="priority priority-p1">P1</span></td></tr>
+    <tr><td>F4.2</td><td>学习记录历史</td><td><span class="priority priority-p1">P1</span></td></tr>
+    <tr><td>F4.3</td><td>设置入口（音准阈值、谱式偏好）</td><td><span class="priority priority-p0">P0</span></td></tr>
+</table>
+
+<h3>3.3 谱式系统需求</h3>
+
+<h4>3.3.1 三种谱式</h4>
+<table>
+    <tr><th>谱式</th><th>描述</th><th>默认显示</th></tr>
+    <tr><td>五线谱</td><td>标准高音谱号展示</td><td>否</td></tr>
+    <tr><td>六线谱</td><td>吉他专用谱表（弦号+品位+指法）</td><td><strong>是</strong></td></tr>
+    <tr><td>简谱</td><td>数字1-7表示音高</td><td><strong>是</strong></td></tr>
+</table>
+
+<h4>3.3.2 谱式切换</h4>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F5.1</td><td>练习页面顶部谱式切换器</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F5.2</td><td>切换时保持题目数据不变</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F5.3</td><td>用户谱式偏好持久化</td><td><span class="priority priority-p0">P0</span></td></tr>
+</table>
+
+<h4>3.3.3 六线谱组件</h4>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F6.1</td><td>弦号标签（1-6，对应细到粗）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F6.2</td><td>品丝竖线（等宽）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F6.3</td><td>品位数字标注（0=空弦）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F6.4</td><td>演奏技法标记（按弦/空弦/击弦/勾弦）</td><td><span class="priority priority-p1">P1</span></td></tr>
+    <tr><td>F6.5</td><td>横向滚动支持长乐句</td><td><span class="priority priority-p1">P1</span></td></tr>
+</table>
+
+<h3>3.4 练习题型需求</h3>
+
+<h4>3.4.1 听力训练</h4>
+<table>
+    <tr><th>题型</th><th>交互模式</th><th>描述</th></tr>
+    <tr><td>单音辨认</td><td>选择题</td><td>从给定音符中辨认听到的音</td></tr>
+    <tr><td>单音听写</td><td>键盘输入</td><td>输入听到的音高</td></tr>
+    <tr><td>音程比较</td><td>选择题</td><td>比较两音程大小</td></tr>
+    <tr><td>音程辨认</td><td>选择题/键盘输入</td><td>辨认听到的音程类型</td></tr>
+    <tr><td>和弦辨认</td><td>选择题</td><td>辨认和弦类型（大三/小三/属七等）</td></tr>
+    <tr><td>和弦听写</td><td>键盘输入</td><td>输入听到的和弦</td></tr>
+    <tr><td>调式辨认</td><td>选择题</td><td>辨认大调/小调</td></tr>
+    <tr><td>节奏辨认</td><td>选择题</td><td>辨认节奏型</td></tr>
+    <tr><td>节奏听写</td><td>选择题</td><td>补全节奏型</td></tr>
+    <tr><td>旋律听写</td><td>键盘输入</td><td>输入听到的旋律</td></tr>
+</table>
+
+<h4>3.4.2 视唱练习</h4>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F7.1</td><td>显示目标旋律（谱式展示）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F7.2</td><td>实时音准检测（Pitch Detection）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F7.3</td><td>音准指示器（竖直刻度尺+游标）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F7.4</td><td>音准偏差显示（音分数）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F7.5</td><td>视唱结果评分</td><td><span class="priority priority-p1">P1</span></td></tr>
+</table>
+
+<h3>3.5 统一练习容器</h3>
+<p>所有练习题型共用同一容器结构：</p>
+<div class="diagram">┌────────────────────────────────────────┐
+│  ←  返回   题型名称              ⚙️   │  ← 导航栏
+├────────────────────────────────────────┤
+│  ┌────────────────────────────────┐   │
+│  │  ● ● ● ○ ○ ○ ○ ○ ○ ○          │   │  ← 进度圆点
+│  │         3 / 10                 │   │
+│  └────────────────────────────────┘   │
+├────────────────────────────────────────┤
+│  问题描述...                           │  ← 问题区
+├────────────────────────────────────────┤
+│                                        │
+│           [谱式展示区]                   │  ← 五线谱/六线谱/简谱
+│                                        │
+├────────────────────────────────────────┤
+│  新问题       分解          重听       │  ← 操作栏
+├────────────────────────────────────────┤
+│  ┌────────────────────────────────┐   │
+│  │ 交互区（选择题列表/键盘输入）    │   │  ← 交互区
+│  └────────────────────────────────┘   │
+└────────────────────────────────────────┘</div>
+
+<h3>3.6 三种交互模式</h3>
+<table>
+    <tr><th>模式</th><th>适用题型</th><th>界面特征</th></tr>
+    <tr><td><strong>选择题</strong></td><td>单音辨认、音程比较、和弦辨认、调式辨认</td><td>灰色"请选择" + 白色选项列表</td></tr>
+    <tr><td><strong>键盘输入</strong></td><td>单音/音程/和弦/旋律听写</td><td>升降号列 + CDEFGAB键 + 功能键</td></tr>
+    <tr><td><strong>视唱</strong></td><td>单音视唱、旋律视唱</td><td>竖直刻度尺 + 实时游标 + "按着唱"</td></tr>
+</table>
+
+<h3>3.7 音频功能需求</h3>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F8.1</td><td>音频播放（MIDI合成/预录音频）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F8.2</td><td>实时音高检测（Pitch Detection）</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F8.3</td><td>音频波形可视化</td><td><span class="priority priority-p2">P2</span></td></tr>
+</table>
+
+<h3>3.8 数据管理需求</h3>
+<table>
+    <tr><th>功能点</th><th>描述</th><th>优先级</th></tr>
+    <tr><td>F9.1</td><td>用户学习进度持久化</td><td><span class="priority priority-p0">P0</span></td></tr>
+    <tr><td>F9.2</td><td>练习历史记录</td><td><span class="priority priority-p1">P1</span></td></tr>
+    <tr><td>F9.3</td><td>用户设置偏好</td><td><span class="priority priority-p0">P0</span></td></tr>
+</table>
+
+---
+
+<h2 id="4">4. 非功能需求</h2>
+
+<h3>4.1 性能需求</h3>
+<table>
+    <tr><th>指标</th><th>要求</th></tr>
+    <tr><td>页面加载时间</td><td>&lt; 500ms</td></tr>
+    <tr><td>音频播放延迟</td><td>&lt; 50ms</td></tr>
+    <tr><td>音高检测延迟</td><td>&lt; 100ms</td></tr>
+    <tr><td>内存占用</td><td>&lt; 100MB</td></tr>
+    <tr><td>App 启动时间</td><td>&lt; 2s</td></tr>
+</table>
+
+<h3>4.2 可用性需求</h3>
+<table>
+    <tr><th>指标</th><th>要求</th></tr>
+    <tr><td>支持设备</td><td>iPhone（竖屏）</td></tr>
+    <tr><td>系统要求</td><td>iOS 17+</td></tr>
+    <tr><td>辅助功能</td><td>支持 VoiceOver</td></tr>
+    <tr><td>暗色模式</td><td>完全支持</td></tr>
+</table>
+
+<h3>4.3 可靠性需求</h3>
+<table>
+    <tr><th>指标</th><th>要求</th></tr>
+    <tr><td>崩溃率</td><td>&lt; 0.1%</td></tr>
+    <tr><td>音频播放成功率</td><td>&gt; 99%</td></tr>
+    <tr><td>数据持久化成功率</td><td>100%</td></tr>
+</table>
+
+<h3>4.4 安全性需求</h3>
+<table>
+    <tr><th>需求</th><th>说明</th></tr>
+    <tr><td>隐私合规</td><td>不收集用户敏感信息</td></tr>
+    <tr><td>数据本地存储</td><td>学习数据仅本地存储</td></tr>
+</table>
+
+---
+
+<h2 id="5">5. 界面设计规范</h2>
+
+<h3>5.1 设计理念</h3>
+<p><strong>iOS HIG原生风格</strong>：纯白背景、简洁分区线、列表式布局、底部Tab导航。大量留白，呼吸感强。参考App Store五线谱视唱练耳App的极简专业设计。</p>
+
+<h3>5.2 视觉风格要点</h3>
+<ul>
+    <li><strong>整体风格</strong>: 纯白背景、简洁列表分类、iOS HIG规范</li>
+    <li><strong>图标风格</strong>: SF Symbols线条风格</li>
+    <li><strong>圆角</strong>: 12-16pt</li>
+    <li><strong>阴影</strong>: 淡阴影</li>
+    <li><strong>分隔线</strong>: 灰色分隔线替代卡片边框（iOS原生风格）</li>
+    <li><strong>进度指示</strong>: 进度圆点 ●○○○○ 简洁直观</li>
+</ul>
+
+<h3>5.3 色彩系统</h3>
+
+<h4>主色（iOS原生）</h4>
+<table>
+    <tr><th>用途</th><th>颜色代码</th><th>说明</th></tr>
+    <tr><td>Primary</td><td>#007AFF</td><td>iOS蓝</td></tr>
+    <tr><td>Success</td><td>#34C759</td><td>iOS绿</td></tr>
+    <tr><td>Warning</td><td>#FF9500</td><td>iOS橙</td></tr>
+    <tr><td>Error</td><td>#FF3B30</td><td>iOS红</td></tr>
+</table>
+
+<h4>背景色</h4>
+<table>
+    <tr><th>用途</th><th>颜色代码</th><th>说明</th></tr>
+    <tr><td>页面背景</td><td>#FFFFFF</td><td>纯白</td></tr>
+    <tr><td>分组背景</td><td>#F2F2F7</td><td>iOS系统灰</td></tr>
+    <tr><td>卡片背景</td><td>#FFFFFF</td><td>白色</td></tr>
+    <tr><td>分隔线</td><td>#C6C6C8</td><td>iOS标准灰</td></tr>
+</table>
+
+<h4>文字色</h4>
+<table>
+    <tr><th>用途</th><th>颜色代码</th><th>说明</th></tr>
+    <tr><td>主要文字</td><td>#000000</td><td>黑色</td></tr>
+    <tr><td>次要文字</td><td>#8E8E93</td><td>iOS灰</td></tr>
+    <tr><td>占位符</td><td>#C7C7CC</td><td>浅灰</td></tr>
+</table>
+
+<h3>5.4 字体规范</h3>
+<table>
+    <tr><th>用途</th><th>字号</th><th>字重</th><th>字体</th></tr>
+    <tr><td>大标题</td><td>34pt</td><td>Bold</td><td>SF Pro Display</td></tr>
+    <tr><td>标题1</td><td>28pt</td><td>Bold</td><td>SF Pro Display</td></tr>
+    <tr><td>标题2</td><td>22pt</td><td>Bold</td><td>SF Pro Display</td></tr>
+    <tr><td>标题3</td><td>20pt</td><td>Semibold</td><td>SF Pro Text</td></tr>
+    <tr><td>正文</td><td>17pt</td><td>Regular</td><td>SF Pro Text</td></tr>
+    <tr><td>副标题</td><td>15pt</td><td>Regular</td><td>SF Pro Text</td></tr>
+    <tr><td>注释</td><td>13pt</td><td>Regular</td><td>SF Pro Text</td></tr>
+    <tr><td>标签</td><td>12pt</td><td>Medium</td><td>SF Pro Text</td></tr>
+</table>
+
+<h3>5.5 图标规范</h3>
+<p>底部Tab使用 SF Symbols 线条风格图标：</p>
+<table>
+    <tr><th>Tab</th><th>图标名称</th><th>说明</th></tr>
+    <tr><td>练习</td><td>music.note.list</td><td>线条风格</td></tr>
+    <tr><td>课程</td><td>book.closed</td><td>线条风格</td></tr>
+    <tr><td>乐理</td><td>book</td><td>线条风格</td></tr>
+    <tr><td>我的</td><td>person.circle</td><td>线条风格</td></tr>
+</table>
+
+---
+
+<h2 id="6">6. 页面详细设计</h2>
+
+<h3>6.1 底部Tab设计</h3>
+<div class="diagram">┌────────────────────────────────────────┐
+│                                        │
+│            主内容区域                    │
+│                                        │
+├────────────────────────────────────────┤
+│     练习      课程      乐理      我的   │
+│      ○        ○        ○        ○     │
+└────────────────────────────────────────┘</div>
+
+<h3>6.2 练习Tab页面结构</h3>
+<div class="diagram">┌────────────────────────────────────────┐
+│  自由练习                      [设置⚙️]  │
+├────────────────────────────────────────┤
+│                                        │
+│  ═══ 听力训练 ══════════════════════  │
+│  ┌──────────────────────────────────┐  │
+│  │  单音辨认            ▶ 75%    85分│  │
+│  ├──────────────────────────────────┤  │
+│  │  空弦音辨认          ▶ —       — │  │
+│  ├──────────────────────────────────┤  │
+│  │  单音听写            ▶ —       — │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  ═══ 音程训练 ══════════════════════  │
+│  ...                                   │
+└────────────────────────────────────────┘</div>
+<p><em>设计要点</em>：灰色分隔线、进度圆点 ●○○○○、分类标题包裹</p>
+
+<h3>6.3 课程Tab页面结构</h3>
+<div class="diagram">┌────────────────────────────────────────┐
+│  课程                          [设置⚙️]  │
+├────────────────────────────────────────┤
+│                                        │
+│  ═══ 基础课程 ══════════════════════  │
+│  ┌──────────────────────────────────┐  │
+│  │  单音 · 小字组到小字二组           │  │
+│  │  完成度 ●●○○○  2/5               │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  ═══ 音程课程 ══════════════════════  │
+│  ┌──────────────────────────────────┐  │
+│  │  单音程比较 · 纯一度到大二度        │  │
+│  │  进行中 ●○○○○  0/5               │  │
+│  ├──────────────────────────────────┤  │
+│  │  音程辨认 · 大三度到纯四度         │  │
+│  │  待开始 ○○○○○  0/5               │  │
+│  └──────────────────────────────────┘  │
+└────────────────────────────────────────┘</div>
+
+<h3>6.4 练习详情页（答题页）结构</h3>
+<div class="diagram">┌────────────────────────────────────────┐
+│  ←  返回   单音辨认              ⚙️    │
+├────────────────────────────────────────┤
+│  ┌──────────────────────────────────┐  │
+│  │  ● ● ● ○ ○ ○ ○ ○ ○ ○           │  │
+│  │         3 / 10                   │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  请选择你听到的音：                      │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │         [谱式展示区域]             │  │
+│  │   [五线谱/六线谱/简谱 切换显示]     │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │  新问题       分解        重听    │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  请选择                                 │
+│  ┌──────────────────────────────────┐  │
+│  │  C  │  D  │  E  │  F  │  G      │  │
+│  └──────────────────────────────────┘  │
+└────────────────────────────────────────┘</div>
+<p><em>设计要点</em>：顶部谱式切换器、进度圆点、操作栏三等分</p>
+
+<h3>6.5 视唱练习页结构</h3>
+<div class="diagram">┌────────────────────────────────────────┐
+│  ←  返回   单音视唱              ⚙️    │
+├────────────────────────────────────────┤
+│  ┌──────────────────────────────────┐  │
+│  │  ● ● ● ○ ○ ○ ○ ○ ○ ○           │  │
+│  │         3 / 10                   │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│  请演唱你听到的音高：                    │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │  [竖直刻度尺 + 实时游标]          │  │
+│  │      │  ← 绿色=准确              │  │
+│  │    ════════════════              │  │
+│  │   -12      0      +12 (音分)     │  │
+│  └──────────────────────────────────┘  │
+│                                        │
+│       目标音: C  低 12 音分            │
+│                                        │
+│  ┌──────────────────────────────────┐  │
+│  │      [  按着演唱  ]               │  │
+│  └──────────────────────────────────┘  │
+└────────────────────────────────────────┘</div>
+<p><em>设计要点</em>：竖直刻度尺、绿色=准确、"按着演唱"按钮</p>
+
+<h3>6.6 六线谱组件设计</h3>
+<div class="diagram">┌─────────────────────────────────────────┐
+│                                         │
+│   6 ┃ e ┃─────────────────────○────────│
+│   5 ┃ B ┃─────────────────────●─3─────│
+│   4 ┃ G ┃─────○────────────────────────│
+│   3 ┃ D ┃─────●─2──────────────────────│
+│   2 ┃ A ┃─────●─0──────────────────────│
+│   1 ┃ E ┃─●─3──────────────────────────│
+│      ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+│        0   1   2   3   4   5   6   7   │
+│                                         │
+│  品格标记：●=按弦  ○=空弦  数字=品位      │
+│  技法标记：h=击弦  p=勾弦  s=滑音        │
+└─────────────────────────────────────────┘</div>
+
+<h3>6.7 音符输入键盘设计</h3>
+<div class="diagram">┌─────────────────────────────────────────┐
+│  ┌──┐                                   │
+│  │♯ │  ← 升号                           │
+│  ├──┤                                   │
+│  │♭ │  ← 降号                           │
+│  └──┘                                   │
+│                                         │
+│  ┌────┬────┬────┬────┬────┬────┬────┐  │
+│  │ C  │ D  │ E  │ F  │ G  │ A  │ B  │  │
+│  └────┴────┴────┴────┴────┴────┴────┘  │
+│                                         │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  │
+│  │   清空   │  │   确认   │  │   重听   │  │
+│  └─────────┘  └─────────┘  └─────────┘  │
+└─────────────────────────────────────────┘</div>
+
+<h3>6.8 谱式切换器设计</h3>
+<ul>
+    <li><strong>位置</strong>：练习页面顶部导航栏</li>
+    <li><strong>样式</strong>：pill样式（胶囊形状）</li>
+    <li><strong>选项</strong>：五线谱 | 六线谱 | 简谱</li>
+    <li><strong>交互</strong>：点击切换，当前选中项高亮显示</li>
+    <li><strong>切换时</strong>：保持题目/旋律数据不变，仅切换展示</li>
+</ul>
+
+---
+
+<h2 id="7">7. 技术架构</h2>
+
+<h3>7.1 系统架构</h3>
+<div class="diagram">┌─────────────────────────────────────────────────────────────┐
+│                        iOS 17+                              │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌─────────┐ │
+│  │ SwiftUI   │  │ SwiftData │  │AVFoundation│  │  Charts │ │
+│  │  视图层    │  │   数据层   │  │   音频层   │  │  图表层  │ │
+│  └───────────┘  └───────────┘  └───────────┘  └─────────┘ │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                    业务逻辑层 (ViewModels)               │ │
+│  ├──────────┬──────────┬──────────┬──────────┬──────────┤ │
+│  │PracticeVM│ CourseVM │ TheoryVM │ProfileVM │TestVM   │ │
+│  └──────────┴──────────┴──────────┴──────────┴──────────┘ │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────────┐ │
+│  │                    模型层 (Models)                       │ │
+│  ├──────────┬──────────┬──────────┬──────────┬──────────┤ │
+│  │ Exercise │  Course  │  Theory  │  Profile │ Question│ │
+│  └──────────┴──────────┴──────────┴──────────┴──────────┘ │
+└─────────────────────────────────────────────────────────────┘</div>
+
+<h3>7.2 组件架构</h3>
+<div class="diagram">NotationType (枚举: staff/tab/solfege)
+    ↓
+NotationSwitcher (切换器: 五线谱|六线谱|简谱)
+    ↓
+NotationDisplayStrategy (策略模式)
+    ├── StaffNotationView (五线谱)
+    ├── GuitarTabView (六线谱 - 真实精度)
+    └── SolfegeView (简谱)</div>
+
+<h3>7.3 目录结构</h3>
+<div class="diagram">SightSingingApp/
+├── App/
+│   └── ContentView.swift           # [重构] Tab导航容器（4个Tab）
+├── Views/
+│   ├── Tabs/
+│   │   ├── PracticeTab.swift      # [重构] 自由练习入口
+│   │   ├── CourseTab.swift        # [新建] 课程Tab（核心新增）
+│   │   ├── TheoryTab.swift        # [优化] 乐理Tab
+│   │   └── ProfileTab.swift       # [优化] 我的Tab
+│   ├── Practice/                           # 自由练习模块
+│   │   ├── ModuleDetailView.swift         # [重构] 模块详情
+│   │   ├── ExerciseContainerView.swift    # [新建] 统一练习容器
+│   │   ├── ExerciseDetailView.swift       # [重构] 调用容器
+│   │   ├── MusicKeyboardView.swift         # [新建] 音符键盘
+│   │   ├── SightSingingView.swift         # [重构] 视唱
+│   │   └── Components/
+│   │       ├── NotationSwitcher.swift      # [新建] 谱式切换器
+│   │       ├── StaffNotationView.swift     # [新建] 五线谱
+│   │       ├── GuitarTabView.swift          # [重构] 六线谱
+│   │       ├── SolfegeView.swift            # [新建] 简谱
+│   │       └── PitchMeterView.swift         # [重构] 音准指示器
+│   ├── Course/                              # 课程模块（新增）
+│   │   ├── CourseTab.swift                  # [新建] 课程Tab
+│   │   ├── CourseDetailView.swift           # [新建] 课程详情
+│   │   ├── CourseLessonView.swift           # [新建] 单节课程
+│   │   └── CourseExerciseListView.swift     # [新建] 课程练习列表
+│   └── Test/
+│       └── DiagnosticTestView.swift         # [保留] 诊断测试
+├── Models/
+│   ├── Exercise/
+│   │   ├── NotationType.swift               # [新建] 谱式枚举
+│   │   └── QuestionBank.swift               # [新建] 题库
+│   └── Course/
+│       └── CourseModel.swift                # [新建] 课程模型
+├── ViewModels/
+│   ├── PracticeViewModel.swift              # [扩展] 练习逻辑
+│   └── CourseViewModel.swift                 # [新建] 课程逻辑
+├── Services/
+│   ├── AudioEngine.swift                    # [已有] 音频播放
+│   └── PitchDetector.swift                  # [已有] 音高检测
+└── Utilities/
+    └── ColorTheme.swift                     # [重构] 简化颜色系统</div>
+
+---
+
+<h2 id="8">8. 接口需求</h2>
+
+<h3>8.1 页面导航结构</h3>
+<div class="diagram">ContentView (TabView)
+├── PracticeTab
+│   └── ModuleDetailView
+│       └── ExerciseContainerView
+├── CourseTab
+│   └── CourseDetailView
+│       └── CourseLessonView
+│           └── ExerciseContainerView
+├── TheoryTab
+│   └── TheoryDetailView
+└── ProfileTab
+    └── SettingsView</div>
+
+<h3>8.2 模块接口</h3>
+<table>
+    <tr><th>模块</th><th>依赖模块</th><th>说明</th></tr>
+    <tr><td>AudioEngine</td><td>—</td><td>音频播放、音高检测</td></tr>
+    <tr><td>PitchDetector</td><td>AudioEngine</td><td>音高分析</td></tr>
+    <tr><td>QuestionBank</td><td>—</td><td>题库数据管理</td></tr>
+    <tr><td>ProgressManager</td><td>SwiftData</td><td>进度持久化</td></tr>
+</table>
+
+---
+
+<h2 id="9">9. 实施计划</h2>
+
+<h3>9.1 现有代码 vs Solfeggio 差异分析</h3>
+<table>
+    <tr><th>方面</th><th>现有实现</th><th>Solfeggio</th><th>差异</th></tr>
+    <tr><td><strong>Tab结构</strong></td><td>练习/测试/乐理/我的</td><td>练习/课程/乐理/我的</td><td><span class="crossmark">❌</span> "测试"应为"课程"</td></tr>
+    <tr><td><strong>练习容器</strong></td><td>各题型独立实现</td><td>统一容器</td><td><span class="crossmark">❌</span> 重复代码</td></tr>
+    <tr><td><strong>交互模式</strong></td><td>自定义多种</td><td>三种统一模式</td><td><span class="crossmark">❌</span> 不统一</td></tr>
+    <tr><td><strong>课程模块</strong></td><td>无</td><td>4层结构化学习路径</td><td><span class="crossmark">❌</span> 需新增</td></tr>
+    <tr><td><strong>六线谱</strong></td><td>基础版</td><td>无</td><td><span class="checkmark">✅</span> 已有优势</td></tr>
+    <tr><td><strong>视唱功能</strong></td><td>完整实现</td><td>完整实现</td><td><span class="checkmark">✅</span> 已完成</td></tr>
+</table>
+
+<h3>9.2 重构优先级</h3>
+<div class="diagram">Phase 1: Tab结构重构（低风险）
+├── ContentView.swift - 调整Tab顺序/名称
+├── 删除 TestTab.swift（诊断测试移至练习Tab）
+└── 新建 CourseTab.swift
+
+Phase 2: 统一练习容器（核心重构）
+├── 新建 ExerciseContainerView.swift
+├── 新建 MusicKeyboardView.swift
+├── 新建 QuestionBank.swift（题库）
+└── 简化 ExerciseDetailView.swift
+
+Phase 3: 谱式组件完善
+├── GuitarTabView 完善（品位数字、指法）
+├── 新建 StaffNotationView.swift (五线谱)
+└── 新建 SolfegeView.swift (简谱)
+
+Phase 4: 课程模块（新增）
+├── 新建 CourseTab.swift
+├── 新建 CourseDetailView.swift
+├── 新建 CourseLessonView.swift
+└── 新建 CourseExerciseListView.swift</div>
+
+<h3>9.3 需重构/新建文件清单</h3>
+<table>
+    <tr><th>文件</th><th>操作</th><th>优先级</th></tr>
+    <tr><td>ContentView.swift</td><td>重构</td><td><span class="priority priority-p0">P1</span></td></tr>
+    <tr><td>TestTab.swift</td><td>删除</td><td><span class="priority priority-p0">P1</span></td></tr>
+    <tr><td>PracticeTab.swift</td><td>重构</td><td><span class="priority priority-p0">P1</span></td></tr>
+    <tr><td>CourseTab.swift</td><td>新建</td><td><span class="priority priority-p0">P1</span></td></tr>
+    <tr><td>ExerciseContainerView.swift</td><td>新建</td><td><span class="priority priority-p1">P2</span></td></tr>
+    <tr><td>MusicKeyboardView.swift</td><td>新建</td><td><span class="priority priority-p1">P2</span></td></tr>
+    <tr><td>QuestionBank.swift</td><td>新建</td><td><span class="priority priority-p1">P2</span></td></tr>
+    <tr><td>ExerciseDetailView.swift</td><td>重构</td><td><span class="priority priority-p1">P2</span></td></tr>
+    <tr><td>GuitarTabView.swift</td><td>重构</td><td><span class="priority priority-p2">P3</span></td></tr>
+    <tr><td>StaffNotationView.swift</td><td>新建</td><td><span class="priority priority-p2">P3</span></td></tr>
+    <tr><td>SolfegeView.swift</td><td>新建</td><td><span class="priority priority-p2">P3</span></td></tr>
+    <tr><td>NotationSwitcher.swift</td><td>新建</td><td><span class="priority priority-p2">P3</span></td></tr>
+    <tr><td>CourseDetailView.swift</td><td>新建</td><td><span class="priority priority-p2">P4</span></td></tr>
+    <tr><td>CourseLessonView.swift</td><td>新建</td><td><span class="priority priority-p2">P4</span></td></tr>
+    <tr><td>CourseExerciseListView.swift</td><td>新建</td><td><span class="priority priority-p2">P4</span></td></tr>
+</table>
+
+---
+
+<h2 id="10">10. 验收标准</h2>
+
+<h3>10.1 功能验收</h3>
+<table>
+    <tr><th>编号</th><th>功能点</th><th>验收条件</th></tr>
+    <tr><td>AC1</td><td>Tab导航</td><td>底部4个Tab可切换，内容正确显示</td></tr>
+    <tr><td>AC2</td><td>谱式切换</td><td>练习页可切换三种谱式，切换无卡顿</td></tr>
+    <tr><td>AC3</td><td>选择题</td><td>可正常作答，提交后显示对错反馈</td></tr>
+    <tr><td>AC4</td><td>键盘输入</td><td>可输入音符，确认后判断对错</td></tr>
+    <tr><td>AC5</td><td>视唱</td><td>可检测音准，指示器实时更新</td></tr>
+    <tr><td>AC6</td><td>课程</td><td>可查看课程列表，进入课程详情</td></tr>
+    <tr><td>AC7</td><td>进度保存</td><td>退出App后重新打开，进度保持</td></tr>
+</table>
+
+<h3>10.2 性能验收</h3>
+<table>
+    <tr><th>编号</th><th>指标</th><th>验收条件</th></tr>
+    <tr><td>PC1</td><td>启动时间</td><td>App冷启动 &lt; 2秒</td></tr>
+    <tr><td>PC2</td><td>页面切换</td><td>页面切换 &lt; 300ms</td></tr>
+    <tr><td>PC3</td><td>音高检测</td><td>检测延迟 &lt; 100ms</td></tr>
+</table>
+
+<h3>10.3 界面验收</h3>
+<table>
+    <tr><th>编号</th><th>检查点</th><th>验收条件</th></tr>
+    <tr><td>VC1</td><td>视觉风格</td><td>符合iOS HIG规范</td></tr>
+    <tr><td>VC2</td><td>暗色模式</td><td>正确适配</td></tr>
+    <tr><td>VC3</td><td>六线谱</td><td>弦号、品位、指法标记正确显示</td></tr>
+</table>
+
+---
+
+<h2 id="11">11. 附录</h2>
+
+<h3>11.1 参考应用信息</h3>
+<table>
+    <tr><th>应用名称</th><td>Solfeggio（练耳大师）</td></tr>
+    <tr><th>开发者</th><td>海林</td></tr>
+    <tr><th>App Store</th><td>apps.apple.com/cn/app/solfeggio/id1009678914</td></tr>
+    <tr><th>评分</th><td>⭐ 4.6</td></tr>
+    <tr><th>价格</th><td>免费（内购课程 ¥8-38）</td></tr>
+</table>
+
+<h3>11.2 术语表</h3>
+<table>
+    <tr><th>术语</th><th>英文</th><th>定义</th></tr>
+    <tr><td>视唱</td><td>Sight-singing</td><td>根据乐谱演唱</td></tr>
+    <tr><td>练耳</td><td>Ear training</td><td>听觉训练</td></tr>
+    <tr><td>音准</td><td>Intonation</td><td>音高准确性</td></tr>
+    <tr><td>音程</td><td>Interval</td><td>两音之间的距离</td></tr>
+    <tr><td>和弦</td><td>Chord</td><td>三个及以上音同时发音</td></tr>
+    <tr><td>调式</td><td>Mode</td><td>音阶的组织形式</td></tr>
+</table>
+
+<hr>
+
+<div class="footer">
+    <p><strong>文档结束</strong></p>
+    <p>本需求规格说明书解释权归项目团队所有，如有任何疑问请联系项目负责人。</p>
+</div>
+
+</body>
+</html>

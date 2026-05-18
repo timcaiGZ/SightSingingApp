@@ -63,7 +63,14 @@ struct ModuleDetailView: View {
             ExerciseDetailView(exercise: exercise, module: module, viewModel: viewModel)
         }
         .fullScreenCover(item: $showingExercise) { exercise in
-            ExerciseDetailView(exercise: exercise, module: module, viewModel: viewModel)
+            switch exercise {
+            case .singleNoteRecognition:
+                SingleNoteListeningView(module: module, viewModel: viewModel)
+            case .rootNoteRecognition:
+                RootNoteListeningView(module: module, viewModel: viewModel)
+            default:
+                ExerciseDetailView(exercise: exercise, module: module, viewModel: viewModel)
+            }
         }
     }
 }

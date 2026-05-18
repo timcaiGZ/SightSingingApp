@@ -26,9 +26,40 @@ struct MusicTheory {
         ("7", 71, "B"),  // si
     ]
 
-    /// 升降号简谱表示
+    /// 升降号简谱表示（支持 # 和 ♭）
+    /// - Parameters:
+    ///   - solfege: 简谱数字（如 "1", "4"）
+    ///   - sharp: 是否升号（true），false 表示降号
+    /// - Returns: 带升降号的简谱表示（如 "1#", "5b"）
     static func solfegeWithAccidental(_ solfege: String, sharp: Bool) -> String {
-        sharp ? "\(solfege)#".replacingOccurrences(of: "##", with: "♯") : solfege
+        if sharp {
+            return "\(solfege)#".replacingOccurrences(of: "##", with: "♯")
+        } else {
+            return "\(solfege)♭"
+        }
+    }
+    
+    /// 升降号简谱表示（显式指定升降号类型）
+    /// - Parameters:
+    ///   - solfege: 简谱数字
+    ///   - accidental: 升降号类型：.sharp（#）、.flat（♭）、.natural（无）
+    /// - Returns: 带升降号的简谱表示
+    static func solfegeWithAccidental(_ solfege: String, accidental: Accidental) -> String {
+        switch accidental {
+        case .sharp:
+            return "\(solfege)#".replacingOccurrences(of: "##", with: "♯")
+        case .flat:
+            return "\(solfege)♭"
+        case .natural:
+            return solfege
+        }
+    }
+    
+    /// 升降号枚举
+    enum Accidental {
+        case sharp   // 升号 ♯
+        case flat    // 降号 ♭
+        case natural // 本位音（无升降）
     }
 
     // MARK: - 音程

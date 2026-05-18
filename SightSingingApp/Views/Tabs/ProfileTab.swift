@@ -161,12 +161,28 @@ struct SettingsView: View {
     var body: some View {
         List {
             Section("外观") {
-                Picker("主题", selection: $viewModel.colorScheme) {
-                    Text("跟随系统").tag(0)
-                    Text("浅色模式").tag(1)
-                    Text("深色模式").tag(2)
+                ForEach(["跟随系统", "浅色模式", "深色模式"], id: \.self) { option in
+                    Button {
+                        switch option {
+                        case "浅色模式":
+                            viewModel.colorScheme = .light
+                        case "深色模式":
+                            viewModel.colorScheme = .dark
+                        default:
+                            viewModel.colorScheme = nil
+                        }
+                    } label: {
+                        HStack {
+                            Text(option)
+                            Spacer()
+                            if viewModel.colorScheme == (option == "浅色模式" ? .light : (option == "深色模式" ? .dark : nil)) {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(AppColors.primary)
+                            }
+                        }
+                    }
+                    .foregroundStyle(.primary)
                 }
-                .pickerStyle(.inline)
             }
 
             Section("音频") {
@@ -184,7 +200,7 @@ struct SettingsView: View {
                 HStack {
                     Text("版本")
                     Spacer()
-                    Text("1.0.0")
+                    Text(AppConstants.appVersion)
                         .foregroundStyle(.secondary)
                 }
             }

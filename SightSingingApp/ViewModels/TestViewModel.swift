@@ -39,15 +39,16 @@ final class TestViewModel {
         showingTestIntro = false
     }
 
-    /// 选择答案
+    /// 选择答案（async/await 版本）
     func selectAnswer(questionID: UUID, answerIndex: Int) {
         let elapsed = Date().timeIntervalSince(currentQuestionStartTime)
         answers[questionID] = answerIndex
         responseTimes[questionID] = elapsed
-
+        
         // 延迟 0.5 秒后进入下一题
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.nextQuestion()
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 秒
+            self.nextQuestion()
         }
     }
 
@@ -115,6 +116,8 @@ final class TestViewModel {
             totalDurationSeconds: result.totalDurationSeconds
         )
         context.insert(history)
-        try? context.save()
+        if !AppLogger.saveContext(context) {
+            AppLogger.error("保存测试历史失败", category: .database)
+        }
     }
 }

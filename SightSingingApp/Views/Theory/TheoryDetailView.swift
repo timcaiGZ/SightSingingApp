@@ -168,10 +168,18 @@ struct MarkdownContentView: View {
                 blocks.append(ContentBlock(type: .bulletList, text: "", items: items))
                 continue
             } else if line.first?.isNumber == true && line.contains(".") {
-                // 有序列表
+                // 有序列表 - 使用 prefix(while:) 更安全
                 var items: [String] = []
-                while i < lines.count && (lines[i].first?.isNumber == true) {
-                    let cleaned = lines[i].replacingOccurrences(of: "^\\d+\\.\\s*", with: "", options: .regularExpression)
+                while i < lines.count {
+                    let currentLine = lines[i]
+                    // 检查是否是有序列表项（数字开头）
+                    guard let firstChar = currentLine.first, firstChar.isNumber else { break }
+                    // 找到数字后的点和空格
+                    var cleaned = currentLine
+                    if let dotIndex = cleaned.firstIndex(where: { $0 == "." }) {
+                        let startIndex = cleaned.index(after: dotIndex)
+                        cleaned = String(cleaned[startIndex...]).trimmingCharacters(in: .whitespaces)
+                    }
                     items.append(cleaned)
                     i += 1
                 }
@@ -190,8 +198,11 @@ struct MarkdownContentView: View {
 
 #Preview {
     NavigationStack {
-        TheoryDetailView(
-            topic: TheoryDataSource.allTopics.first!
-        )
+        if let firstTopic = TheoryDataSource.allTopics.first {
+            TheoryDetailView(topic: firstTopic)
+        } else {
+            Text("无可用的乐理主题")
+                .navigationTitle("预览")
+        }
     }
 }

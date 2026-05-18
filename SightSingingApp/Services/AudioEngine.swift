@@ -1,18 +1,17 @@
 import AVFoundation
 import Foundation
 
-/// 音频引擎 — 负责播放吉他音色音符
-final class AudioEngine {
-    static let shared = AudioEngine()
-
+/// 音频引擎 actor — 负责播放吉他音色音符，线程安全
+actor AudioEngineManager {
+    static let shared = AudioEngineManager()
+    
     private var audioEngine: AVAudioEngine?
     private var playerNode: AVAudioPlayerNode?
-    private var mixerNode: AVAudioMixerNode?
     private var isSetup = false
 
     private init() {}
 
-    /// 初始化音频引擎（懒加载）
+    /// 初始化音频引擎（懒加载，线程安全）
     func setup() {
         guard !isSetup else { return }
 
@@ -26,7 +25,6 @@ final class AudioEngine {
 
         audioEngine = AVAudioEngine()
         playerNode = AVAudioPlayerNode()
-        mixerNode = audioEngine?.mainMixerNode
 
         guard let engine = audioEngine, let player = playerNode else { return }
 
@@ -44,15 +42,15 @@ final class AudioEngine {
     }
 
     /// 播放单个音符（简谱 solfege，如 "1", "2", "5"）
-    func playSolfege(_ solfege: String, octave: Int = 4, duration: TimeInterval = 0.8) {
+    func playSolfege(_ solfege: String, octave: Int = 4, duration: TimeInterval = 0.8) async {
         guard let midiNote = MusicTheory.midiNote(from: solfege, octave: octave) else { return }
         let frequency = MusicTheory.frequencyFromMIDI(midiNote)
-        playNote(frequency: frequency, duration: duration)
+        await playNote(frequency: frequency, duration: duration)
     }
 
     /// 播放指定频率的音符（吉他音色合成）
-    func playNote(frequency: Double, duration: TimeInterval = 0.8) {
-        setup()
+    func playNote(frequency: Double, duration: TimeInterval = 0.8) async {
+        await setup()
 
         guard let player = playerNode else { return }
 
@@ -75,8 +73,8 @@ final class AudioEngine {
     }
 
     /// 播放和弦（多个音符同时发声）
-    func playChord(_ notes: [(solfege: String, octave: Int)], duration: TimeInterval = 1.0) {
-        setup()
+    func playChord(_ notes: [(solfege: String, octave: Int)], duration: TimeInterval = 1.0) async {
+        await setup()
 
         guard let player = playerNode else { return }
         player.stop()
@@ -102,9 +100,9 @@ final class AudioEngine {
     }
 
     /// 播放指定 MIDI note
-    func playMIDI(_ midiNote: Int, duration: TimeInterval = 0.8) {
+    func playMIDI(_ midiNote: Int, duration: TimeInterval = 0.8) async {
         let frequency = MusicTheory.frequencyFromMIDI(midiNote)
-        playNote(frequency: frequency, duration: duration)
+        await playNote(frequency: frequency, duration: duration)
     }
 
     /// 停止播放

@@ -43,11 +43,11 @@ struct TestTab: View {
                             )
                         )
 
-                    Text("吉他弹唱诊断")
+                    Text(AppConstants.appName)
                         .font(.title2)
                         .fontWeight(.bold)
 
-                    Text("测试将覆盖 6 大核心技能\n使用简谱和六线谱展示")
+                    Text(AppConstants.testDescription)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -112,7 +112,7 @@ struct TestIntroSheet: View {
                     .foregroundStyle(AppColors.primary)
                     .padding(.top, 32)
 
-                Text("吉他弹唱诊断测试")
+                Text("\(AppConstants.appName) - \(AppConstants.testName)")
                     .font(.title)
                     .fontWeight(.bold)
 
@@ -124,7 +124,7 @@ struct TestIntroSheet: View {
                 }
                 .padding(.horizontal, 24)
 
-                Text("题目涵盖音名、音程、和弦、调式、节奏、旋律六大模块，使用简谱和六线谱展示。")
+                Text("题目涵盖音名、音程、和弦、调式、节奏、旋律六大模块。")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)

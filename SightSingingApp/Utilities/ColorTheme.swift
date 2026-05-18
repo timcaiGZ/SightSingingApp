@@ -64,8 +64,17 @@ struct AppColors {
 
 // MARK: - 环境感知颜色
 
-struct ThemedColors {
-    @Environment(\.colorScheme) private var colorScheme
+/// 环境感知颜色管理器
+final class ThemedColors: ObservableObject {
+    /// 当前颜色方案
+    @Published var colorScheme: ColorScheme = .light
+
+    init() {}
+
+    /// 从环境注入颜色方案
+    func inject(from environment: EnvironmentValues) {
+        self.colorScheme = environment.colorScheme ?? .light
+    }
 
     var background: Color {
         colorScheme == .dark ? AppColors.darkBackground : AppColors.lightBackground
