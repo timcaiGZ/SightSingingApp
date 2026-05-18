@@ -2,7 +2,16 @@ import AVFoundation
 import Accelerate
 import Foundation
 
-/// 音高检测器 — 纯 AVFoundation + Accelerate 实现
+/// 音高检测结果
+struct PitchResult {
+    let frequency: Float      // 频率 Hz
+    let noteName: String       // 音符名 C4, D4...
+    let cents: Int             // 音分偏差 (-50 to +50)
+    let amplitude: Float       // 音量振幅
+    let timestamp: Date
+}
+
+/// 音高检测器 — 使用自相关法检测音高
 final class PitchDetector: ObservableObject {
     static let shared = PitchDetector()
 
@@ -12,12 +21,24 @@ final class PitchDetector: ObservableObject {
         case stopped
     }
 
+    // MARK: - 公开属性
+
     @Published var state: DetectionState = .idle
     @Published var detectedFrequency: Double = 0
     @Published var detectedNote: String = ""
     @Published var detectedMIDI: Int = 0
     @Published var centsDeviation: Double = 0
     @Published var currentScore: Int = 0
+    @Published var currentAmplitude: Float = 0
+
+    // 回调
+    var onPitchDetected: ((PitchResult) -> Void)?
+
+    // 音高检测配置
+    let sampleRate: Double = 44100
+    let bufferSize: AVAudioFrameCount = 4096
+
+    // MARK: - 私有属性
 
     private var audioEngine: AVAudioEngine?
     private var inputNode: AVAudioInputNode?
@@ -30,6 +51,8 @@ final class PitchDetector: ObservableObject {
     private var realPart: [Float] = []
     private var imagPart: [Float] = []
 
+    // MARK: - 初始化
+
     private init() {
         fftSetup = vDSP_DFT_zop_CreateSetup(nil, vDSP_Length(fftSize), .FORWARD)
         realPart = [Float](repeating: 0, count: fftSize)
@@ -41,6 +64,8 @@ final class PitchDetector: ObservableObject {
             vDSP_DFT_DestroySetup(setup)
         }
     }
+
+    // MARK: - 公开方法
 
     /// 请求麦克风权限
     func requestMicrophonePermission() async -> Bool {
@@ -93,6 +118,7 @@ final class PitchDetector: ObservableObject {
         detectedMIDI = 0
         centsDeviation = 0
         currentScore = 0
+        currentAmplitude = 0
         targetMIDI = nil
         targetSolfege = nil
         state = .idle
@@ -138,13 +164,29 @@ final class PitchDetector: ObservableObject {
         guard let channelData = buffer.floatChannelData?[0] else { return }
         let frameLength = Int(buffer.frameLength)
 
+        // 计算振幅
+        let amplitude = calculateAmplitude(channelData, frameLength: frameLength)
+
         // 使用自相关法（YIN 算法的简化版）检测基频
         if let frequency = detectPitch(channelData, frameLength: frameLength, sampleRate: buffer.format.sampleRate) {
             if frequency > 50 && frequency < 2000 {
                 Task { @MainActor in
                     self.detectedFrequency = frequency
+                    self.currentAmplitude = amplitude
                     self.detectedMIDI = Int(round(69 + 12 * log2(frequency / 440.0)))
+                    self.detectedNote = self.midiToNoteName(self.detectedMIDI)
                     self.updateScore()
+                    
+                    // 触发回调
+                    let noteResult = self.frequencyToNote(frequency)
+                    let pitchResult = PitchResult(
+                        frequency: frequency,
+                        noteName: noteResult.name,
+                        cents: noteResult.cents,
+                        amplitude: amplitude,
+                        timestamp: Date()
+                    )
+                    self.onPitchDetected?(pitchResult)
                 }
             }
         }
@@ -233,4 +275,43 @@ final class PitchDetector: ObservableObject {
 
         currentScore = MusicTheory.pitchScore(cents: abs(deviation))
     }
+
+    /// MIDI 到音符名转换
+    private func midiToNoteName(_ midi: Int) -> String {
+        let noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+        let noteIndex = midi % 12
+        let octave = (midi / 12) - 1
+        return noteNames[noteIndex] + "\(octave)"
+    }
+
+    /// 频率到音符转换
+    private func frequencyToNote(_ frequency: Float) -> (name: String, cents: Int) {
+        // A4 = 440Hz
+        let a4 = 440.0
+        let c0 = a4 * pow(2.0, -4.75)
+
+        let halfSteps = 12.0 * log2(Double(frequency) / c0)
+        let roundedSteps = round(halfSteps)
+        let cents = Int((halfSteps - roundedSteps) * 100)
+
+        let noteNames = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+        let noteIndex = Int(roundedSteps + 120) % 12
+        let octave = (Int(roundedSteps) + 120) / 12 - 1
+        let noteName = noteNames[noteIndex] + "\(octave)"
+
+        return (noteName, cents)
+    }
+
+    /// 计算振幅
+    private func calculateAmplitude(_ data: UnsafeMutablePointer<Float>, frameLength: Int) -> Float {
+        var sum: Float = 0
+        for i in 0..<frameLength {
+            sum += data[i] * data[i]
+        }
+        return sqrt(sum / Float(frameLength))
+    }
+}
+
+#Preview {
+    Text("PitchDetector")
 }
