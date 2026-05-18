@@ -148,40 +148,13 @@ struct SightSingingView: View {
         }
     }
 
-    /// 谱式展示（仅六线谱+简谱）
+    /// 谱式展示（简谱）
     private var notationDisplay: some View {
-        VStack(spacing: 12) {
-            GuitarTablatureView(
-                notes: guitarNotesForCurrent,
-                fretRange: 0...5
-            )
-            Divider()
-            SolfegeView(
-                notes: melody.map { SolfegeNote(solfege: $0.solfege, octave: $0.octave, duration: .quarter) },
-                highlightedIndex: currentNoteIndex
-            )
-        }
+        SolfegeView(
+            notes: melody.map { SolfegeNote(solfege: $0.solfege, octave: $0.octave, duration: .quarter) },
+            highlightedIndex: currentNoteIndex
+        )
         .padding(.horizontal, 24)
-    }
-
-    private var guitarNotesForCurrent: [GuitarTabNote] {
-        melody.prefix(4).enumerated().map { index, note in
-            GuitarTabNote(
-                string: 6 - (index % 6),
-                fret: Int.random(in: 0...3),
-                technique: nil
-            )
-        }
-    }
-
-    private var staffNotesForCurrent: [StaffNote] {
-        melody.prefix(4).enumerated().map { index, note in
-            StaffNote(
-                pitch: StaffPitch(line: index * 2),
-                duration: .quarter,
-                accidental: nil
-            )
-        }
     }
 
     // MARK: - Waiting View

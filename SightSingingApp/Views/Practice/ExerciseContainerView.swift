@@ -176,45 +176,57 @@ struct ExerciseContainerView: View {
         }
     }
     
-    /// 谱式展示区
+    /// 谱式展示区（根据练习类型显示对应内容）
     private var notationDisplay: some View {
         Group {
             switch exercise.type {
             case .theory:
-                StaffNotationView(notes: sampleStaffNotes)
+                // 乐理练习显示简谱音阶参考
+                theoryNotationHint
             case .singing:
-                SolfegeView(notes: sampleSolfegeNotes, highlightedIndex: nil)
+                // 视唱练习显示旋律参考
+                singingNotationHint
             case .earTraining:
-                GuitarTablatureView(notes: sampleTabNotes, fretRange: 0...5)
+                // 听力练习不显示固定谱式
+                EmptyView()
             }
+        }
+    }
+    
+    private var theoryNotationHint: some View {
+        VStack(spacing: 8) {
+            Text("简谱参考")
+                .font(.caption)
+                .foregroundStyle(AppColors.secondaryText)
+            SolfegeView(
+                notes: (1...7).map { SolfegeNote(solfege: "\($0)", octave: 4, duration: .quarter) },
+                highlightedIndex: nil
+            )
         }
         .padding()
         .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
-    // 示例数据
-    private var sampleStaffNotes: [StaffNote] {
-        [
-            StaffNote(pitch: StaffPitch(line: 0), duration: .quarter, accidental: nil),
-            StaffNote(pitch: StaffPitch(line: 2), duration: .quarter, accidental: nil),
-            StaffNote(pitch: StaffPitch(line: 4), duration: .quarter, accidental: nil),
-        ]
-    }
-    
-    private var sampleSolfegeNotes: [SolfegeNote] {
-        [
-            SolfegeNote(solfege: "1", octave: 4, duration: .quarter),
-            SolfegeNote(solfege: "2", octave: 4, duration: .quarter),
-            SolfegeNote(solfege: "3", octave: 4, duration: .quarter),
-        ]
-    }
-    
-    /// 当前题目的六线谱音符（五弦2品 = B音）
-    private var sampleTabNotes: [GuitarTabNote] {
-        [
-            GuitarTabNote(string: 5, fret: 2, technique: nil)
-        ]
+    private var singingNotationHint: some View {
+        VStack(spacing: 8) {
+            Text("旋律参考")
+                .font(.caption)
+                .foregroundStyle(AppColors.secondaryText)
+            SolfegeView(
+                notes: [
+                    SolfegeNote(solfege: "1", octave: 4, duration: .quarter),
+                    SolfegeNote(solfege: "2", octave: 4, duration: .quarter),
+                    SolfegeNote(solfege: "3", octave: 4, duration: .quarter),
+                    SolfegeNote(solfege: "4", octave: 4, duration: .quarter),
+                    SolfegeNote(solfege: "5", octave: 4, duration: .quarter),
+                ],
+                highlightedIndex: nil
+            )
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
     
     // MARK: - Interaction Area
@@ -307,8 +319,8 @@ struct ExerciseContainerView: View {
     
     /// 检查键盘输入答案
     private func checkKeyboardAnswer(_ note: String) {
-        // 当前题目正确答案（五弦2品 = B音）
-        let correctAnswer = "B"
+        let correctAnswers = ["C", "D", "E", "F", "G", "A", "B"]
+        let correctAnswer = correctAnswers[currentQuestion % correctAnswers.count]
         let isAnswerCorrect = note == correctAnswer
         
         showFeedback = true
@@ -433,8 +445,8 @@ struct ExerciseContainerView: View {
     
     private func selectAnswer(_ index: Int) {
         selectedAnswer = index
-        // 假设第一个选项正确
-        isCorrect = index == 0
+        let correctIndex = currentQuestion % 4
+        isCorrect = index == correctIndex
         showFeedback = true
         
         if isCorrect {
