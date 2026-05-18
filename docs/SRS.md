@@ -17,9 +17,8 @@
 6. [页面详细设计](#6-页面详细设计)
 7. [技术架构](#7-技术架构)
 8. [接口需求](#8-接口需求)
-9. [实施计划](#9-实施计划)
-10. [验收标准](#10-验收标准)
-11. [附录](#11-附录)
+9. [验收标准](#9-验收标准)
+10. [附录](#10-附录)
 
 ---
 
@@ -1123,55 +1122,7 @@ ContentView (TabView)
 
 ---
 
-## 9. 实施计划
-
-### 9.1 重构任务清单（V2.0）
-
-| Phase | 任务 | 文件 | 状态 |
-|-------|------|------|------|
-| **Phase 1: 界面重构** | | | |
-| 1.1 | ColorTheme | Utilities/ColorTheme.swift | ✅ 深蓝主题 |
-| 1.2 | 卡片组件 | Components/*.swift | ⏳ ProgressDots, ModuleCard, ModuleBadge |
-| 1.3 | PracticeTab | Views/Tabs/PracticeTab.swift | ⏳ |
-| 1.4 | CourseTab | Views/Tabs/CourseTab.swift | ⏳ |
-| 1.5 | ProfileTab | Views/Tabs/ProfileTab.swift | ⏳ |
-| **Phase 2: 视唱功能** | | | |
-| 2.1 | PitchDetector | Services/PitchDetector.swift | ⏳ |
-| 2.2 | SightSingingView | Views/Practice/SightSingingView.swift | ⏳ |
-| 2.3 | ScoreResultView | Views/Practice/ScoreResultView.swift | ⏳ |
-| **Phase 3: 课程模块** | | | |
-| 3.1 | 课程数据 | Models/Course/CourseData.swift | ⏳ |
-| 3.2 | 课程练习入口 | Views/Course/CourseLessonView.swift | ⏳ |
-| **Phase 4: 乐理模块** | | | |
-| 4.1 | 乐理知识库 | Models/Theory/TheoryTopic.swift | ⏳ |
-| **Phase 5: 收尾优化** | | | |
-| 5.1 | 深色模式 | Utilities/ColorTheme.swift | ⏳ |
-| 5.2 | 构建验证 | — | ⏳ |
-
-### 9.2 每日目标
-
-| 天数 | 完成目标 |
-|------|---------|
-| 第1天 | Phase 1: 界面重构 |
-| 第2天 | Phase 2: 视唱功能 |
-| 第3天 | Phase 3: 课程模块 |
-| 第4天 | Phase 4: 乐理模块 |
-| 第5天 | Phase 5: 收尾优化 |
-
-### 9.3 V1.0 vs V2.0 差异总结
-
-| 方面 | V1.0 实现 | V2.0 实现 | 改进说明 |
-|------|-----------|-----------|----------|
-| **视觉风格** | 纯白背景、iOS原生 | 深蓝主题、卡片布局 | 更专业 |
-| **颜色系统** | iOS默认色 | 完整色彩体系 | 统一规范 |
-| **组件库** | 无 | ModuleCard等 | 可复用 |
-| **视唱功能** | 基础 | 实时检测+评分 | 更完善 |
-| **课程体系** | 框架 | 完整内容 | 更实用 |
-| **乐理知识** | 基础 | 完整知识库 | 更专业 |
-
----
-
-## 10. 验收标准
+## 9. 验收标准
 
 ### 10.1 功能验收
 
@@ -1208,9 +1159,9 @@ ContentView (TabView)
 
 ---
 
-## 11. 附录
+## 10. 附录
 
-### 11.1 参考应用信息
+### 10.1 参考应用信息
 
 #### 五线谱参考
 
@@ -1243,7 +1194,7 @@ ContentView (TabView)
 | 类型 | 专业练耳软件 |
 | 特点 | 深度课程、多种练习模式 |
 
-### 11.2 术语表
+### 10.2 术语表
 
 | 术语 | 英文 | 定义 |
 |------|------|------|
@@ -1258,7 +1209,7 @@ ContentView (TabView)
 
 ---
 
-## 12. 变更记录
+## 11. 变更记录
 
 ### V2.1 (2026-05-18)
 
