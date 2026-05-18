@@ -23,9 +23,6 @@ struct SingleNoteListeningView: View {
     @State private var showFeedback: Bool = false
     @State private var isCorrect: Bool = false
 
-    // 谱式切换
-    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
-
     private let referenceNote = 69 // A4 = 440Hz
     private let whiteKeyNotes = ["C", "D", "E", "F", "G", "A", "B"]
     private let whiteKeyMIDIs = [60, 62, 64, 65, 67, 69, 71]
@@ -46,18 +43,13 @@ struct SingleNoteListeningView: View {
             // 顶部导航栏
             headerView
 
-            // 谱式切换器
-            NotationSwitcher(selectedNotation: $selectedNotation)
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-
             Divider()
 
             // 内容区
             ScrollView {
                 VStack(spacing: 20) {
-                    // 谱式展示
-                    notationDisplay
+                    // 题目提示
+                    questionHint
 
                     // 播放控制
                     playbackControl
@@ -128,9 +120,9 @@ struct SingleNoteListeningView: View {
         .background(Color(.systemBackground))
     }
 
-    // MARK: - 谱式展示
+    // MARK: - 题目提示
 
-    private var notationDisplay: some View {
+    private var questionHint: some View {
         VStack(spacing: 16) {
             // 进度
             HStack {
@@ -140,28 +132,22 @@ struct SingleNoteListeningView: View {
                 Spacer()
             }
 
-            // 谱式展示
-            Group {
-                switch selectedNotation {
-                case .tabWithSolfege:
-                    // 六线谱+简谱组合视图
-                    VStack(spacing: 12) {
-                        GuitarTablatureView(
-                            notes: [GuitarTabNote(string: 5, fret: 0, technique: nil)],
-                            fretRange: 0...3
-                        )
-                        Divider()
-                        SolfegeView(
-                            notes: [SolfegeNote(solfege: targetNoteName, octave: targetOctave, duration: .quarter)],
-                            highlightedIndex: 0
-                        )
-                    }
-                case .staff:
-                    StaffNotationView(
-                        notes: [StaffNote(pitch: StaffPitch(line: 0), duration: .quarter, accidental: nil)]
-                    )
-                }
+            // 听力练习提示（不显示谱式，避免提前泄露答案）
+            VStack(spacing: 12) {
+                Image(systemName: "ear.fill")
+                    .font(.system(size: 48))
+                    .foregroundStyle(AppColors.primary.opacity(0.3))
+
+                Text("仔细聆听播放的音符")
+                    .font(.body)
+                    .foregroundStyle(AppColors.secondaryText)
+
+                Text("点击下方播放按钮开始")
+                    .font(.caption)
+                    .foregroundStyle(AppColors.tertiaryText)
             }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 40)
         }
     }
 
