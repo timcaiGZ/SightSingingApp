@@ -1,13 +1,14 @@
 import AVFoundation
 import Accelerate
 import Foundation
+import SwiftUI
 
 /// 音高检测结果
 struct PitchResult {
-    let frequency: Float      // 频率 Hz
+    let frequency: Double     // 频率 Hz
     let noteName: String       // 音符名 C4, D4...
     let cents: Int             // 音分偏差 (-50 to +50)
-    let amplitude: Float       // 音量振幅
+    let amplitude: Double      // 音量振幅
     let timestamp: Date
 }
 
@@ -172,7 +173,7 @@ final class PitchDetector: ObservableObject {
             if frequency > 50 && frequency < 2000 {
                 Task { @MainActor in
                     self.detectedFrequency = frequency
-                    self.currentAmplitude = amplitude
+                    self.currentAmplitude = Float(amplitude)
                     self.detectedMIDI = Int(round(69 + 12 * log2(frequency / 440.0)))
                     self.detectedNote = self.midiToNoteName(self.detectedMIDI)
                     self.updateScore()
@@ -285,7 +286,7 @@ final class PitchDetector: ObservableObject {
     }
 
     /// 频率到音符转换
-    private func frequencyToNote(_ frequency: Float) -> (name: String, cents: Int) {
+    private func frequencyToNote(_ frequency: Double) -> (name: String, cents: Int) {
         // A4 = 440Hz
         let a4 = 440.0
         let c0 = a4 * pow(2.0, -4.75)
@@ -303,12 +304,12 @@ final class PitchDetector: ObservableObject {
     }
 
     /// 计算振幅
-    private func calculateAmplitude(_ data: UnsafeMutablePointer<Float>, frameLength: Int) -> Float {
+    private func calculateAmplitude(_ data: UnsafeMutablePointer<Float>, frameLength: Int) -> Double {
         var sum: Float = 0
         for i in 0..<frameLength {
             sum += data[i] * data[i]
         }
-        return sqrt(sum / Float(frameLength))
+        return Double(sqrt(sum / Float(frameLength)))
     }
 }
 
