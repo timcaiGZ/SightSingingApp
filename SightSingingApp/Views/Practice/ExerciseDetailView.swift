@@ -17,7 +17,7 @@ struct ExerciseDetailView: View {
     @State private var selectedAnswer: Int?
     @State private var isCorrect: Bool?
     @State private var startTime: Date = Date()
-    @State private var selectedNotation: NotationType = .tabWithSolfege
+    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
 
     enum ExerciseState {
         case question

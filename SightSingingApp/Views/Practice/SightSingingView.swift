@@ -33,7 +33,7 @@ struct SightSingingView: View {
     @State private var singingTimer: Timer?
 
     @State private var melody: [MelodyNote] = []
-    @State private var selectedNotation: NotationType = .tabWithSolfege
+    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
 
     private let pitchDetector = PitchDetector.shared
 

@@ -24,7 +24,7 @@ struct SingleNoteListeningView: View {
     @State private var isCorrect: Bool = false
 
     // 谱式切换
-    @State private var selectedNotation: NotationType = .tabWithSolfege
+    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
 
     private let referenceNote = 69 // A4 = 440Hz
     private let whiteKeyNotes = ["C", "D", "E", "F", "G", "A", "B"]
