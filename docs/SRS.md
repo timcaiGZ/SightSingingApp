@@ -797,6 +797,65 @@ SF Symbols 线条风格图标：
 - 胶囊形状
 - 白字 + 模块对应颜色背景
 
+### 5.7 iOS 设计规范（Figma 版本，V2.3）
+
+> **说明**：以下规范基于 Apple Human Interface Guidelines (HIG)，为全面对齐 iOS 原生设计风格而制定。所有设计文档位于 `docs/figma/` 目录下。
+
+#### 5.7.1 设计文档结构
+
+```
+docs/
+├── ios_design_spec.md          # iOS 设计规范总览
+├── interaction_spec.md          # 交互规范文档
+└── figma/
+    ├── practice_tab_spec.md    # 练习 Tab 设计规范
+    ├── course_tab_spec.md      # 课程 Tab 设计规范
+    ├── theory_tab_spec.md      # 乐理 Tab 设计规范
+    ├── test_tab_spec.md        # 测试 Tab 设计规范
+    └── profile_tab_spec.md     # 我的 Tab 设计规范
+```
+
+#### 5.7.2 核心设计原则
+
+| 原则 | 说明 |
+|------|------|
+| **Clarity** | 内容为核心，清晰易读 |
+| **Deference** | UI 服务于内容 |
+| **Depth** | 层次感与可发现性 |
+
+#### 5.7.3 iOS 标准组件
+
+| 组件类型 | iOS 实现 | 说明 |
+|----------|----------|------|
+| 颜色 | SF System Colors | 支持 Light/Dark Mode |
+| 字体 | SF Pro + Dynamic Type | 自动适配无障碍 |
+| 间距 | 8pt 网格系统 | 小组件 8pt，卡片 16pt |
+| 圆角 | 12-16pt | 小组件 8pt，标准卡片 12pt |
+| 毛玻璃 | .ultraThinMaterial | TabBar、浮动面板 |
+| 按钮 | .borderedProminent | 主要操作按钮 |
+| 列表 | .listStyle(.insetGrouped) | 分组列表样式 |
+
+#### 5.7.4 Tab 设计规范
+
+| Tab | 图标 | 设计要点 |
+|-----|------|----------|
+| **练习** | `music.note.list` | 树形结构、练习容器、实时反馈 |
+| **课程** | `book.fill` | 进度卡片、章节列表、学习流程 |
+| **乐理** | `graduationcap.fill` | 知识卡片、分类过滤、文章阅读 |
+| **测试** | `checkmark.circle.fill` | 诊断测试、能力评估、报告分析 |
+| **我的** | `person.fill` | 用户卡片、统计图表、设置页面 |
+
+#### 5.7.5 交互规范要点
+
+| 动画类型 | 时长 | 缓动曲线 |
+|----------|------|----------|
+| 即时反馈 | 100ms | easeOut |
+| 快速过渡 | 200ms | easeInOut |
+| 标准过渡 | 300ms | easeInOut |
+| 页面转场 | 350ms | easeInOut |
+| 复杂动画 | 400-500ms | spring |
+| 成就动画 | 1000-2000ms | spring + particle |
+
 ---
 
 ## 6. 页面详细设计
