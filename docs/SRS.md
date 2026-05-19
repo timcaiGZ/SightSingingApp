@@ -1,7 +1,7 @@
 # 视唱练耳 App 需求规格说明书
 
-**版本**: V2.1
-**日期**: 2026年5月18日
+**版本**: V2.2
+**日期**: 2026年5月19日
 **作者**: TC
 **指导老师**: 小艾
 
@@ -431,9 +431,18 @@
 
 | 模式 | 适用题型 | 界面特征 |
 |------|----------|----------|
-| **选择题** | 单音辨认、音程比较、和弦辨认、调式辨认 | 灰色"请选择" + 白色选项列表 |
-| **键盘输入** | 单音/音程/和弦/旋律听写 | 升降号列 + CDEFGAB键 + 功能键 |
-| **视唱** | 单音视唱、旋律视唱 | 竖直刻度尺 + 实时游标 + 评分反馈 |
+| **选择题** (multipleChoice) | 单音辨认、音程比较、和弦辨认、调式辨认 | 灰色"请选择" + 白色选项列表 |
+| **键盘输入** (keyboardInput) | 单音/音程/和弦/旋律听写 | 升降号列 + CDEFGAB键 + 功能键 |
+| **视唱** (sightSinging) | 单音视唱、旋律视唱 | 竖直刻度尺 + 实时游标 + 评分反馈 |
+
+**ExerciseMode 枚举**：
+```swift
+enum ExerciseMode: String, CaseIterable {
+    case multipleChoice = "选择题"
+    case keyboardInput = "键盘输入"
+    case sightSinging = "视唱"
+}
+```
 
 ### 3.10 音频功能需求
 
@@ -561,14 +570,11 @@
 
 ### 5.5 图标规范
 
-底部 Tab 使用 SF Symbols 线条风格图标：
+SF Symbols 线条风格图标：
 
-| Tab | 图标名称 | 说明 |
-|-----|----------|------|
-| 练习 | music.note.list | 音符列表 |
-| 课程 | book.closed | 闭合书本 |
-| 乐理 | book | 书本 |
-| 我的 | person.circle | 用户头像 |
+- **Tab 图标**: music.note.list, book.closed, book, checkmark.circle, person.circle
+- **功能图标**: mic.fill (视唱), pianokeys (键盘), list.bullet (选择题)
+- **状态图标**: checkmark.circle.fill (完成), circle (未完成)
 
 ### 5.6 组件规范（V2.0 新增）
 
@@ -620,10 +626,20 @@
 │            主内容区域                    │
 │                                        │
 ├────────────────────────────────────────┤
-│     练习      课程      乐理      我的   │
-│      ○        ○        ○        ○     │
+│   练习     课程     乐理     测试     我的 │
+│    ○       ○        ○        ○       ○  │
 └────────────────────────────────────────┘
 ```
+
+**Tab 图标（V2.2 更新）**：
+
+| Tab | 图标名称 | 说明 |
+|-----|----------|------|
+| 练习 | music.note.list | 音符列表 |
+| 课程 | book.closed | 闭合书本 |
+| 乐理 | book | 书本 |
+| 测试 | checkmark.circle | 测试/验收 |
+| 我的 | person.circle | 用户头像 |
 
 ### 6.2 练习 Tab 页面结构（V2.0 深蓝主题）
 
@@ -898,9 +914,9 @@
 - 支持升降号 ♯ ♭ ♮
 - 时值：全音符（空心椭圆）/ 二分音符（空心+符干）/ 四分音符（实心+符干）/ 八分音符（实心+符干+符尾）
 
-### 6.8 音符输入键盘设计
+### 6.8 音符输入键盘设计（V2.2 完善）
 
-用于音高听写题型的输入：
+MusicKeyboardView 组件用于音高听写题型的输入：
 
 ```
 ┌─────────────────────────────────────────┐
@@ -920,7 +936,43 @@
 └─────────────────────────────────────────┘
 ```
 
-### 6.9 谱式切换器设计（V2.1 简化）
+**设计要点**：
+- 升降号按钮可切换激活状态（白色背景=激活）
+- 七个自然音按钮 (C-D-E-F-G-A-B)
+- 功能按钮：清空（Clear）、确认（Submit）、重听（Replay）
+- 深蓝色按钮样式，与整体主题一致
+
+### 6.9 统一练习容器（V2.2 新增）
+
+ExerciseContainerView 是核心练习容器，整合三种练习模式：
+
+```
+┌────────────────────────────────────────┐
+│  ✕      练习标题              85 分     │  ← 导航栏
+├────────────────────────────────────────┤
+│  [五线谱]  [六线谱+简谱]                 │  ← 谱式切换
+├────────────────────────────────────────┤
+│  ● ● ● ○ ○ ○ ○ ○ ○ ○                   │  ← 进度圆点
+│            3 / 10                      │
+├────────────────────────────────────────┤
+│                                        │
+│           [谱式展示区]                   │  ← 五线谱/六线谱/简谱
+│                                        │
+├────────────────────────────────────────┤
+│  新问题       分解          重听         │  ← 操作栏
+├────────────────────────────────────────┤
+│  ┌────────────────────────────────┐   │
+│  │ 交互区（选择题/键盘/视唱）       │   │  ← 根据 ExerciseMode 显示
+│  └────────────────────────────────┘   │
+└────────────────────────────────────────┘
+```
+
+**ExerciseMode 模式切换**：
+- `multipleChoice`: 显示选项列表
+- `keyboardInput`: 显示 MusicKeyboardView
+- `sightSinging`: 显示视唱界面 + PitchDetector
+
+### 6.10 谱式切换器设计（V2.1 简化）
 
 #### 6.9.1 练习页面顶部切换
 
@@ -1045,47 +1097,50 @@ ReusableComponents (组件库)
 ```
 SightSingingApp/
 ├── App/
-│   └── ContentView.swift               # Tab导航容器（4个Tab）
+│   └── ContentView.swift               # Tab导航容器（5个Tab）
 ├── Views/
 │   ├── Tabs/
-│   │   ├── PracticeTab.swift          # 自由练习入口
-│   │   ├── CourseTab.swift            # 课程Tab
-│   │   ├── TheoryTab.swift            # 乐理Tab
-│   │   └── ProfileTab.swift           # 我的Tab
-│   ├── Practice/                              # 自由练习模块
-│   │   ├── ModuleDetailView.swift             # 模块详情
-│   │   ├── ExerciseContainerView.swift        # 统一练习容器
-│   │   ├── ExerciseDetailView.swift           # 调用容器
-│   │   ├── MusicKeyboardView.swift            # 音符键盘
-│   │   ├── SightSingingView.swift             # 视唱练习
-│   │   └── ScoreResultView.swift              # 评分结果（V2.0新增）
-│   └── Components/
-│       ├── NotationSwitcher.swift             # 谱式切换器
-│       ├── StaffNotationView.swift             # 五线谱
-│       ├── GuitarTabView.swift                 # 六线谱
-│       ├── SolfegeView.swift                   # 简谱
-│       └── PitchMeterView.swift                # 音准指示器
-├── Components/                                  # 通用组件库（V2.0）
-│   ├── ModuleCard.swift                       # 模块卡片
-│   ├── ProgressDots.swift                      # 进度圆点
-│   └── ModuleBadge.swift                       # 模块徽章
+│   │   ├── PracticeTab.swift           # 自由练习入口
+│   │   ├── CourseTab.swift             # 课程Tab
+│   │   ├── TheoryTab.swift             # 乐理Tab
+│   │   ├── TestTab.swift               # 测试Tab（V2.2新增）
+│   │   └── ProfileTab.swift            # 我的Tab
+│   ├── Practice/                       # 自由练习模块
+│   │   ├── ModuleDetailView.swift      # 模块详情
+│   │   ├── ExerciseContainerView.swift # 统一练习容器
+│   │   ├── ExerciseDetailView.swift    # 调用容器
+│   │   ├── MusicKeyboardView.swift     # 音符输入键盘（V2.2）
+│   │   ├── RootNoteListeningView.swift # 根音听力练习
+│   │   ├── ScoreResultView.swift       # 评分结果
+│   │   ├── SightSingingResultView.swift# 视唱结果页
+│   │   ├── SightSingingView.swift      # 视唱练习
+│   │   ├── SingleNoteListeningView.swift# 单音听力
+│   │   └── Components/
+│   │       ├── GuitarTabView.swift     # 六线谱
+│   │       ├── NotationDisplayView.swift# 谱式展示
+│   │       ├── NotationSwitcher.swift  # 谱式切换器
+│   │       ├── PianoKeyboardView.swift # 钢琴键盘
+│   │       ├── PitchMeterView.swift    # 音准指示器
+│   │       ├── SolfegeView.swift       # 简谱
+│   │       └── StaffNotationView.swift # 五线谱
+│   ├── Course/                         # 课程模块
+│   │   ├── CourseChapterView.swift     # 课程章节
+│   │   ├── CourseDetailView.swift      # 课程详情
+│   │   ├── CourseExerciseListView.swift# 课程练习列表（V2.2）
+│   │   └── CourseLessonView.swift      # 课时视图
+│   ├── Theory/                         # 乐理模块
+│   └── Profile/                        # 个人中心模块
+├── Components/                         # 通用组件库
+│   └── ModuleCard.swift                # 模块卡片
 ├── Models/
 │   ├── Exercise/
-│   │   ├── NotationType.swift                  # 谱式枚举
-│   │   └── QuestionBank.swift                  # 题库
 │   ├── Course/
-│   │   └── CourseData.swift                    # 课程数据（V2.0完善）
-│   └── Theory/
-│       └── TheoryTopic.swift                   # 乐理知识库（V2.0新增）
+│   ├── Theory/
+│   ├── Test/
+│   └── User/
 ├── ViewModels/
-│   ├── PracticeViewModel.swift                # 练习逻辑
-│   ├── CourseViewModel.swift                   # 课程逻辑
-│   └── SightSingingViewModel.swift             # 视唱逻辑（V2.0新增）
 ├── Services/
-│   ├── AudioEngine.swift                       # 音频播放
-│   └── PitchDetector.swift                     # 音高检测（V2.0）
 └── Utilities/
-    └── ColorTheme.swift                        # 深蓝主题色板（V2.0）
 ```
 
 ---
@@ -1095,16 +1150,20 @@ SightSingingApp/
 ### 8.1 页面导航结构
 
 ```
-ContentView (TabView)
+ContentView (TabView - 5个Tab)
 ├── PracticeTab
 │   └── ModuleDetailView
 │       └── ExerciseContainerView
 ├── CourseTab
 │   └── CourseDetailView
-│       └── CourseLessonView
-│           └── ExerciseContainerView
+│       └── CourseChapterView
+│           └── CourseLessonView
+│               └── CourseExerciseListView
+│                   └── ExerciseContainerView
 ├── TheoryTab
 │   └── TheoryDetailView
+├── TestTab                          # V2.2 新增
+│   └── ...
 └── ProfileTab
     └── SettingsView
 ```
@@ -1210,6 +1269,17 @@ ContentView (TabView)
 ---
 
 ## 11. 变更记录
+
+### V2.2 (2026-05-19)
+
+| 变更类型 | 变更内容 |
+|----------|----------|
+| **统一练习容器** | 新增 ExerciseContainerView，整合三种练习模式 |
+| **音符键盘** | 新增 MusicKeyboardView 音符输入键盘组件 |
+| **课程练习** | 新增 CourseExerciseListView 课程练习列表 |
+| **Test Tab** | 新增 TestTab 测试入口 |
+| **谱式组件完善** | NotationDisplayView、NotationSwitcher、SolfegeView 等组件完善 |
+| **文件结构** | 调整 Views 目录结构，新增 Components 子目录 |
 
 ### V2.1 (2026-05-18)
 
