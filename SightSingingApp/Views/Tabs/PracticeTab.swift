@@ -1,203 +1,181 @@
 import SwiftUI
 
-/// Tab 1 — 练习首页（深蓝主题重构）
+// MARK: - Tab 1 练习首页 (匹配 v0 原型)
 struct PracticeTab: View {
-    @Environment(\.modelContext) private var modelContext
-    @State private var viewModel = PracticeViewModel()
-    @State private var selectedModule: ExerciseModule?
-
+    @State private var selectedExercise: ExerciseItem?
+    @State private var selectedModuleId: String?
+    
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                    ForEach(ExerciseModule.allCases) { module in
-                        Section {
-                            moduleExercisesList(module: module)
-                        } header: {
-                            sectionHeader(module: module)
+        ScrollView {
+            VStack(spacing: 16) {
+                // 页面标题 (28px bold)
+                HStack {
+                    Text("自由练习")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(AppTheme.primaryText)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                
+                // 练习模块列表
+                VStack(spacing: 16) {
+                    ForEach(PracticeModuleData.allModules) { module in
+                        ModuleCardView(module: module) { exercise in
+                            selectedExercise = exercise
+                            selectedModuleId = module.id
                         }
                     }
                 }
+                .padding(.horizontal, 16)
             }
-            .pageBackground()
-            .navigationTitle("练习")
-            .navigationDestination(for: ExerciseModule.self) { module in
-                ModuleDetailView(module: module, viewModel: viewModel)
-            }
+            .padding(.bottom, 24)
         }
-        .onAppear {
-            viewModel.setModelContext(modelContext)
+        .background(AppTheme.background)
+        .navigationDestination(item: $selectedExercise) { exercise in
+            ExerciseContainerView(
+                exercise: exercise,
+                moduleId: selectedModuleId ?? ""
+            )
         }
-    }
-
-    /// 分类标题
-    private func sectionHeader(module: ExerciseModule) -> some View {
-        HStack {
-            Image(systemName: module.iconName)
-                .font(.caption)
-                .foregroundStyle(moduleColor(for: module))
-
-            Text(module.rawValue)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(AppColors.primaryText)
-
-            Spacer()
-
-            // 模块进度圆点
-            let progress = viewModel.progress(for: module)
-            ProgressDots(total: 5, completed: progress)
-
-            // 模块得分
-            if let bestScore = viewModel.bestScore(for: ExerciseType.allCases.first { $0.module == module } ?? .singleNoteRecognition),
-               bestScore > 0 {
-                Text("\(bestScore) 分")
-                    .font(.caption)
-                    .foregroundStyle(AppColors.secondaryText)
-            }
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(AppColors.pageBackground)
-    }
-
-    /// 模块内的练习列表
-    private func moduleExercisesList(module: ExerciseModule) -> some View {
-        VStack(spacing: 0) {
-            ForEach(viewModel.exercises(for: module)) { exercise in
-                NavigationLink(value: module) {
-                    exerciseRow(exercise: exercise)
-                }
-                .buttonStyle(.plain)
-
-                if exercise != viewModel.exercises(for: module).last {
-                    Divider()
-                        .padding(.leading, 56)
-                }
-            }
-        }
-        .padding(.horizontal, 16)
-        .background(AppColors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
-        .padding(.horizontal, 16)
-        .padding(.vertical, 4)
-    }
-
-    /// 单个练习行
-    private func exerciseRow(exercise: ExerciseType) -> some View {
-        HStack(spacing: 12) {
-            // 图标
-            Image(systemName: exerciseIcon(for: exercise))
-                .font(.title3)
-                .foregroundStyle(moduleColor(for: exercise.module))
-                .frame(width: 32)
-
-            // 练习名称和进度
-            VStack(alignment: .leading, spacing: 2) {
-                Text(exercise.rawValue)
-                    .font(.body)
-                    .foregroundStyle(AppColors.primaryText)
-
-                if let bestScore = viewModel.bestScore(for: exercise), bestScore > 0 {
-                    Text("最高 \(bestScore) 分")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.secondaryText)
-                } else {
-                    Text("未练习")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.tertiaryText)
-                }
-            }
-
-            Spacer()
-
-            // 进度指示
-            progressIndicator(for: exercise)
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
-        }
-        .padding(.vertical, 12)
-        .contentShape(Rectangle())
-    }
-
-    /// 进度指示器
-    @ViewBuilder
-    private func progressIndicator(for exercise: ExerciseType) -> some View {
-        if let bestScore = viewModel.bestScore(for: exercise), bestScore > 0 {
-            HStack(spacing: 4) {
-                Text("\(bestScore)")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(scoreColor(bestScore))
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(scoreColor(bestScore).opacity(0.1))
-            .clipShape(Capsule())
-        }
-    }
-
-    /// 模块对应颜色
-    private func moduleColor(for module: ExerciseModule) -> Color {
-        switch module {
-        case .noteName: return AppColors.noteName
-        case .interval: return AppColors.interval
-        case .chord: return AppColors.chord
-        case .scale: return AppColors.scale
-        case .rhythm: return AppColors.rhythm
-        case .melody: return AppColors.melody
-        }
-    }
-
-    /// 练习类型对应图标
-    private func exerciseIcon(for exercise: ExerciseType) -> String {
-        switch exercise {
-        case .singleNoteRecognition: return "music.note"
-        case .openStringRecognition: return "guitars"
-        case .rootNoteRecognition: return "music.note.list"
-        case .tablatureNoteReading: return "text.alignleft"
-        case .intervalRecognition, .fretboardIntervalComparison: return "music.note"
-        case .intervalSinging: return "mic.fill"
-        case .fretboardIntervalComparison: return "square.grid.3x3"
-        case .hammerPullInterval: return "hand.tap"
-        case .barreChordRecognition, .chordQualityRecognition: return "rectangle.3.group"
-        case .chordTransitionSpeed: return "arrow.left.arrow.right"
-        case .commonChordRecognition: return "rectangle.3.group.fill"
-        case .scaleRecognition: return "music.quarternote.3"
-        case .cagedSystemPractice: return "square.grid.2x2"
-        case .commonTuningRecognition: return "tuningfork"
-        case .strummingPattern: return "waveform"
-        case .arpeggioPattern: return "waveform.path"
-        case .metronomeStability: return "metronome"
-        case .syncopationRecognition: return "music.note.list"
-        case .tablatureMelodySinging, .guitarMelodyRecognition: return "music.mic"
-        case .harmonicRecognition: return "waveform.path.ecg"
-        }
-    }
-
-    /// 得分对应颜色
-    private func scoreColor(_ score: Int) -> Color {
-        if score >= 90 { return AppColors.success }
-        else if score >= 70 { return AppColors.warning }
-        else { return AppColors.error }
     }
 }
 
-// MARK: - PracticeViewModel Extension
-extension PracticeViewModel {
-    /// 计算模块进度（0-5）
-    func progress(for module: ExerciseModule) -> Int {
-        let exercises = exercises(for: module)
-        let completedCount = exercises.filter { bestScore(for: $0) ?? 0 > 0 }.count
-        let totalCount = max(exercises.count, 1)
-        return min(5, Int((Double(completedCount) / Double(totalCount)) * 5))
+// MARK: - 模块卡片 (匹配 v0 ModuleCard: 彩色顶条 + 标题栏 + 分割线 + 列表)
+struct ModuleCardView: View {
+    let module: PracticeModuleData
+    let onExerciseSelect: (ExerciseItem) -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // === 顶部彩色条 h-1 (4pt) ===
+            Rectangle()
+                .fill(module.color)
+                .frame(height: 4)
+            
+            // === 标题栏: icon + title, border-b ===
+            HStack(spacing: 8) {
+                Image(systemName: module.icon)
+                    .font(.system(size: 15))
+                    .foregroundStyle(module.color)
+                
+                Text(module.title)
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.primaryText)
+                
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color.white)
+            .overlay(alignment: .bottom) {
+                Rectangle().fill(AppTheme.border).frame(height: 0.5)
+            }
+            
+            // === 内容区: divide-y ===
+            VStack(spacing: 0) {
+                ForEach(Array(module.exercises.enumerated()), id: \.element.id) { index, exercise in
+                    ModuleItemView(exercise: exercise, onTap: { onExerciseSelect(exercise) })
+                    
+                    if index < module.exercises.count - 1 {
+                        Divider()
+                            .padding(.leading, 16)
+                    }
+                }
+            }
+            .background(Color.white)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 14))   // rounded-2xl
+        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 1)  // shadow-sm
+    }
+}
+
+// MARK: - 模块项行 (匹配 v0 ModuleItem: title + ProgressRing + % + chevron)
+struct ModuleItemView: View {
+    let exercise: ExerciseItem
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                // 标题 text-[15px]
+                Text(exercise.title)
+                    .font(.system(size: 15))
+                    .foregroundStyle(AppTheme.primaryText)
+                
+                Spacer()
+                
+                // 进度环 size=sm(20pt)
+                if exercise.percentage >= 0 {
+                    ProgressRingView(
+                        percentage: exercise.percentage,
+                        size: 20,
+                        lineWidth: 2.5
+                    )
+                }
+                
+                // 百分比 text-[13px] min-w-[32px] text-right
+                Text(progressText)
+                    .font(.system(size: 13))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .frame(width: 32, alignment: .trailing)
+                
+                // 右箭头 text-muted-foreground/50
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(AppTheme.secondaryText.opacity(0.5))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(IOSPressStyle())
+    }
+    
+    private var progressText: String {
+        if exercise.percentage > 0 { return "\(exercise.percentage)%" }
+        return "—"
+    }
+}
+
+// MARK: - 进度环组件 (匹配 v0 ProgressRing: SVG circle + 颜色逻辑)
+struct ProgressRingView: View {
+    let percentage: Int
+    var size: CGFloat = 20
+    var lineWidth: CGFloat = 2.5
+    private var ringColor: Color { ProgressColor.ringColor(percentage: percentage) }
+    private var radius: CGFloat { (size - lineWidth) / 2 }
+    private var circumference: CGFloat { 2 * .pi * radius }
+    
+    var body: some View {
+        ZStack {
+            // 背景圆环 text-muted-foreground/20
+            Circle()
+                .stroke(AppTheme.secondaryText.opacity(0.15), lineWidth: lineWidth)
+            
+            // 进度圆环 strokeLinecap=round
+            Circle()
+                .trim(from: 0, to: CGFloat(max(percentage, 0)) / 100)
+                .stroke(
+                    ringColor,
+                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
+                )
+                .rotationEffect(.degrees(-90))
+                .animation(.easeOut(duration: 0.5), value: percentage)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+// MARK: - iOS 风格按压按钮样式 (匹配 v0 ios-press)
+struct IOSPressStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .opacity(configuration.isPressed ? 0.7 : 1)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
     }
 }
 
 #Preview {
     PracticeTab()
-        .modelContainer(for: [PracticeRecord.self, TestHistory.self], inMemory: true)
 }

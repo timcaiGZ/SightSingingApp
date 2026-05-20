@@ -1,180 +1,234 @@
 import SwiftUI
 
-/// Tab 3 — 乐理知识库（采用卡片式知识点展示）
+// MARK: - Tab 2 乐理知识 (匹配 v0 原型: 标题34px + 副标题15px + 搜索框 + 手风琴)
 struct TheoryTab: View {
-    @State private var viewModel = TheoryViewModel()
-    @State private var selectedTopic: TheoryTopic?
-
+    @State private var expandedCategories: Set<String> = ["basic"]
+    @State private var selectedTopic: TheoryTopicData?
+    @State private var navigateToSpecial: String?
+    @State private var searchQuery = ""
+    
+    // 搜索过滤
+    var filteredCategories: [TheoryCategoryData] {
+        if searchQuery.isEmpty { return TheoryCategoryData.allCategories }
+        return TheoryCategoryData.allCategories.compactMap { cat in
+            let filteredTopics = cat.topics.filter {
+                $0.title.localizedCaseInsensitiveContains(searchQuery) ||
+                $0.description.localizedCaseInsensitiveContains(searchQuery)
+            }
+            if filteredTopics.isEmpty { return nil }
+            return TheoryCategoryData(
+                id: cat.id, title: cat.title, icon: cat.icon,
+                color: cat.color, topics: filteredTopics
+            )
+        }
+    }
+    
     var body: some View {
-        NavigationStack {
-            Group {
-                if viewModel.filteredTopics.isEmpty {
-                    emptyState
-                } else {
-                    topicsGrid
-                }
-            }
-            .background(Color(.systemGroupedBackground))
-            .navigationTitle("乐理")
-            .searchable(text: $viewModel.searchText, prompt: "搜索知识点（如\"横按\"\"节奏型\"）")
-            .navigationDestination(for: TheoryTopic.self) { topic in
-                TheoryDetailView(topic: topic)
-            }
-        }
-    }
-
-    // MARK: - Empty State
-
-    private var emptyState: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
-
-            Text("未找到相关知识点")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-
-            Button("清除搜索") {
-                viewModel.clearSearch()
-            }
-            .buttonStyle(.bordered)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    // MARK: - Topics Grid
-
-    private var topicsGrid: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                // 分类过滤器
-                categoryFilter
-
-                // 知识点卡片网格
-                ForEach(viewModel.groupedTopics, id: \.category) { group in
-                    VStack(alignment: .leading, spacing: 12) {
-                        // 分类标题
-                        Text(group.category.displayName)
-                            .font(.headline)
-                            .foregroundStyle(AppColors.primaryText)
-                            .padding(.horizontal, 16)
-
-                        // 卡片网格
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                            ForEach(group.topics) { topic in
-                                NavigationLink(value: topic) {
-                                    TopicCard(topic: topic)
+            VStack(spacing: 16) {
+                // === 页面标题 34px bold + 副标题 15px ===
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("乐理知识")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(AppTheme.primaryText)
+                    Text("音乐理论词典与学习资料")
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                
+                // === 搜索框 h-11 rounded-xl bg-secondary/50 ===
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 17, weight: .regular))
+                        .foregroundStyle(AppTheme.secondaryText)
+                    
+                    TextField("搜索乐理知识...", text: $searchQuery)
+                        .font(.system(size: 15))
+                }
+                .padding(.horizontal, 12)
+                .frame(height: 44)   // h-11
+                .background(AppTheme.secondaryBg)
+                .clipShape(RoundedRectangle(cornerRadius: 12))  // rounded-xl
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(searchQuery.isEmpty ? Color.clear : AppTheme.accent.opacity(0.2), lineWidth: 1.5)
+                )
+                .padding(.horizontal, 16)
+                
+                // === 分类手风琴列表 space-y-4 ===
+                VStack(spacing: 16) {
+                    ForEach(filteredCategories) { category in
+                        TheoryCategoryAccordionView(
+                            category: category,
+                            isExpanded: expandedCategories.contains(category.id) || !searchQuery.isEmpty,
+                            onToggle: {
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    if expandedCategories.contains(category.id) {
+                                        expandedCategories.remove(category.id)
+                                    } else {
+                                        expandedCategories.insert(category.id)
+                                    }
                                 }
-                                .buttonStyle(.plain)
+                            },
+                            onTopicSelect: { topic in
+                                if topic.isSpecial {
+                                    navigateToSpecial = topic.id
+                                } else {
+                                    selectedTopic = topic
+                                }
                             }
+                        )
+                    }
+                    
+                    // === 搜索无结果 ===
+                    if !searchQuery.isEmpty && filteredCategories.isEmpty {
+                        VStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(AppTheme.mutedBackground)
+                                    .frame(width: 64, height: 64)
+                                Image(systemName: "magnifyingglass")
+                                    .font(.system(size: 24, weight: .medium))
+                                    .foregroundStyle(AppTheme.secondaryText)
+                            }
+                            
+                            Text("未找到结果")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(AppTheme.primaryText)
+                            
+                            Text("没有找到与\"\(searchQuery)\"相关的乐理知识")
+                                .font(.system(size: 14))
+                                .foregroundStyle(AppTheme.secondaryText)
+                                .multilineTextAlignment(.center)
                         }
-                        .padding(.horizontal, 16)
+                        .padding(.vertical, 48)
                     }
                 }
+                .padding(.horizontal, 16)
             }
-            .padding(.vertical, 16)
+            .padding(.bottom, 20)
         }
-    }
-
-    // MARK: - Category Filter
-
-    private var categoryFilter: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                CategoryChip(
-                    title: "全部",
-                    isSelected: viewModel.selectedCategory == nil
-                ) {
-                    viewModel.selectCategory(nil)
-                }
-
-                ForEach(TheoryCategory.allCases, id: \.self) { category in
-                    CategoryChip(
-                        title: category.displayName,
-                        isSelected: viewModel.selectedCategory == category
-                    ) {
-                        viewModel.selectCategory(category)
-                    }
-                }
+        .background(AppTheme.background)
+        .navigationDestination(item: $selectedTopic) { topic in
+            TheoryDetailView(topic: topic)
+        }
+        .navigationDestination(item: $navigateToSpecial) { specialId in
+            switch specialId {
+            case "seventh-chords":
+                SeventhChordsView()
+            case "mode-relation":
+                CircleOfFifthsView()
+            default:
+                Text("未知页面")
             }
-            .padding(.horizontal, 16)
         }
     }
 }
 
-/// 知识点卡片
-struct TopicCard: View {
-    let topic: TheoryTopic
-
+// MARK: - 手风琴分类卡片 (匹配 v0: 彩色图标圆角方框 + title + count + chevron-down)
+struct TheoryCategoryAccordionView: View {
+    let category: TheoryCategoryData
+    let isExpanded: Bool
+    let onToggle: () -> Void
+    let onTopicSelect: (TheoryTopicData) -> Void
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // 图标
-            Image(systemName: topicIcon)
-                .font(.title2)
-                .foregroundStyle(categoryColor)
-
-            // 标题
-            Text(topic.title)
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(AppColors.primaryText)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
-
-            // 摘要
-            Text(topic.summary)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(2)
-                .multilineTextAlignment(.leading)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.04), radius: 4, x: 0, y: 2)
-    }
-
-    private var topicIcon: String {
-        switch topic.category {
-        case .notationBasics: return "doc.text"
-        case .intervalsAndScales: return "arrow.left.and.right"
-        case .chords: return "hand.raised"
-        case .rhythm: return "metronome"
-        case .modes: return "pianokeys"
-        }
-    }
-
-    private var categoryColor: Color {
-        switch topic.category {
-        case .notationBasics: return AppColors.noteName
-        case .intervalsAndScales: return AppColors.interval
-        case .chords: return AppColors.chord
-        case .rhythm: return AppColors.rhythm
-        case .modes: return AppColors.scale
-        }
-    }
-}
-
-/// 分类选择标签
-struct CategoryChip: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            Text(title)
-                .font(.subheadline)
-                .fontWeight(isSelected ? .semibold : .regular)
-                .foregroundStyle(isSelected ? .white : .primary)
+        VStack(spacing: 0) {
+            // === 分类标题行 ===
+            Button(action: onToggle) {
+                HStack(spacing: 10) {
+                    // 彩色图标背景 w-8 h-8 rounded-lg
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(category.color)
+                            .frame(width: 32, height: 32)
+                        Image(systemName: category.icon)
+                            .font(.system(size: 14))
+                            .foregroundStyle(.white)
+                    }
+                    
+                    // 标题 text-[17px] font-semibold flex-1
+                    Text(category.title)
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(AppTheme.primaryText)
+                    
+                    Spacer()
+                    
+                    // 数量 text-[13px]
+                    Text("\(category.topics.count)")
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                    
+                    // 展开箭头 rotate-180
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                        .animation(.easeInOut(duration: 0.2), value: isExpanded)
+                }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(isSelected ? AppColors.primary : Color(.systemGray5))
-                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            
+            // === 知识点卡片列表 mt-2 bg-card rounded-xl shadow-sm ===
+            if isExpanded {
+                VStack(spacing: 0) {
+                    ForEach(Array(category.topics.enumerated()), id: \.element.id) { index, topic in
+                        TopicCardRow(topic: topic, onTap: { onTopicSelect(topic) })
+                        
+                        if index < category.topics.count - 1 {
+                            Divider().padding(.leading, 16)
+                        }
+                    }
+                }
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12))  // rounded-xl
+                .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 1)  // shadow-sm
+                .padding(.top, 8)   // mt-2
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
         }
-        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - 知识点卡片行 (匹配 v0 TopicCard: title+desc + chevron-right)
+struct TopicCardRow: View {
+    let topic: TheoryTopicData
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 0) {
+                // 左侧内容 flex-1
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(topic.title)
+                        .font(.system(size: 15, weight: .medium))  // text-[15px] font-medium
+                        .foregroundStyle(AppTheme.primaryText)
+                    
+                    Text(topic.description)
+                        .font(.system(size: 13))                   // text-[13px]
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .lineLimit(1)
+                }
+                
+                Spacer()
+                
+                // 右箭头 text-muted-foreground/40 flex-shrink-0 ml-3
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundStyle(AppTheme.tertiaryText.opacity(0.4))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)  // py-3.5
+        }
+        .buttonStyle(IOSPressStyle())
+        .contentShape(Rectangle())
     }
 }
 

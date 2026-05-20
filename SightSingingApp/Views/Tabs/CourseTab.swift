@@ -1,180 +1,293 @@
 import SwiftUI
 
-/// Tab 2 — 课程列表首页（深蓝主题重构）
+// MARK: - Tab 2 课程学习 (匹配 v0 原型: 标题28px + CourseCard列表)
 struct CourseTab: View {
-    @State private var viewModel = CourseViewModel()
-
+    @State private var selectedCourse: CourseItemData?
+    
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // 学习进度概览
-                    progressOverview
-
-                    // 课程列表
-                    courseList
-                }
-                .padding(.vertical, 16)
-            }
-            .pageBackground()
-            .navigationTitle("课程")
-            .navigationDestination(for: Course.self) { course in
-                CourseDetailView(course: course, viewModel: viewModel)
-            }
-            .navigationDestination(for: Chapter.self) { chapter in
-                CourseChapterView(chapter: chapter, viewModel: viewModel)
-            }
-            .navigationDestination(for: Lesson.self) { lesson in
-                CourseLessonView(lesson: lesson)
-            }
-        }
-    }
-
-    // MARK: - 学习进度概览
-
-    private var progressOverview: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("学习进度")
-                .font(.headline)
-                .foregroundStyle(AppColors.primaryText)
-                .padding(.horizontal, 16)
-
-            HStack(spacing: 16) {
-                ForEach(viewModel.courses) { course in
-                    ProgressCard(course: course, viewModel: viewModel)
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-
-    // MARK: - 课程列表
-
-    private var courseList: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("全部课程")
-                .font(.headline)
-                .foregroundStyle(AppColors.primaryText)
-                .padding(.horizontal, 16)
-
-            VStack(spacing: 12) {
-                ForEach(viewModel.courses) { course in
-                    NavigationLink(value: course) {
-                        CourseCard(course: course, viewModel: viewModel)
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
-            .padding(.horizontal, 16)
-        }
-    }
-}
-
-// MARK: - 进度卡片
-
-struct ProgressCard: View {
-    let course: Course
-    let viewModel: CourseViewModel
-
-    var body: some View {
-        VStack(spacing: 8) {
-            // 圆形进度
-            ZStack {
-                Circle()
-                    .stroke(viewModel.iconColor(for: course).opacity(0.2), lineWidth: 6)
-                    .frame(width: 56, height: 56)
-
-                Circle()
-                    .trim(from: 0, to: viewModel.calculateProgress(for: course))
-                    .stroke(viewModel.iconColor(for: course), style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                    .frame(width: 56, height: 56)
-                    .rotationEffect(.degrees(-90))
-
-                Image(systemName: course.icon)
-                    .font(.title3)
-                    .foregroundStyle(viewModel.iconColor(for: course))
-            }
-
-            Text(course.title)
-                .font(.caption)
-                .foregroundStyle(AppColors.secondaryText)
-                .lineLimit(1)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .background(AppColors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
-    }
-}
-
-// MARK: - 课程卡片
-
-struct CourseCard: View {
-    let course: Course
-    let viewModel: CourseViewModel
-
-    var body: some View {
-        HStack(spacing: 16) {
-            // 图标
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(viewModel.iconColor(for: course).opacity(0.15))
-                    .frame(width: 56, height: 56)
-
-                Image(systemName: course.icon)
-                    .font(.title2)
-                    .foregroundStyle(viewModel.iconColor(for: course))
-            }
-
-            // 内容
-            VStack(alignment: .leading, spacing: 4) {
-                Text(course.title)
-                    .font(.headline)
-                    .foregroundStyle(AppColors.primaryText)
-
-                Text(course.description)
-                    .font(.caption)
-                    .foregroundStyle(AppColors.secondaryText)
-                    .lineLimit(2)
-
-                // 进度条
-                ProgressView(value: viewModel.calculateProgress(for: course))
-                    .tint(viewModel.iconColor(for: course))
-                    .padding(.top, 4)
-
+        ScrollView {
+            VStack(spacing: 16) {
+                // === 页面标题 28px bold ===
                 HStack {
-                    // 章节数
-                    ModuleBadge(title: "\(course.chapters.count) 章节", color: viewModel.iconColor(for: course))
+                    Text("课程学习")
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundStyle(AppTheme.primaryText)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                
+                // === 课程卡片列表 space-y-3 ===
+                VStack(spacing: 12) {
+                    ForEach(CourseItemData.allCourses) { course in
+                        CourseCardView(course: course) {
+                            selectedCourse = course
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+            .padding(.bottom, 24)
+        }
+        .background(AppTheme.background)
+        .navigationDestination(item: $selectedCourse) { course in
+            CourseDetailView(course: course)
+        }
+    }
+}
+
+// MARK: - 课程卡片 (匹配 v0 CourseCard: 彩色顶条 + icon+title+info + ProgressRing lg + ProgressBar)
+struct CourseCardView: View {
+    let course: CourseItemData
+    let onTap: () -> Void
+    
+    private var percentage: Int {
+        course.total > 0 ? Int((Double(course.progress) / Double(course.total)) * 100) : 0
+    }
+    
+    private var statusText: String {
+        switch course.status {
+        case .notStarted: return "未开始"
+        case .inProgress: return "进行中"
+        case .completed: return "已完成"
+        }
+    }
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 0) {
+                // === 顶部彩色条 h-1 ===
+                Rectangle()
+                    .fill(course.color)
+                    .frame(height: 4)
+                
+                // === 内容 p-4 ===
+                VStack(spacing: 12) {
+                    // icon + title(17px semibold) + 课时数/状态(13px)
+                    HStack(spacing: 10) {
+                        Image(systemName: course.icon)
+                            .font(.system(size: 20))
+                            .foregroundStyle(course.color)
+                        
+                        Text(course.title)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(AppTheme.primaryText)
+                        
+                        Spacer()
+                        
+                        // ProgressRing(lg) showPercentage — 右上角
+                        ProgressRingView(
+                            percentage: percentage,
+                            size: 40,
+                            lineWidth: 3
+                        )
+                    }
                     
-                    // 课时数
-                    Text("\(course.totalLessons) 课时")
-                        .font(.caption2)
-                        .foregroundStyle(AppColors.tertiaryText)
+                    // 课时数 · 状态 text-[13px] muted-foreground mb-3
+                    HStack(spacing: 6) {
+                        Text("\(course.lessonCount) 课时")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        
+                        Text("·")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        
+                        Text(statusText)
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    // ProgressBar(md = h-1.5)
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(AppTheme.secondaryText.opacity(0.15))
+                                .frame(height: 5)
+                            
+                            RoundedRectangle(cornerRadius: 2)
+                                .fill(progressBarColor)
+                                .frame(width: geo.size.width * CGFloat(max(percentage, 0)) / 100, height: 5)
+                        }
+                    }
+                    .frame(height: 5)
+                    
+                    // 进度文本 text-[12px] right muted-foreground
+                    HStack {
+                        Spacer()
+                        Text("\(course.progress)/\(course.total) 课时")
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                }
+                .padding(16)
+            }
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 14))   // rounded-2xl
+            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 1)  // shadow-sm
+        }
+        .buttonStyle(IOSPressStyle())
+    }
+    
+    private var progressBarColor: Color {
+        if percentage >= 80 { return AppTheme.success }
+        else if percentage >= 50 { return AppTheme.accent }
+        else if percentage > 0 { return AppTheme.warning }
+        return AppTheme.secondaryText.opacity(0.3)
+    }
+}
+
+// MARK: - 课程详情页 (匹配 v0 CourseDetail 占位)
+struct CourseDetailView: View {
+    let course: CourseItemData
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            // NavBar 风格导航栏
+            HStack {
+                Button("← 返回") { dismiss() }
+                    .font(.system(size: 17))
+                    .foregroundStyle(AppTheme.accent)
+                Spacer()
+                Text(course.title)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(AppTheme.primaryText)
+                Spacer()
+                Color.clear.frame(width: 50)
+            }
+            .padding(16)
+            .background(Color.white)
+            
+            ScrollView {
+                VStack(spacing: 24) {
+                    Spacer().frame(height: 40)
+                    
+                    // 课程信息卡片
+                    VStack(spacing: 12) {
+                        Image(systemName: course.icon)
+                            .font(.system(size: 40))
+                            .foregroundStyle(course.color)
+                        
+                        Text(course.title)
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(AppTheme.primaryText)
+                        
+                        Text("\(course.lessonCount) 课时")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    .padding(24)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
+                    .padding(.horizontal, 16)
+                    
+                    // 章节占位
+                    ForEach(0..<min(course.total, 9), id: \.self) { index in
+                        HStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .stroke(index < course.progress ? AppTheme.accent : AppTheme.border, lineWidth: 1.5)
+                                    .frame(width: 28, height: 28)
+                                
+                                if index < course.progress {
+                                    Circle()
+                                        .fill(AppTheme.accent)
+                                        .frame(width: 18, height: 18)
+                                } else {
+                                    Text("\(index + 1)")
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundStyle(AppTheme.secondaryText)
+                                }
+                            }
+                            
+                            Text("第\(index + 1)课: \(course.title)基础内容")
+                                .font(.system(size: 15))
+                                .foregroundStyle(AppTheme.primaryText)
+                            
+                            Spacer()
+                            
+                            Image(systemName: index < course.progress ? "checkmark.circle.fill" : "play.circle")
+                                .font(.system(size: 20))
+                                .foregroundStyle(index < course.progress ? AppTheme.success : AppTheme.secondaryText)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                        .background(Color.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
                     
                     Spacer()
-                    
-                    // 进度圆点
-                    let progressPercent = Int(viewModel.calculateProgress(for: course) * 5)
-                    ProgressDots(total: 5, completed: progressPercent)
                 }
             }
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.caption)
-                .foregroundStyle(AppColors.tertiaryText)
         }
-        .padding(16)
-        .background(AppColors.cardBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
+        .background(AppTheme.background)
+        .navigationBarHidden(true)
     }
 }
 
-// MARK: - Preview
-
-#Preview {
-    CourseTab()
+// MARK: - 课程数据模型 (匹配 v0 原型数据)
+struct CourseItemData: Identifiable, Hashable {
+    let id: String
+    let title: String
+    let icon: String
+    let color: Color
+    let lessonCount: Int
+    let status: CourseStatus
+    let progress: Int
+    let total: Int
+    
+    enum CourseStatus: String {
+        case notStarted = "not-started"
+        case inProgress = "in-progress"
+        case completed = "completed"
+    }
+    
+    static let allCourses: [CourseItemData] = [
+        CourseItemData(
+            id: "music-theory",
+            title: "乐理基础",
+            icon: "book",
+            color: AppTheme.accent,                   // bg-primary
+            lessonCount: 9,
+            status: .inProgress,
+            progress: 4,
+            total: 9
+        ),
+        CourseItemData(
+            id: "sight-singing",
+            title: "视唱入门",
+            icon: "mic.fill",
+            color: AppTheme.Module.melody,            // bg-module-melody
+            lessonCount: 5,
+            status: .notStarted,
+            progress: 0,
+            total: 5
+        ),
+        CourseItemData(
+            id: "rhythm-course",
+            title: "节奏训练",
+            icon: "music.note",
+            color: AppTheme.Module.rhythm,            // bg-module-rhythm
+            lessonCount: 6,
+            status: .notStarted,
+            progress: 0,
+            total: 6
+        ),
+        CourseItemData(
+            id: "ear-training",
+            title: "听力训练",
+            icon: "headphones",
+            color: AppTheme.Module.pitch,             // bg-module-pitch
+            lessonCount: 5,
+            status: .notStarted,
+            progress: 0,
+            total: 5
+        )
+    ]
 }
+
+#Preview { CourseTab() }
