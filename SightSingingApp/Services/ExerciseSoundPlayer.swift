@@ -119,6 +119,37 @@ struct ExerciseSoundPlayer {
             playNote(name: noteName)
         }
     }
+
+    // MARK: - 按名称播放（确保音频与选项一致）
+
+    /// 根据中文音程名称播放对应音程（兜底方法，用于 QuestionBank 中找不到的名称）
+    static func fallbackPlayInterval(named name: String) {
+        let target = MusicTheoryInterval.allCases.first { $0.chineseName == name || $0.chineseName.contains(name) || name.contains($0.chineseName) }
+        if let interval = target {
+            playInterval(interval)
+        } else {
+            // 最终兜底：播放纯一度
+            playInterval(.unison)
+        }
+    }
+
+    /// 根据中文名称播放对应和弦
+    static func playChordNamed(_ name: String) {
+        let target: TriadQuality?
+        if name.contains("大三") { target = .major }
+        else if name.contains("小三") { target = .minor }
+        else if name.contains("减三") { target = .diminished }
+        else if name.contains("增三") { target = .augmented }
+        else if name.contains("大六") { target = .major }   // 大六和弦以大三为基础
+        else if name.contains("小六") { target = .minor }   // 小六和弦以小三为基础
+        else { target = nil }
+
+        if let quality = target {
+            playTriadQuality(quality)
+        } else {
+            playTriadQuality(.major)
+        }
+    }
 }
 
 // MARK: - 音程枚举

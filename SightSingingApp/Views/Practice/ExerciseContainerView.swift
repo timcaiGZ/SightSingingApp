@@ -200,22 +200,37 @@ struct ExerciseContainerView: View {
     }
 
     private func playCurrentExerciseAudio() {
-        guard currentQuestionData != nil else { return }
+        guard let qd = currentQuestionData else { return }
         switch exercise.mode {
         case .multipleChoice:
-            // 根据 moduleId 播对应的音程/和弦
-            if moduleId.contains("interval") || exercise.id.contains("interval") {
-                if let intervalQ = QuestionBank.intervalQuestions.randomElement(),
-                   let interval = MusicTheoryInterval.allCases.first(where: { $0.semitones == intervalQ.semitones }) {
-                    ExerciseSoundPlayer.playInterval(interval)
-                }
-            } else {
-                ExerciseSoundPlayer.playTriadQuality(TriadQuality.allCases.randomElement()!)
-            }
+            playMultipleChoiceAudio(correctName: qd.correctAnswer)
         case .keyboardInput:
             ExerciseSoundPlayer.playStandardSequence(noteName: currentCorrectAnswer)
         case .sightSinging:
             ExerciseSoundPlayer.playNote(name: currentCorrectAnswer)
+        }
+    }
+
+    /// 根据正确答案名称精确播放对应音程/和弦（确保声音与选项一致）
+    private func playMultipleChoiceAudio(correctName: String) {
+        let isIntervalModule = moduleId.contains("interval") || exercise.id.contains("interval")
+        let isChordModule = moduleId.contains("chord") || exercise.id.contains("chord") || exercise.id.contains("triad")
+
+        if isIntervalModule {
+            // 从正确名称反查对应的 IntervalQuestion → 播放
+            let target = QuestionBank.intervalQuestions.first { $0.name == correctName }
+            if let intervalQ = target,
+               let interval = MusicTheoryInterval.allCases.first(where: { $0.semitones == intervalQ.semitones }) {
+                ExerciseSoundPlayer.playInterval(interval)
+            } else {
+                // 兜底：按名称模糊匹配
+                ExerciseSoundPlayer.fallbackPlayInterval(named: correctName)
+            }
+        } else if isChordModule {
+            // 根据和弦名播放对应和弦
+            ExerciseSoundPlayer.playChordNamed(correctName)
+        } else {
+            // 节奏等其他类型暂无对应音频，静默处理
         }
     }
 
