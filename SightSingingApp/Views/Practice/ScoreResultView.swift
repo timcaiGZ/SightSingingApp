@@ -50,7 +50,7 @@ struct ScoreResultView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
                         .background(AppTheme.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
 
                 Button {
@@ -80,7 +80,7 @@ struct ScoreResultView: View {
             
             Text(title)
                 .font(.caption)
-                .foregroundStyle(AppColors.secondaryText)
+                .foregroundStyle(AppTheme.secondaryText)
         }
     }
     

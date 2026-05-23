@@ -34,9 +34,9 @@ struct ProfileTab: View {
                     ZStack {
                         Circle()
                             .fill(AppTheme.accent.opacity(0.15))
-                            .frame(width: 56, height: 56)
+                            .frame(width: 64, height: 64)
                         Image(systemName: "person.fill")
-                            .font(.system(size: 26))
+                            .font(.system(size: 32))
                             .foregroundStyle(AppTheme.accent)
                     }
                     
@@ -53,8 +53,8 @@ struct ProfileTab: View {
                 }
                 .padding(16)                                          // p-4
                 .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14))       // rounded-2xl
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(AppTheme.border, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 16))       // rounded-2xl
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.border, lineWidth: 0.5))
                 .padding(.horizontal, 16)
                 
                 // === 学习统计 bg-card rounded-2xl border overflow-hidden ===
@@ -88,8 +88,8 @@ struct ProfileTab: View {
                     }
                 }
                 .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(AppTheme.border, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.border, lineWidth: 0.5))
                 .padding(.horizontal, 16)
                 
                 // === 学习设置 bg-card rounded-2xl border overflow-hidden ===
@@ -140,8 +140,8 @@ struct ProfileTab: View {
                     .padding(.vertical, 12)
                 }
                 .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(AppTheme.border, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.border, lineWidth: 0.5))
                 .padding(.horizontal, 16)
                 
                 // === 通用设置 bg-card rounded-2xl border overflow-hidden ===
@@ -195,8 +195,8 @@ struct ProfileTab: View {
                     }
                 }
                 .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(AppTheme.border, lineWidth: 0.5))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.border, lineWidth: 0.5))
                 .padding(.horizontal, 16)
                 
                 // === 其他设置 bg-card rounded-2xl border ===
@@ -221,6 +221,7 @@ struct ProfileTab: View {
                     .font(.system(size: 13))
                     .foregroundStyle(AppTheme.tertiaryText)
                     .padding(.top, 8)
+                    .padding(.bottom, 16)
             }
             .padding(.bottom, 24)
         }

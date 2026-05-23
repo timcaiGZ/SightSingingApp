@@ -11,17 +11,24 @@ struct ExerciseLevelsPage: View {
     var body: some View {
         VStack(spacing: 0) {
             // 顶部导航
-            HStack {
-                Button(action: { dismiss() }) {
-                    HStack(spacing: 2) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 18, weight: .semibold))
-                        Text("返回")
-                            .font(.system(size: 15))
+            ZStack {
+                HStack {
+                    Button(action: { dismiss() }) {
+                        HStack(spacing: 2) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .semibold))
+                            Text("返回")
+                                .font(.system(size: 15))
+                        }
+                        .foregroundStyle(AppTheme.accent)
                     }
-                    .foregroundStyle(AppTheme.accent)
+                    Spacer()
                 }
-                Spacer()
+                
+                Text(exercise.title)
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(AppTheme.primaryText)
+                    .lineLimit(1)
             }
             .padding(.horizontal, 16)
             .frame(height: 44)
@@ -77,10 +84,20 @@ struct ExerciseLevelsPage: View {
     }
     
     private var modeForExercise: ExerciseMode {
-        switch categoryId {
-        case "singing": return .sightSinging
-        case "rhythm": return .multipleChoice
-        default: return .multipleChoice
+        switch exercise.id {
+        // 视唱类 → sightSinging
+        case "single-note-sing", "scale-sing", "interval-sing", "melody-sing":
+            return .sightSinging
+        // 键盘输入类 → keyboardInput
+        case "note-name-keyboard":
+            return .keyboardInput
+        // 节奏/音程/和弦 → multipleChoice
+        case "quarter-eighth", "rhythm-complex",
+             "ascending-interval", "descending-interval", "harmonic-interval",
+             "triad-identify", "chord-inversion", "seventh-chord":
+            return .multipleChoice
+        default:
+            return .multipleChoice
         }
     }
     

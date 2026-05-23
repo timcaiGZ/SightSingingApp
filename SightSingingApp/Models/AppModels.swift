@@ -172,12 +172,13 @@ struct CourseChapter: Identifiable, Hashable {
 struct TheoryCategoryData: Identifiable, Hashable {
     let id: String
     let title: String
+    let description: String  // v0: 分类描述文本
     let icon: String
     let color: Color
     let topics: [TheoryTopicData]
     
     static let allCategories: [TheoryCategoryData] = [
-        TheoryCategoryData(id: "basic", title: "基础乐理", icon: "book.fill", color: AppTheme.Theory.basic, topics: [
+        TheoryCategoryData(id: "basic", title: "基础乐理", description: "音符、节拍、拍号，搭建音乐的底层认知", icon: "book.fill", color: AppTheme.Theory.basic, topics: [
             TheoryTopicData(id: "notes", title: "认识音符", description: "音符的构成、时值关系"),
             TheoryTopicData(id: "pitch-names", title: "音名与唱名", description: "C-D-E-F-G-A-B 系统"),
             TheoryTopicData(id: "whole-half", title: "全音与半音", description: "吉他指板上的全半音关系"),
@@ -185,32 +186,32 @@ struct TheoryCategoryData: Identifiable, Hashable {
             TheoryTopicData(id: "beat-signature", title: "节拍与拍号", description: "4/4, 3/4, 6/8 等常见拍号"),
             TheoryTopicData(id: "rhythm-basics", title: "节奏基础", description: "基本节奏型和休止符")
         ]),
-        TheoryCategoryData(id: "notation", title: "识谱知识", icon: "music.note.list", color: AppTheme.Theory.notation, topics: [
+        TheoryCategoryData(id: "notation", title: "识谱知识", description: "五线谱、简谱、六线谱，轻松读懂各类记谱", icon: "music.note.list", color: AppTheme.Theory.notation, topics: [
             TheoryTopicData(id: "staff-intro", title: "五线谱入门", description: "五线谱构成与谱号"),
             TheoryTopicData(id: "solfege-intro", title: "简谱入门", description: "数字记谱法"),
             TheoryTopicData(id: "tab-reading", title: "六线谱识谱", description: "吉他专用谱表"),
             TheoryTopicData(id: "clef-key", title: "谱号与调号", description: "调号的识别与应用")
         ]),
-        TheoryCategoryData(id: "interval", title: "音程", icon: "square.stack.3d.up", color: AppTheme.Theory.interval, topics: [
+        TheoryCategoryData(id: "interval", title: "音程", description: "两音之间的距离，听辨的核心基础", icon: "square.stack.3d.up", color: AppTheme.Theory.interval, topics: [
             TheoryTopicData(id: "interval-concept", title: "音程的概念", description: "度数与音数"),
             TheoryTopicData(id: "guitar-intervals", title: "吉他常用音程", description: "纯一度到纯八度"),
             TheoryTopicData(id: "interval-quality", title: "音程的性质", description: "大、小、纯、增、减"),
             TheoryTopicData(id: "interval-hearing", title: "音程的听辨技巧", description: "协和与不协和音程")
         ]),
-        TheoryCategoryData(id: "chord", title: "和弦", icon: "pianokeys", color: AppTheme.Theory.chord, topics: [
+        TheoryCategoryData(id: "chord", title: "和弦", description: "多音叠置的色彩，弹唱的骨架所在", icon: "pianokeys", color: AppTheme.Theory.chord, topics: [
             TheoryTopicData(id: "triads", title: "三和弦", description: "大三、小三、增三、减三"),
             TheoryTopicData(id: "seventh-chords", title: "七和弦", description: "属七、大七、小七和弦", isSpecial: true),
             TheoryTopicData(id: "inversions", title: "和弦转位", description: "第一、第二转位"),
             TheoryTopicData(id: "guitar-chords", title: "吉他和弦指法", description: "开放和弦与横按和弦"),
             TheoryTopicData(id: "chord-hearing", title: "和弦听辨", description: "和弦色彩与进行")
         ]),
-        TheoryCategoryData(id: "mode", title: "调式", icon: "music.quaversign", color: AppTheme.Theory.mode, topics: [
+        TheoryCategoryData(id: "mode", title: "调式", description: "音阶的组织方式，决定音乐的情绪色彩", icon: "tuningfork", color: AppTheme.Theory.mode, topics: [
             TheoryTopicData(id: "major-scale", title: "大调音阶", description: "自然大调结构"),
             TheoryTopicData(id: "minor-scale", title: "小调音阶", description: "自然、和声、旋律小调"),
             TheoryTopicData(id: "mode-relation", title: "调式关系", description: "关系大小调", isSpecial: true),
             TheoryTopicData(id: "church-modes", title: "中古调式", description: "多利亚、弗里几亚等")
         ]),
-        TheoryCategoryData(id: "rhythm-theory", title: "节奏", icon: "metronome", color: AppTheme.Theory.rhythm, topics: [
+        TheoryCategoryData(id: "rhythm-theory", title: "节奏", description: "音乐的律动脉搏，让弹唱更有感觉", icon: "metronome", color: AppTheme.Theory.rhythm, topics: [
             TheoryTopicData(id: "time-signatures", title: "节拍与拍号", description: "单拍子、复拍子"),
             TheoryTopicData(id: "rhythm-patterns", title: "常用节奏型", description: "切分、附点节奏"),
             TheoryTopicData(id: "tuplets", title: "三连音与多连音", description: "连音的演奏"),

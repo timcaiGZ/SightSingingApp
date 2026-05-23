@@ -74,7 +74,7 @@ struct PracticeCategoryCard: View {
                         .fill(category.color)
                         .frame(width: 56, height: 56)
                     Image(systemName: category.systemImage)
-                        .font(.system(size: 24))
+                        .font(.system(size: 28))
                         .foregroundStyle(.white)
                 }
                 
@@ -104,10 +104,10 @@ struct PracticeCategoryCard: View {
                     HStack(spacing: 8) {
                         GeometryReader { geo in
                             ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 2)
+                                Capsule()
                                     .fill(AppTheme.secondaryBg)
                                     .frame(height: 6)
-                                RoundedRectangle(cornerRadius: 2)
+                                Capsule()
                                     .fill(category.color)
                                     .frame(width: geo.size.width * CGFloat(category.progress) / 100, height: 6)
                             }
@@ -128,9 +128,9 @@ struct PracticeCategoryCard: View {
             }
             .padding(16)
             .background(Color.white)
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .clipShape(RoundedRectangle(cornerRadius: 20))  // rounded-2xl
             .overlay(
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 20)  // rounded-2xl
                     .stroke(AppTheme.border, lineWidth: 1)
             )
         }
