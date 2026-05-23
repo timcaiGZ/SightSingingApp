@@ -49,7 +49,7 @@ struct SightSingingResultView: View {
                         score: pitchScore,
                         subtitle: "× 0.7",
                         icon: "waveform.path",
-                        color: AppColors.primary
+                        color: AppTheme.accent
                     )
 
                     ScoreCard(
@@ -92,10 +92,10 @@ struct SightSingingResultView: View {
                         .font(.headline)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        ScoreLegendItem(color: AppColors.success, label: "≤ 10 音分 — 优秀（90-100分）")
+                        ScoreLegendItem(color: AppTheme.success, label: "≤ 10 音分 — 优秀（90-100分）")
                         ScoreLegendItem(color: .yellow, label: "10-30 音分 — 良好（70-89分）")
                         ScoreLegendItem(color: .orange, label: "30-50 音分 — 及格（60-69分）")
-                        ScoreLegendItem(color: AppColors.error, label: "> 50 音分 — 不及格（0-59分）")
+                        ScoreLegendItem(color: AppTheme.error, label: "> 50 音分 — 不及格（0-59分）")
                     }
                 }
                 .padding()
@@ -115,8 +115,8 @@ struct SightSingingResultView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(AppColors.primary)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .background(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                     }
 
                     Button {
@@ -124,7 +124,7 @@ struct SightSingingResultView: View {
                     } label: {
                         Text("再练一次")
                             .font(.headline)
-                            .foregroundStyle(AppColors.primary)
+                            .foregroundStyle(AppTheme.accent)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .background(Color(.systemGray5))
@@ -182,10 +182,10 @@ private struct NoteScoreView: View {
 
     private var scoreColor: Color {
         switch score {
-        case 90...100: return AppColors.success
+        case 90...100: return AppTheme.success
         case 70..<90: return .yellow
         case 60..<70: return .orange
-        default: return AppColors.error
+        default: return AppTheme.error
         }
     }
 
@@ -259,10 +259,10 @@ private enum ScoreGrade {
 
     var color: Color {
         switch self {
-        case .excellent: return AppColors.success
+        case .excellent: return AppTheme.success
         case .good: return .yellow
         case .pass: return .orange
-        case .fail: return AppColors.error
+        case .fail: return AppTheme.error
         }
     }
 }

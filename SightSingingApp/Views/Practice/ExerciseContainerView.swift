@@ -77,7 +77,8 @@ struct ExerciseContainerView: View {
                                         selectedOption = answer
                                         showResult = true
                                     },
-                                    onPlay: { playCurrentExerciseAudio() }
+                                    onPlay: { playCurrentExerciseAudio() },
+                                    onNext: { nextQuestion() }
                                 )
                             }
 
@@ -322,6 +323,7 @@ struct MultipleChoiceContent: View {
     let correctAnswer: String
     let onAnswer: (String) -> Void
     let onPlay: () -> Void
+    let onNext: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
@@ -396,7 +398,7 @@ struct MultipleChoiceContent: View {
             // 下一题按钮
             if showResult {
                 Button {
-                    // handled by parent
+                    onNext()
                 } label: {
                     Text("下一题")
                         .font(.system(size: 17, weight: .semibold))
@@ -696,8 +698,17 @@ struct SightSingingContent: View {
 
     private func startSinging() {
         phase = .singing
+        var tick = 0
+        let totalTicks = 30
         timer = Timer.scheduledTimer(withTimeInterval: 0.08, repeats: true) { _ in
-            cents = Double.random(in: -44...44)
+            tick += 1
+            let progress = Double(tick) / Double(totalTicks)
+            let convergence = sin(progress * .pi * 0.7)
+            let noiseRange: Double = 35.0 * (1.0 - progress)
+            cents = convergence * Double.random(in: -noiseRange...noiseRange)
+            if tick >= totalTicks {
+                stopSinging()
+            }
         }
     }
 
