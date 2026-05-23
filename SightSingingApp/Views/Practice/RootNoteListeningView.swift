@@ -27,6 +27,18 @@ struct RootNoteListeningView: View {
     @State private var showNext = false
     @State private var showComplete = false
 
+    // MARK: - 多轮练习追踪
+    @State private var roundNumber = 1
+    @State private var roundResults: [RootRoundResult] = []
+
+    struct RootRoundResult: Identifiable {
+        let id = UUID()
+        let round: Int
+        let correctCount: Int
+        let totalQuestions: Int
+        var accuracy: Int { Int(Double(correctCount) / Double(totalQuestions) * 100) }
+    }
+
     enum AnswerState {
         case idle, correct, wrong
     }
@@ -145,9 +157,11 @@ struct RootNoteListeningView: View {
             // 完成覆盖层
             if showComplete {
                 ExerciseCompletionOverlay(
+                    roundNumber: roundNumber,
                     correctCount: correctCount,
                     totalQuestions: totalQuestions,
-                    onRetry: handleRetryRound,
+                    roundResults: roundResults.map { RoundSummaryItem(round: $0.round, correctCount: $0.correctCount, totalQuestions: $0.totalQuestions) },
+                    onContinue: handleContinueRound,
                     onBack: { dismiss() }
                 )
                 .transition(.opacity)
@@ -163,6 +177,12 @@ struct RootNoteListeningView: View {
 
     private func goNext() {
         if questionCount >= totalQuestions {
+            // 记录本轮成绩
+            roundResults.append(RootRoundResult(
+                round: roundNumber,
+                correctCount: correctCount,
+                totalQuestions: totalQuestions
+            ))
             withAnimation { showComplete = true }
             return
         }
@@ -218,7 +238,24 @@ struct RootNoteListeningView: View {
         generator.impactOccurred()
     }
 
+    private func handleContinueRound() {
+        // 保留历史记录，进入下一轮
+        roundNumber += 1
+        questionCount = 0
+        correctCount = 0
+        inputNotes = []
+        selectedNoteName = nil
+        selectedAccidental = .natural
+        answerState = .idle
+        showNext = false
+        showComplete = false
+        generateNewQuestion()
+    }
+
     private func handleRetryRound() {
+        // 完全重置，清空所有轮次记录
+        roundNumber = 1
+        roundResults.removeAll()
         questionCount = 0
         correctCount = 0
         inputNotes = []

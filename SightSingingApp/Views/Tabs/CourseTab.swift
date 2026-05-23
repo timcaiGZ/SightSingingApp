@@ -237,7 +237,7 @@ struct CourseDetailView: View {
             }
         }
         .background(AppTheme.background)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .fullScreenCover(item: $selectedLesson) { lesson in
             ExerciseContainerView(
                 exercise: ExerciseItem(

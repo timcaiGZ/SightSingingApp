@@ -18,6 +18,19 @@ struct SingleNoteListeningView: View {
     @State private var showComplete = false
     @State private var currentAnswer: NoteNameQuestion?
 
+    // 多轮练习追踪
+    @State private var roundNumber = 1
+    @State private var roundResults: [SingleRoundResult] = []
+
+    /// 单轮成绩记录（SingleNoteListeningView 专用）
+    struct SingleRoundResult: Identifiable {
+        let id = UUID()
+        let round: Int
+        let correctCount: Int
+        let totalQuestions: Int
+        var accuracy: Int { Int(Double(correctCount) / Double(totalQuestions) * 100) }
+    }
+
     enum AnswerState {
         case idle, correct, wrong
     }
@@ -74,21 +87,35 @@ struct SingleNoteListeningView: View {
             // 完成覆盖层
             if showComplete {
                 ExerciseCompletionOverlay(
+                    roundNumber: roundNumber,
                     correctCount: correctCount,
                     totalQuestions: totalQuestions,
-                    onRetry: handleRetryRound,
+                    roundResults: roundResults.map { RoundSummaryItem(round: $0.round, correctCount: $0.correctCount, totalQuestions: $0.totalQuestions) },
+                    onContinue: handleContinueRound,
                     onBack: { dismiss() }
                 )
                 .transition(.opacity)
             }
         }
-        .onAppear { generateNewQuestion() }
+        .onAppear {
+            generateNewQuestion()
+            // 延迟 1.5 秒自动播放第一题
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                handleReplay()
+            }
+        }
     }
 
     // MARK: - Actions
 
     private func goNext() {
         if currentQuestion >= totalQuestions {
+            // 记录本轮成绩
+            roundResults.append(SingleRoundResult(
+                round: roundNumber,
+                correctCount: correctCount,
+                totalQuestions: totalQuestions
+            ))
             withAnimation { showComplete = true }
             return
         }
@@ -98,6 +125,10 @@ struct SingleNoteListeningView: View {
         showNext = false
         currentQuestion += 1
         generateNewQuestion()
+        // 自动播放新题目
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            handleReplay()
+        }
     }
 
     private func handleNewQuestion() {
@@ -128,10 +159,16 @@ struct SingleNoteListeningView: View {
         let expectedNote = q.noteName
         let ok = last == expectedNote
         answerState = ok ? .correct : .wrong
-        showNext = true
         if ok {
             correctCount += 1
             score += 10
+            // 答对：短暂显示正确反馈后自动进入下一题
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                goNext()
+            }
+        } else {
+            // 答错：显示"下一题"按钮，用户手动点击
+            showNext = true
         }
     }
 
@@ -142,7 +179,9 @@ struct SingleNoteListeningView: View {
         currentAnswer = pool.randomElement()
     }
 
-    private func handleRetryRound() {
+    /// 继续下一轮（保留历史记录）
+    private func handleContinueRound() {
+        roundNumber += 1
         currentQuestion = 1
         correctCount = 0
         score = 0
@@ -151,6 +190,28 @@ struct SingleNoteListeningView: View {
         showNext = false
         showComplete = false
         generateNewQuestion()
+        // 自动播放新轮次第一题
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            handleReplay()
+        }
+    }
+
+    /// 完全重置（清空轮次，从第1轮开始）
+    private func handleRetryRound() {
+        roundNumber = 1
+        currentQuestion = 1
+        correctCount = 0
+        score = 0
+        inputNotes = []
+        answerState = .idle
+        showNext = false
+        showComplete = false
+        roundResults.removeAll()
+        generateNewQuestion()
+        // 自动播放第一题
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            handleReplay()
+        }
     }
 }
 
@@ -452,16 +513,36 @@ struct TabSolfegeDisplay: View {
     }
 }
 
-// MARK: - 练习完成覆盖层
+// MARK: - 通用单轮成绩记录（供 ExerciseCompletionOverlay 使用）
 
-struct ExerciseCompletionOverlay: View {
+struct RoundSummaryItem: Identifiable {
+    let id = UUID()
+    let round: Int
     let correctCount: Int
     let totalQuestions: Int
-    let onRetry: () -> Void
+    var accuracy: Int { Int(Double(correctCount) / Double(totalQuestions) * 100) }
+}
+
+// MARK: - 练习完成覆盖层（支持多轮连续练习）
+
+struct ExerciseCompletionOverlay: View {
+    let roundNumber: Int
+    let correctCount: Int
+    let totalQuestions: Int
+    let roundResults: [RoundSummaryItem]
+    let onContinue: () -> Void
     let onBack: () -> Void
 
     private var percentage: Int {
         Int(Double(correctCount) / Double(totalQuestions) * 100)
+    }
+
+    /// 根据正确率返回颜色
+    private func colorForAccuracy(_ acc: Int) -> Color {
+        if acc >= 90 { return AppTheme.success }
+        if acc >= 70 { return AppTheme.accent }
+        if acc >= 50 { return AppTheme.warning }
+        return AppTheme.error
     }
 
     var body: some View {
@@ -469,51 +550,126 @@ struct ExerciseCompletionOverlay: View {
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-                Text("练习完成")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(AppTheme.primaryText)
+            ScrollView {
+                VStack(spacing: 20) {
+                    // === 头部 ===
+                    Text("练习完成")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(AppTheme.primaryText)
 
-                VStack(spacing: 8) {
-                    Text("\(correctCount)/\(totalQuestions)")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundStyle(AppTheme.accent)
-
-                    Text("正确率 \(percentage)%")
-                        .font(.system(size: 15))
+                    // 轮次标签
+                    Text("第 \(roundNumber) 轮")
+                        .font(.system(size: 14))
                         .foregroundStyle(AppTheme.secondaryText)
-                }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                        .background(AppTheme.secondaryBg)
+                        .clipShape(Capsule())
 
-                VStack(spacing: 12) {
-                    Button {
-                        onRetry()
-                    } label: {
-                        Text("重新练习")
-                            .font(.system(size: 17, weight: .semibold))
+                    // 本轮成绩大字展示
+                    VStack(spacing: 8) {
+                        Text("\(correctCount)/\(totalQuestions)")
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundStyle(colorForAccuracy(percentage))
+
+                        Text("正确率 \(percentage)%")
+                            .font(.system(size: 15))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+
+                    // === 历史轮次汇总（2轮以上显示）===
+                    if roundResults.count > 1 {
+                        Divider()
+                            .padding(.horizontal, 20)
+
+                        historyRoundsList
+                    }
+
+                    // === 按钮 ===
+                    VStack(spacing: 12) {
+                        Button {
+                            onContinue()
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text("继续练习")
+                                    .font(.system(size: 17, weight: .semibold))
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .font(.system(size: 18))
+                            }
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .background(AppTheme.accent)
                             .clipShape(RoundedRectangle(cornerRadius: 18))
-                    }
-                    .buttonStyle(.plain)
+                        }
+                        .buttonStyle(.plain)
 
-                    Button {
-                        onBack()
-                    } label: {
-                        Text("返回")
-                            .font(.system(size: 17))
-                            .foregroundStyle(AppTheme.secondaryText)
+                        Button {
+                            onBack()
+                        } label: {
+                            Text("结束练习，返回")
+                                .font(.system(size: 15))
+                                .foregroundStyle(AppTheme.secondaryText)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
+                }
+                .padding(28)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
+                .padding(.horizontal, 36)
+            }
+        }
+    }
+
+    // MARK: - 历史轮次列表
+
+    @ViewBuilder
+    private var historyRoundsList: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 4) {
+                Image(systemName: "chart.bar.xaxis")
+                    .font(.system(size: 13))
+                    .foregroundStyle(AppTheme.accent)
+                Text("已练 \(roundResults.count) 轮")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(AppTheme.primaryText)
+            }
+
+            ForEach(roundResults) { result in
+                HStack(spacing: 10) {
+                    Text("第\(result.round)轮")
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .frame(width: 44, alignment: .trailing)
+
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(AppTheme.mutedBackground)
+                                .frame(height: 12)
+
+                            RoundedRectangle(cornerRadius: 3)
+                                .fill(colorForAccuracy(result.accuracy).opacity(0.75))
+                                .frame(width: max(4, geo.size.width * Double(result.accuracy) / 100), height: 12)
+
+                            Text("\(result.accuracy)%")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .offset(x: min(
+                                    geo.size.width * Double(result.accuracy) / 100 - 16,
+                                    geo.size.width - 32
+                                ))
+                        }
+                    }
+                    .frame(height: 12)
                 }
             }
-            .padding(32)
-            .background(AppTheme.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 24))
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
-            .padding(.horizontal, 40)
         }
+        .padding(14)
+        .background(AppTheme.mutedBackground.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
 

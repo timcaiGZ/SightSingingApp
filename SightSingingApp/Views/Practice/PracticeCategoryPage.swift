@@ -80,7 +80,7 @@ struct PracticeCategoryPage: View {
             }
         }
         .background(AppTheme.background)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $selectedExercise) { exercise in
             if exercise.id == "single-note" {
                 // 单音辨认使用专用页面（匹配 v0 SingleNoteExercise）

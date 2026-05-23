@@ -33,7 +33,7 @@ final class TestEngineTests: XCTestCase {
 
         for question in questions {
             answers[question.id] = question.correctAnswerIndex
-            responseTimes[question.id] = 1.0
+            responseTimes[question.id] = 0.0  // 瞬间反应 = 满分
         }
 
         let result = TestEngine.calculateResult(
@@ -42,7 +42,8 @@ final class TestEngineTests: XCTestCase {
             responseTimes: responseTimes
         )
 
-        XCTAssertEqual(result.totalScore, 100, "全对时应得100分")
+        // 得分公式: 正确率×0.7 + (1-归一化时间)×0.3, 0s响应=100分
+        XCTAssertEqual(result.totalScore, 100, "全对+0秒响应应得100分")
     }
 
     func testCalculateResult_AllWrong() {
@@ -54,7 +55,7 @@ final class TestEngineTests: XCTestCase {
             // 选一个错误的答案
             let wrongAnswer = (question.correctAnswerIndex + 1) % question.options.count
             answers[question.id] = wrongAnswer
-            responseTimes[question.id] = 2.0
+            responseTimes[question.id] = 5.0  // 慢速响应
         }
 
         let result = TestEngine.calculateResult(
@@ -63,6 +64,7 @@ final class TestEngineTests: XCTestCase {
             responseTimes: responseTimes
         )
 
+        // 全错 = 0分 (正确率0, 时间分也为0)
         XCTAssertEqual(result.totalScore, 0, "全错时应得0分")
     }
 }

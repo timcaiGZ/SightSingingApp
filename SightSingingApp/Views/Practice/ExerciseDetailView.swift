@@ -18,6 +18,19 @@ struct ExerciseDetailView: View {
     @State private var showResult = false
     @State private var showComplete = false
 
+    // 多轮练习追踪
+    @State private var roundNumber = 1
+    @State private var roundResults: [DetailRoundResult] = []
+
+    /// 单轮成绩记录（ExerciseDetailView 专用）
+    struct DetailRoundResult: Identifiable {
+        let id = UUID()
+        let round: Int
+        let correctCount: Int
+        let totalQuestions: Int
+        var accuracy: Int { Int(Double(correctCount) / Double(totalQuestions) * 100) }
+    }
+
     @State private var currentQuestionData: QuestionData = QuestionData(displayContent: "点击播放", displayLabel: "加载中...", options: [], correctAnswer: "")
 
     private var showDecompose: Bool {
@@ -104,9 +117,11 @@ struct ExerciseDetailView: View {
             // 完成覆盖层
             if showComplete {
                 ExerciseCompletionOverlay(
+                    roundNumber: roundNumber,
                     correctCount: correctCount,
                     totalQuestions: totalQuestions,
-                    onRetry: handleRetryRound,
+                    roundResults: roundResults.map { RoundSummaryItem(round: $0.round, correctCount: $0.correctCount, totalQuestions: $0.totalQuestions) },
+                    onContinue: handleContinueRound,
                     onBack: { dismiss() }
                 )
                 .transition(.opacity)
@@ -136,6 +151,12 @@ struct ExerciseDetailView: View {
 
     private func goNext() {
         if currentQuestion >= totalQuestions {
+            // 记录本轮成绩
+            roundResults.append(DetailRoundResult(
+                round: roundNumber,
+                correctCount: correctCount,
+                totalQuestions: totalQuestions
+            ))
             withAnimation { showComplete = true }
             return
         }
@@ -149,13 +170,27 @@ struct ExerciseDetailView: View {
         if showResult { goNext() }
     }
 
-    private func handleRetryRound() {
+    /// 继续下一轮（保留历史记录）
+    private func handleContinueRound() {
+        roundNumber += 1
         currentQuestion = 1
         correctCount = 0
         score = 0
         selectedOption = nil
         showResult = false
         showComplete = false
+        generateQuestionFromBank()
+    }
+
+    private func handleRetryRound() {
+        roundNumber = 1
+        currentQuestion = 1
+        correctCount = 0
+        score = 0
+        selectedOption = nil
+        showResult = false
+        showComplete = false
+        roundResults.removeAll()
         generateQuestionFromBank()
     }
 

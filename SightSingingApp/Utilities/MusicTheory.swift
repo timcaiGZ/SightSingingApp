@@ -139,7 +139,9 @@ struct MusicTheory {
 
     /// 计算两个 MIDI note 之间的音分（cents）
     static func centsBetween(_ note1: Int, _ note2: Int) -> Double {
-        1200.0 * log2(Double(note2) / Double(note1))
+        let freq1 = frequencyFromMIDI(note1)
+        let freq2 = frequencyFromMIDI(note2)
+        return 1200.0 * log2(freq2 / freq1)
     }
 
     /// 从频率计算音分偏差

@@ -12,6 +12,19 @@ struct ExerciseContainerView: View {
     @State private var correctCount = 0
     @State private var isCompleted = false
 
+    // 多轮练习追踪
+    @State private var roundNumber = 1                    // 当前轮次（从1开始）
+    @State private var roundResults: [RoundResult] = []   // 每轮成绩记录
+
+    /// 单轮成绩记录
+    struct RoundResult: Identifiable {
+        let id = UUID()
+        let round: Int
+        let correctCount: Int
+        let totalQuestions: Int
+        var accuracy: Int { Int(Double(correctCount) / Double(totalQuestions) * 100) }
+    }
+
     // 选择题状态
     @State private var selectedOption: String?
     @State private var showResult = false
@@ -43,6 +56,18 @@ struct ExerciseContainerView: View {
 
     private var totalQuestions: Int { exercise.totalQuestions }
 
+    /// 累计统计（所有轮次合计）
+    private var totalCorrectOverall: Int { roundResults.reduce(0) { $0 + $1.correctCount } }
+    private var totalQuestionsOverall: Int { roundResults.count * totalQuestions }
+    private var averageAccuracy: Int {
+        guard !roundResults.isEmpty else { return 0 }
+        return roundResults.reduce(0) { $0 + $1.accuracy } / roundResults.count
+    }
+    /// 最佳轮次正确率
+    private var bestRoundAccuracy: Int {
+        roundResults.map(\.accuracy).max() ?? 0
+    }
+
     // MARK: - Body (匹配 v0 ExerciseContainer 结构)
 
     var body: some View {
@@ -53,9 +78,13 @@ struct ExerciseContainerView: View {
             // 内容区域 (匹配 v0: flex-1 px-4 overflow-auto)
             if isCompleted {
                 ExerciseCompletionView(
+                    roundNumber: roundNumber,
                     correctCount: correctCount,
                     totalQuestions: totalQuestions,
-                    onRetry: resetExercise,
+                    roundResults: roundResults,
+                    averageAccuracy: averageAccuracy,
+                    bestRoundAccuracy: bestRoundAccuracy,
+                    onContinue: continueToNextRound,
                     onBack: { dismiss() }
                 )
             } else {
@@ -120,7 +149,7 @@ struct ExerciseContainerView: View {
             }
         }
         .background(AppTheme.background)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .onAppear {
             generateNewQuestion()
         }
@@ -508,6 +537,12 @@ struct ExerciseContainerView: View {
 
     private func nextQuestion() {
         if currentQuestion >= totalQuestions {
+            // 记录本轮成绩
+            roundResults.append(RoundResult(
+                round: roundNumber,
+                correctCount: correctCount,
+                totalQuestions: totalQuestions
+            ))
             withAnimation {
                 isCompleted = true
             }
@@ -527,10 +562,23 @@ struct ExerciseContainerView: View {
         generateNewQuestion()
     }
 
-    private func resetExercise() {
+    /// 继续下一轮练习（保留历史轮次记录）
+    private func continueToNextRound() {
+        roundNumber += 1
         currentQuestion = 1
         correctCount = 0
+        pitchScore = 0
+        rhythmScore = 0
         isCompleted = false
+        resetQuestionState()
+    }
+
+    /// 完全重置（清空所有轮次记录，重新从第1轮开始）
+    private func resetExercise() {
+        roundNumber = 1
+        correctCount = 0
+        isCompleted = false
+        roundResults.removeAll()
         resetQuestionState()
     }
 }
@@ -972,12 +1020,16 @@ struct SightSingingContent: View {
     }
 }
 
-// MARK: - 练习完成视图 (匹配 v0 ExerciseCompletionOverlay)
+// MARK: - 练习总结视图（每组10题完成后展示，支持多轮连续练习）
 
 struct ExerciseCompletionView: View {
+    let roundNumber: Int
     let correctCount: Int
     let totalQuestions: Int
-    let onRetry: () -> Void
+    let roundResults: [ExerciseContainerView.RoundResult]
+    let averageAccuracy: Int
+    let bestRoundAccuracy: Int
+    let onContinue: () -> Void
     let onBack: () -> Void
 
     private var accuracy: Int {
@@ -991,25 +1043,50 @@ struct ExerciseCompletionView: View {
         return "📚"
     }
 
+    private var gradeTitle: String {
+        if accuracy >= 90 { return "表现出色！" }
+        if accuracy >= 70 { return "做得不错！" }
+        if accuracy >= 50 { return "继续加油！" }
+        return "多多练习！"
+    }
+
+    /// 根据正确率返回颜色
+    private func colorForAccuracy(_ acc: Int) -> Color {
+        if acc >= 90 { return AppTheme.success }
+        if acc >= 70 { return AppTheme.accent }
+        if acc >= 50 { return AppTheme.warning }
+        return AppTheme.error
+    }
+
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                Spacer().frame(height: 20)
+            VStack(spacing: 20) {
+                Spacer().frame(height: 16)
 
+                // === 本轮结果头部 ===
                 Text(gradeEmoji)
                     .font(.system(size: 48))
 
-                Text("练习完成!")
+                Text(gradeTitle)
                     .font(.system(size: 22, weight: .bold))
                     .foregroundStyle(AppTheme.primaryText)
 
-                // 结果卡片
+                // 轮次标签
+                Text("第 \(roundNumber) 轮")
+                    .font(.system(size: 14))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(AppTheme.secondaryBg)
+                    .clipShape(Capsule())
+
+                // === 本轮成绩卡片 ===
                 HStack(spacing: 24) {
                     VStack(spacing: 6) {
                         Text("\(correctCount)/\(totalQuestions)")
                             .font(.system(size: 32, weight: .bold))
                             .foregroundStyle(AppTheme.success)
-                        Text("正确")
+                        Text("答对题数")
                             .font(.system(size: 13))
                             .foregroundStyle(AppTheme.secondaryText)
                     }
@@ -1021,7 +1098,7 @@ struct ExerciseCompletionView: View {
                     VStack(spacing: 6) {
                         Text("\(accuracy)%")
                             .font(.system(size: 32, weight: .bold))
-                            .foregroundStyle(AppTheme.accent)
+                            .foregroundStyle(colorForAccuracy(accuracy))
                         Text("正确率")
                             .font(.system(size: 13))
                             .foregroundStyle(AppTheme.secondaryText)
@@ -1033,21 +1110,32 @@ struct ExerciseCompletionView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
 
-                // 按钮
+                // === 历史轮次汇总（有2轮以上才显示）===
+                if roundResults.count > 1 {
+                    historySummarySection
+                }
+
+                // === 操作按钮 ===
                 VStack(spacing: 12) {
-                    Button(action: onRetry) {
-                        Text("再来一轮")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundStyle(.white)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
-                            .background(AppTheme.accent)
-                            .clipShape(RoundedRectangle(cornerRadius: 18))
+                    // 主要操作：继续下一轮
+                    Button(action: onContinue) {
+                        HStack(spacing: 6) {
+                            Text("继续练习")
+                                .font(.system(size: 17, weight: .semibold))
+                            Image(systemName: "arrow.right.circle.fill")
+                                .font(.system(size: 18))
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
                     .buttonStyle(IOSPressStyle())
 
+                    // 次要操作：返回
                     Button(action: onBack) {
-                        Text("返回")
+                        Text("结束练习，返回")
                             .font(.system(size: 17, weight: .medium))
                             .foregroundStyle(AppTheme.primaryText)
                             .frame(maxWidth: .infinity)
@@ -1062,6 +1150,112 @@ struct ExerciseCompletionView: View {
             }
             .padding(16)
         }
+    }
+
+    // MARK: - 历史轮次汇总区域
+
+    @ViewBuilder
+    private var historySummarySection: some View {
+        VStack(spacing: 14) {
+            // 汇总标题行
+            HStack {
+                Image(systemName: "chart.bar.xaxis")
+                    .font(.system(size: 14))
+                    .foregroundStyle(AppTheme.accent)
+                Text("已练 \(roundResults.count) 轮 · 累计统计")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundStyle(AppTheme.primaryText)
+                Spacer()
+            }
+
+            // 三项汇总指标
+            HStack(spacing: 12) {
+                summaryCard(
+                    title: "平均正确率",
+                    value: "\(averageAccuracy)%",
+                    icon: "chart.line.uptrend.xyaxis",
+                    color: averageAccuracy >= 70 ? AppTheme.accent : AppTheme.warning
+                )
+                summaryCard(
+                    title: "最佳单轮",
+                    value: "\(bestRoundAccuracy)%",
+                    icon: "trophy.fill",
+                    color: AppTheme.success
+                )
+                summaryCard(
+                    title: "总答题数",
+                    value: "\(roundResults.count * totalQuestions)",
+                    icon: "list.bullet",
+                    color: AppTheme.secondaryText
+                )
+            }
+
+            // 各轮成绩条形图
+            VStack(spacing: 8) {
+                ForEach(roundResults) { result in
+                    HStack(spacing: 10) {
+                        Text("第\(result.round)轮")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .frame(width: 44, alignment: .trailing)
+
+                        GeometryReader { geometry in
+                            ZStack(alignment: .leading) {
+                                // 背景轨道
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(AppTheme.mutedBackground)
+                                    .frame(height: 16)
+
+                                // 填充进度
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(colorForAccuracy(result.accuracy).opacity(0.8))
+                                    .frame(
+                                        width: max(4, geometry.size.width * Double(result.accuracy) / 100),
+                                        height: 16
+                                    )
+
+                                // 百分比文字
+                                Text("\(result.accuracy)%")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .offset(x: min(
+                                        geometry.size.width * Double(result.accuracy) / 100 - 18,
+                                        geometry.size.width - 36
+                                    ), y: 0)
+                            }
+                        }
+                        .frame(height: 16)
+                    }
+                }
+            }
+            .padding(14)
+            .background(AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.border.opacity(0.5), lineWidth: 0.5))
+        }
+        .padding(16)
+        .background(AppTheme.secondaryBg.opacity(0.3))
+        .clipShape(RoundedRectangle(cornerRadius: 24))
+    }
+
+    /// 汇总小卡片
+    private func summaryCard(title: String, value: String, icon: String, color: Color) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 18))
+                .foregroundStyle(color)
+            Text(value)
+                .font(.system(size: 20, weight: .bold))
+                .foregroundStyle(AppTheme.primaryText)
+            Text(title)
+                .font(.system(size: 11))
+                .foregroundStyle(AppTheme.secondaryText)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 12)
+        .background(AppTheme.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
     }
 }
 

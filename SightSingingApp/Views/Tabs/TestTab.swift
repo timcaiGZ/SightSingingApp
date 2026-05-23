@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Tab 3 测试中心 (匹配 v0 原型: 标题28px + 3列统计卡片 + 可用测试列表)
+// MARK: - Tab 3 测试 (标题34px + 3列统计卡片 + 可用测试列表)
 struct TestTab: View {
     @State private var selectedTest: TestItemData?
     
@@ -16,13 +16,13 @@ struct TestTab: View {
         NavigationStack {
         ScrollView {
             VStack(spacing: 16) {
-                // === 页面标题 28px bold + 副标题 ===
+                // === 页面标题 34px bold + 副标题 ===
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("测试中心")
-                        .font(.system(size: 28, weight: .bold))
+                    Text("测试")
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(AppTheme.primaryText)
                     Text("轻松视唱练耳，自由畅快弹唱")
-                        .font(.system(size: 14))
+                        .font(.system(size: 15))
                         .foregroundStyle(AppTheme.secondaryText)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -215,7 +215,7 @@ struct TestRowView: View {
     }
 }
 
-// MARK: - 测试容器视图 (匹配 v0 test-session: ExerciseLayout + AudioPromptCard + ChoiceList)
+// MARK: - 测试容器视图 (四级页面：匹配 v0 test-session + 设计文档 ExerciseResultPage)
 struct TestContainerView: View {
     let test: TestItemData
     @Environment(\.dismiss) private var dismiss
@@ -226,6 +226,9 @@ struct TestContainerView: View {
     @State private var selectedOption: String?
     @State private var showResult = false
     @State private var startTime = Date()
+    @State private var comboCount = 0
+    @State private var maxCombo = 0
+    @State private var answeredCount = 0
 
     // TestEngine 生成的题目
     @State private var questions: [TestQuestion] = []
@@ -241,6 +244,9 @@ struct TestContainerView: View {
     private var questionPrompt: String {
         currentTestQuestion?.prompt ?? "请听辨音频，选择正确的答案。"
     }
+    private var elapsedMinutes: Int {
+        max(1, Int(Date().timeIntervalSince(startTime) / 60))
+    }
 
     var body: some View {
         ZStack {
@@ -249,8 +255,9 @@ struct TestContainerView: View {
                     score: score,
                     correctCount: correctCount,
                     totalQuestions: questions.count,
-                    timeSpent: Int(Date().timeIntervalSince(startTime) / 60),
-                    onViewAnalysis: {},
+                    timeSpent: elapsedMinutes,
+                    maxCombo: maxCombo,
+                    onRetry: { resetAndStart() },
                     onBack: { dismiss() }
                 )
             } else {
@@ -261,9 +268,14 @@ struct TestContainerView: View {
                     questionText: questionPrompt,
                     score: score,
                     showDecompose: false,
-                    onBack: { dismiss() },
+                    onBack: {
+                        dismiss()
+                    },
                     onNewQuestion: {
-                        if showResult { nextQuestion() }
+                        // "新问题"按钮：跳过当前题（计为错误）
+                        if !showResult {
+                            handleSkip()
+                        }
                     },
                     onReplay: {
                         playCurrentAudio()
@@ -271,6 +283,22 @@ struct TestContainerView: View {
                     replayLabel: "重听"
                 ) {
                     VStack(spacing: 16) {
+                        // 连击显示
+                        if comboCount > 1 {
+                            HStack(spacing: 4) {
+                                Image(systemName: "flame.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundStyle(AppTheme.warning)
+                                Text("连击 \(comboCount)")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(AppTheme.warning)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(AppTheme.warning.opacity(0.1))
+                            .clipShape(Capsule())
+                        }
+                        
                         AudioPromptCard(
                             label: "点击播放",
                             hint: "听辨音频",
@@ -295,28 +323,66 @@ struct TestContainerView: View {
             questions = TestEngine.generateDiagnosticTest()
             if !questions.isEmpty {
                 currentTestQuestion = questions[0]
+                // 自动播放第一题
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    playCurrentAudio()
+                }
             }
         }
     }
 
+    // MARK: - 根据题目类型播放正确音频
+    
     private func playCurrentAudio() {
-        guard let q = currentTestQuestion else { return }
-        // 根据维度播放对应音频
-        if let module = q.dimensionValue {
-            switch module {
-            case .chord:
-                ExerciseSoundPlayer.playTriadQuality(TriadQuality.random)
-            case .interval:
-                if let interval = MusicTheoryInterval.allCases.randomElement() {
+        guard let q = currentTestQuestion, let module = q.dimensionValue else { return }
+        
+        // 使用题目的 audioNote 数据播放实际音频
+        let audioNote = q.audioNote
+        
+        switch module {
+        case .noteName:
+            // audioNote 是简谱数字，需要转换为音名
+            let solfegeToNote: [String: String] = ["1": "C", "2": "D", "3": "E", "4": "F", "5": "G", "6": "A", "7": "B"]
+            let noteName = solfegeToNote[audioNote] ?? "C"
+            if let question = QuestionBank.noteNameQuestions.first(where: { $0.noteName == noteName }) {
+                ExerciseSoundPlayer.playStandardSequence(noteName: "\(question.noteName)\(question.octave)")
+            } else {
+                ExerciseSoundPlayer.playNote(name: noteName)
+            }
+            
+        case .interval:
+            // audioNote 是音程简称，如 "M2", "m3", "P5"
+            if let intervalQuestion = QuestionBank.intervalQuestions.first(where: { $0.shortName == audioNote }) {
+                let interval = MusicTheoryInterval.allCases.first {
+                    $0.semitones == intervalQuestion.semitones
+                }
+                if let interval = interval {
                     ExerciseSoundPlayer.playInterval(interval)
                 }
-            case .noteName:
-                if let note = QuestionBank.noteNameQuestions.randomElement() {
-                    ExerciseSoundPlayer.playStandardSequence(noteName: "\(note.noteName)\(note.octave)")
-                }
-            default:
+            } else {
+                ExerciseSoundPlayer.playInterval(.majorSecond)
+            }
+            
+        case .chord:
+            // audioNote 是和弦名，如 "C", "Am"
+            let chordName = audioNote.replacingOccurrences(of: "(大横按)", with: "")
+            if let chord = MusicTheory.openChords.first(where: { $0.name == chordName }) {
+                ExerciseSoundPlayer.playChordNamed(chord.name)
+            } else {
+                ExerciseSoundPlayer.playTriadQuality(TriadQuality.random)
+            }
+            
+        case .scale:
+            if let question = QuestionBank.scaleQuestions.first(where: { $0.name == audioNote }) {
+                let solfegeToNote: [String: String] = ["1": "C", "2": "D", "3": "E", "4": "F", "5": "G", "6": "A", "7": "B"]
+                let noteName = solfegeToNote[question.root] ?? "C"
+                ExerciseSoundPlayer.playNote(name: noteName)
+            } else {
                 ExerciseSoundPlayer.playReference()
             }
+            
+        case .melody, .rhythm:
+            ExerciseSoundPlayer.playReference()
         }
     }
 
@@ -324,54 +390,227 @@ struct TestContainerView: View {
         guard !showResult else { return }
         selectedOption = option
         showResult = true
+        answeredCount += 1
+        
         if option == correctAnswer {
             correctCount += 1
             score += 10
+            comboCount += 1
+            maxCombo = max(maxCombo, comboCount)
+        } else {
+            comboCount = 0
         }
+    }
+    
+    private func handleSkip() {
+        // 跳过当前题，计为未作答
+        comboCount = 0
+        nextQuestion()
     }
 
     private func nextQuestion() {
         let totalQuestions = questions.count
         if currentQuestion >= totalQuestions {
-            withAnimation { isCompleted = true }
+            withAnimation(.easeInOut(duration: 0.3)) { isCompleted = true }
         } else {
             currentQuestion += 1
             selectedOption = nil
             showResult = false
             if currentQuestion <= totalQuestions {
                 currentTestQuestion = questions[currentQuestion - 1]
+                // 自动播放下一题
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    playCurrentAudio()
+                }
+            }
+        }
+    }
+    
+    private func resetAndStart() {
+        currentQuestion = 1
+        correctCount = 0
+        score = 0
+        isCompleted = false
+        selectedOption = nil
+        showResult = false
+        comboCount = 0
+        maxCombo = 0
+        answeredCount = 0
+        startTime = Date()
+        questions = TestEngine.generateDiagnosticTest()
+        if !questions.isEmpty {
+            currentTestQuestion = questions[0]
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                playCurrentAudio()
             }
         }
     }
 }
 
-// MARK: - 测试结果
+// MARK: - 测试结果页 (匹配设计文档 ExerciseResultPage)
 struct TestResultView: View {
-    let score: Int; let correctCount: Int; let totalQuestions: Int; let timeSpent: Int
-    let onViewAnalysis: () -> Void; let onBack: () -> Void
+    let score: Int
+    let correctCount: Int
+    let totalQuestions: Int
+    let timeSpent: Int
+    let maxCombo: Int
+    let onRetry: () -> Void
+    let onBack: () -> Void
     
-    private var scoreColor: Color {
-        score >= 85 ? AppTheme.success : (score >= 60 ? AppTheme.warning : AppTheme.error)
+    private var percentage: Int {
+        Int(Double(correctCount) / Double(totalQuestions) * 100)
+    }
+    
+    private var gradeText: String {
+        if percentage >= 90 { return "太棒了！完美表现！" }
+        if percentage >= 80 { return "做得很好！继续保持！" }
+        if percentage >= 60 { return "不错！还有进步空间！" }
+        return "继续加油！熟能生巧！"
+    }
+    
+    private var gradeColor: Color {
+        if percentage >= 80 { return AppTheme.success }
+        if percentage >= 60 { return AppTheme.warning }
+        return AppTheme.error
     }
     
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                Spacer().frame(height: 40)
-                Text("🎉").font(.system(size: 40))
-                Text("测试完成!").font(.system(size: 20, weight: .bold)).foregroundStyle(AppTheme.primaryText)
-                HStack(spacing: 20) {
-                    VStack(spacing: 4) { Text("\(score)").font(.system(size: 48, weight: .bold)).foregroundStyle(scoreColor); Text("总分").font(.system(size: 12)).foregroundStyle(AppTheme.secondaryText) }
-                    Rectangle().fill(AppTheme.border).frame(width: 1, height: 60)
-                    VStack(spacing: 4) { Text("\(correctCount)/\(totalQuestions)").font(.system(size: 24, weight: .bold)).foregroundStyle(AppTheme.accent); Text("正确题数").font(.system(size: 12)).foregroundStyle(AppTheme.secondaryText) }
-                    Rectangle().fill(AppTheme.border).frame(width: 1, height: 60)
-                    VStack(spacing: 4) { Text("\(timeSpent)分钟").font(.system(size: 24, weight: .bold)).foregroundStyle(AppTheme.primaryText); Text("用时").font(.system(size: 12)).foregroundStyle(AppTheme.secondaryText) }
-                }.padding(20).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: .black.opacity(0.08), radius: 8)
-                VStack(spacing: 10) {
-                    Button(action: onViewAnalysis) { Text("查看解析").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 13).background(AppTheme.accent).clipShape(RoundedRectangle(cornerRadius: 16)) }
-                    Button(action: onBack) { Text("返回").font(.system(size: 14)).foregroundStyle(AppTheme.primaryText).frame(maxWidth: .infinity).padding(.vertical, 12).background(AppTheme.mutedBackground).clipShape(RoundedRectangle(cornerRadius: 13)) }
-                }; Spacer()
-            }.padding(16)
+                // === 标题 ===
+                VStack(spacing: 12) {
+                    ZStack {
+                        Circle()
+                            .fill(gradeColor.opacity(0.1))
+                            .frame(width: 80, height: 80)
+                        Text("🏆")
+                            .font(.system(size: 40))
+                    }
+                    
+                    Text("测试完成")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(AppTheme.primaryText)
+                    
+                    Text(gradeColor == AppTheme.success ? "太棒了！完美表现！" : gradeText)
+                        .font(.system(size: 15))
+                        .foregroundStyle(gradeColor)
+                }
+                .padding(.top, 20)
+                
+                // === 成绩统计卡片 ===
+                VStack(spacing: 16) {
+                    // 正确率
+                    statsRow(icon: "checkmark.circle.fill", iconColor: AppTheme.success, value: "\(correctCount)/\(totalQuestions)", label: "正确率", detail: "\(percentage)%")
+                    
+                    Divider()
+                    
+                    // 最高连击
+                    statsRow(icon: "flame.fill", iconColor: AppTheme.warning, value: "\(maxCombo) 题", label: "最高连击", detail: maxCombo > 0 ? "连续答对 \(maxCombo) 题" : "未产生连击")
+                    
+                    Divider()
+                    
+                    // 用时
+                    statsRow(icon: "clock.fill", iconColor: AppTheme.accent, value: "\(timeSpent) 分钟", label: "用时", detail: "共 \(max(1, timeSpent)) 分钟完成测试")
+                }
+                .padding(20)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+                .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                
+                // === 分数等级色条 ===
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("分数等级")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        Spacer()
+                    }
+                    
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(AppTheme.mutedBackground)
+                                .frame(height: 10)
+                            
+                            RoundedRectangle(cornerRadius: 4)
+                                .fill(gradeColor)
+                                .frame(width: max(4, geo.size.width * Double(percentage) / 100), height: 10)
+                        }
+                    }
+                    .frame(height: 10)
+                    
+                    Text(gradeText)
+                        .font(.system(size: 13))
+                        .foregroundStyle(gradeColor)
+                }
+                .padding(16)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .shadow(color: .black.opacity(0.03), radius: 4, x: 0, y: 1)
+                
+                // === 操作按钮 ===
+                VStack(spacing: 12) {
+                    Button(action: onRetry) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "arrow.counterclockwise")
+                                .font(.system(size: 16, weight: .semibold))
+                            Text("再练一次")
+                                .font(.system(size: 17, weight: .semibold))
+                        }
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                    }
+                    .buttonStyle(.plain)
+                    
+                    Button(action: onBack) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 14))
+                            Text("返回测试列表")
+                                .font(.system(size: 15))
+                        }
+                        .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.bottom, 8)
+                }
+            }
+            .padding(.horizontal, 16)
+        }
+        .background(AppTheme.background)
+    }
+    
+    @ViewBuilder
+    private func statsRow(icon: String, iconColor: Color, value: String, label: String, detail: String) -> some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(iconColor.opacity(0.1))
+                    .frame(width: 44, height: 44)
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundStyle(iconColor)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(value)
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.primaryText)
+                    
+                    Text(label)
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+                Text(detail)
+                    .font(.system(size: 12))
+                    .foregroundStyle(AppTheme.tertiaryText)
+            }
+            
+            Spacer()
         }
     }
 }

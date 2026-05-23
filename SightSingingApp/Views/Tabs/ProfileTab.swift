@@ -3,7 +3,7 @@ import SwiftUI
 // MARK: - Tab 4 我的 (匹配 v0 原型: 用户卡+统计2x2+谱式单选+设置行+版本)
 struct ProfileTab: View {
     @AppStorage("notationType") private var notationType: String = "guitar-tab"
-    @AppStorage("darkMode") private var darkMode: Bool = false
+    @AppStorage("colorScheme") private var colorScheme: Int = 0
     @State private var selectedSettingsRow: SettingsDestination?
     
     enum SettingsDestination: Hashable {
@@ -18,13 +18,16 @@ struct ProfileTab: View {
         NavigationStack {
         ScrollView {
             VStack(spacing: 16) {
-                // === 页面标题 28px bold ===
-                HStack {
+                // === 页面标题 34px bold ===
+                VStack(alignment: .leading, spacing: 4) {
                     Text("我的")
-                        .font(.system(size: 28, weight: .bold))
+                        .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(AppTheme.primaryText)
-                    Spacer()
+                    Text("轻松视唱练耳，自由畅快弹唱")
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.secondaryText)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 
@@ -185,8 +188,11 @@ struct ProfileTab: View {
                             
                             Spacer()
                             
-                            // iOS 风格 Toggle switch
-                            Toggle("", isOn: $darkMode)
+                            // 与 ContentView 的 preferredColorScheme 联动: 0=system, 2=dark
+                            Toggle("", isOn: Binding(
+                                get: { colorScheme == 2 },
+                                set: { colorScheme = $0 ? 2 : 0 }
+                            ))
                                 .labelsHidden()
                                 .tint(AppTheme.accent)
                         }
@@ -280,7 +286,7 @@ struct SettingsDetailView: View {
             }
         }
         .background(AppTheme.background)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 

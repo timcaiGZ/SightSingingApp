@@ -8,19 +8,19 @@ struct PracticeTab: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 0) {
-                    // === 页面标题 28px bold ===
+                    // === 页面标题 34px bold ===
                     VStack(alignment: .leading, spacing: 4) {
                         Text("练习")
-                            .font(.system(size: 28, weight: .bold))
+                            .font(.system(size: 34, weight: .bold))
                             .foregroundStyle(AppTheme.primaryText)
                         Text("轻松视唱练耳，自由畅快弹唱")
-                            .font(.system(size: 14))
+                            .font(.system(size: 15))
                             .foregroundStyle(AppTheme.secondaryText)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
                     .padding(.top, 8)
-                    .padding(.bottom, 16)
+                    .padding(.bottom, 44)
                     
                     // === 五大练习分类 space-y-3 ===
                     VStack(spacing: 12) {
@@ -31,28 +31,11 @@ struct PracticeTab: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    
-                    // === 底部提示 ===
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("训练建议")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(AppTheme.primaryText)
-                        Text("建议按照「音准 → 唱准 → 节奏 → 和弦 → 扒谱」的顺序循序渐进，每个分类从第一组开始练习。")
-                            .font(.system(size: 12))
-                            .foregroundStyle(AppTheme.secondaryText)
-                            .lineSpacing(2)
-                    }
-                    .padding(16)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(AppTheme.secondaryBg.opacity(0.5))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .padding(.horizontal, 16)
-                    .padding(.top, 24)
                 }
                 .padding(.bottom, 24)
             }
             .background(AppTheme.background)
-            .navigationBarHidden(true)
+            .toolbar(.hidden, for: .navigationBar)
             .navigationDestination(item: $selectedCategory) { category in
                 PracticeCategoryPage(category: category)
             }

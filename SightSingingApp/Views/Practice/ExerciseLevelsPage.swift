@@ -69,7 +69,7 @@ struct ExerciseLevelsPage: View {
             }
         }
         .background(AppTheme.background)
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $selectedLevel) { level in
             ExerciseContainerView(
                 exercise: ExerciseItem(

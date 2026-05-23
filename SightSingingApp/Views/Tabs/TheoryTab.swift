@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - Tab 2 乐理知识 (匹配 v0 原型: 标题34px + 副标题15px + 搜索框 + 手风琴)
+// MARK: - Tab 2 乐理 (匹配 v0 原型: 标题34px + 副标题15px + 搜索框 + 手风琴)
 struct TheoryTab: View {
     @State private var expandedCategories: Set<String> = []  // 默认全部收拢
     @State private var selectedTopic: TheoryTopicData?
@@ -29,7 +29,7 @@ struct TheoryTab: View {
             VStack(spacing: 16) {
                 // === 页面标题 34px bold + 副标题 15px ===
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("乐理知识")
+                    Text("乐理")
                         .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(AppTheme.primaryText)
                     Text("轻松视唱练耳，自由畅快弹唱")

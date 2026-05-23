@@ -3,7 +3,6 @@ import SwiftUI
 // MARK: - 主应用视图 (严格匹配 v0.app: 4 Tab + 底部导航栏)
 // v0 原型 Tab: 练习(Music) | 乐理(Library) | 测试(CheckCircle) | 我的(User)
 struct ContentView: View {
-    @AppStorage("colorScheme") private var colorScheme: Int = 0
     @AppStorage("notationType") private var globalNotationType: String = "guitar-tab"
     
     var body: some View {
@@ -29,7 +28,6 @@ struct ContentView: View {
                 }
         }
         .tint(AppTheme.accent)
-        .preferredColorScheme(colorScheme == 2 ? .dark : (colorScheme == 1 ? .light : nil))
         .onAppear {
             let appearance = UITabBarAppearance()
             appearance.configureWithOpaqueBackground()
