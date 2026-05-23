@@ -32,12 +32,12 @@ struct NotationSwitcher: View {
                             .font(.caption2)
                             .fontWeight(selectedNotation == notation ? .semibold : .regular)
                     }
-                    .foregroundStyle(selectedNotation == notation ? AppColors.primary : AppColors.secondaryText)
+                    .foregroundStyle(selectedNotation == notation ? AppTheme.primary: AppTheme.secondaryText)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
                     .background(
                         selectedNotation == notation ?
-                        AppColors.primary.opacity(0.1) :
+                        AppTheme.primary.opacity(0.1) :
                         Color.clear
                     )
                 }
@@ -48,7 +48,7 @@ struct NotationSwitcher: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(AppColors.separator, lineWidth: 0.5)
+                .stroke(AppTheme.border, lineWidth: 0.5)
         )
     }
 }
@@ -78,11 +78,11 @@ struct CompactNotationSwitcher: View {
                 } label: {
                     Image(systemName: notation.iconName)
                         .font(.system(size: 16))
-                        .foregroundStyle(selectedNotation == notation ? AppColors.primary : AppColors.secondaryText)
+                        .foregroundStyle(selectedNotation == notation ? AppTheme.primary: AppTheme.secondaryText)
                         .frame(width: 36, height: 36)
                         .background(
                             selectedNotation == notation ?
-                            AppColors.primary.opacity(0.1) :
+                            AppTheme.primary.opacity(0.1) :
                             Color.clear
                         )
                         .clipShape(Circle())

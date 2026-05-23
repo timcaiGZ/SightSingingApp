@@ -55,7 +55,7 @@ struct SingleNoteListeningView: View {
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 48)
                                 .background(AppTheme.accent)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                                .clipShape(RoundedRectangle(cornerRadius: 18))
                         }
                         .buttonStyle(.plain)
                     }
@@ -494,7 +494,7 @@ struct ExerciseCompletionOverlay: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .background(AppTheme.accent)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
                     .buttonStyle(.plain)
 
@@ -510,7 +510,8 @@ struct ExerciseCompletionOverlay: View {
             }
             .padding(32)
             .background(AppTheme.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 24))
             .padding(.horizontal, 40)
         }
     }

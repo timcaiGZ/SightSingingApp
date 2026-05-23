@@ -254,7 +254,7 @@ struct LabeledStaffNotationView: View {
                 Text(noteName(for: note))
                     .font(.caption)
                     .fontWeight(.medium)
-                    .foregroundStyle(AppColors.primary)
+                    .foregroundStyle(AppTheme.primary)
             }
         }
         .padding(.leading, 70)

@@ -25,7 +25,7 @@ struct ModuleDetailView: View {
         .background(AppTheme.background)
         .navigationTitle(module.rawValue)
         .navigationBarTitleDisplayMode(.large)
-        .fullScreenCover(item: $showingExercise) { exercise in
+        .navigationDestination(item: $showingExercise) { exercise in
             exerciseView(for: exercise)
         }
     }

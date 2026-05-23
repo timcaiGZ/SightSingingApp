@@ -115,9 +115,10 @@ struct SightSingingResultView: View {
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                        .background(AppTheme.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .background(AppTheme.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
+                    .buttonStyle(.plain)
 
                     Button {
                         onRetry()
@@ -128,8 +129,9 @@ struct SightSingingResultView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .background(Color(.systemGray5))
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
+                    .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 24)
                 .padding(.bottom, 32)

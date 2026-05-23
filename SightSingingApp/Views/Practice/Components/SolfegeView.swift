@@ -106,10 +106,10 @@ struct SolfegeView: View {
             Text(keySignature)
                 .font(.caption)
                 .fontWeight(.medium)
-                .foregroundStyle(AppColors.primary)
+                .foregroundStyle(AppTheme.primary)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(AppColors.primary.opacity(0.1))
+                .background(AppTheme.primary.opacity(0.1))
                 .clipShape(Capsule())
 
             Spacer()
@@ -117,7 +117,7 @@ struct SolfegeView: View {
             Text(timeSignature)
                 .font(.caption)
                 .fontWeight(.medium)
-                .foregroundStyle(AppColors.secondaryText)
+                .foregroundStyle(AppTheme.secondaryText)
         }
     }
 
@@ -135,7 +135,7 @@ struct SolfegeView: View {
                 // 音符间隔
                 if index < notes.count - 1 {
                     Rectangle()
-                        .fill(AppColors.separator)
+                        .fill(AppTheme.border)
                         .frame(width: 2, height: 40)
                 }
             }
@@ -156,7 +156,7 @@ struct SolfegeNoteView: View {
                 HStack(spacing: 2) {
                     ForEach(0..<octaveDotCount, id: \.self) { _ in
                         Circle()
-                            .fill(isHighlighted ? AppColors.primary : AppColors.secondaryText)
+                            .fill(isHighlighted ? AppTheme.primary: AppTheme.secondaryText)
                             .frame(width: 4, height: 4)
                     }
                 }
@@ -166,15 +166,15 @@ struct SolfegeNoteView: View {
             Text(note.displayText)
                 .font(.system(size: 36, weight: .bold, design: .rounded))
                 .foregroundStyle(
-                    isHighlighted ? AppColors.primary :
-                    note.isRest ? AppColors.secondaryText : AppColors.primaryText
+                    isHighlighted ? AppTheme.primary:
+                    note.isRest ? AppTheme.secondaryText : AppTheme.primaryText
                 )
                 .frame(minWidth: 44)
                 .padding(.vertical, 8)
                 .padding(.horizontal, 4)
                 .background(
                     isHighlighted ?
-                    AppColors.primary.opacity(0.1) :
+                    AppTheme.primary.opacity(0.1) :
                     Color.clear
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -184,7 +184,7 @@ struct SolfegeNoteView: View {
                 HStack(spacing: 2) {
                     ForEach(0..<octaveDotCount, id: \.self) { _ in
                         Circle()
-                            .fill(isHighlighted ? AppColors.primary : AppColors.secondaryText)
+                            .fill(isHighlighted ? AppTheme.primary: AppTheme.secondaryText)
                             .frame(width: 4, height: 4)
                     }
                 }
@@ -194,7 +194,7 @@ struct SolfegeNoteView: View {
             if !note.isRest {
                 Text(durationText)
                     .font(.caption)
-                    .foregroundStyle(AppColors.secondaryText)
+                    .foregroundStyle(AppTheme.secondaryText)
             }
         }
     }
@@ -258,8 +258,8 @@ struct CompactSolfegeNote: View {
             Text(note.displayText)
                 .font(compact ? .system(size: 28, weight: .bold, design: .rounded) : .system(size: 36, weight: .bold, design: .rounded))
                 .foregroundStyle(
-                    isHighlighted ? AppColors.primary :
-                    note.isRest ? AppColors.secondaryText : AppColors.primaryText
+                    isHighlighted ? AppTheme.primary:
+                    note.isRest ? AppTheme.secondaryText : AppTheme.primaryText
                 )
                 .scaleEffect(isHighlighted ? 1.2 : 1.0)
                 .animation(.spring(response: 0.3), value: isHighlighted)
@@ -269,7 +269,7 @@ struct CompactSolfegeNote: View {
                 HStack(spacing: 1) {
                     ForEach(0..<min(note.octave - 4, 2), id: \.self) { _ in
                         Circle()
-                            .fill(isHighlighted ? AppColors.primary : AppColors.secondaryText)
+                            .fill(isHighlighted ? AppTheme.primary: AppTheme.secondaryText)
                             .frame(width: 4, height: 4)
                     }
                 }
@@ -277,7 +277,7 @@ struct CompactSolfegeNote: View {
                 HStack(spacing: 1) {
                     ForEach(0..<min(4 - note.octave, 2), id: \.self) { _ in
                         Circle()
-                            .fill(isHighlighted ? AppColors.primary : AppColors.secondaryText)
+                            .fill(isHighlighted ? AppTheme.primary: AppTheme.secondaryText)
                             .frame(width: 4, height: 4)
                     }
                 }
@@ -288,7 +288,7 @@ struct CompactSolfegeNote: View {
         .padding(.horizontal, 2)
         .background(
             isHighlighted ?
-            AppColors.primary.opacity(0.1) :
+            AppTheme.primary.opacity(0.1) :
             Color.clear
         )
         .clipShape(RoundedRectangle(cornerRadius: 6))

@@ -87,7 +87,7 @@ struct GuitarTablatureView: View {
             ForEach(fretRange, id: \.self) { fret in
                 Text(fret == 0 ? "○" : "\(fret)")
                     .font(.caption2)
-                    .foregroundStyle(AppColors.secondaryText)
+                    .foregroundStyle(AppTheme.secondaryText)
                     .frame(width: fretSpacing)
             }
         }
@@ -138,14 +138,14 @@ struct GuitarTablatureView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
-                        .background(AppColors.primary)
+                        .background(AppTheme.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 3))
 
                     // 技法标记（如果有）
                     if let technique = note.technique {
                         Text(technique.displaySymbol)
                             .font(.system(size: 8, weight: .medium))
-                            .foregroundStyle(AppColors.secondaryText)
+                            .foregroundStyle(AppTheme.secondaryText)
                     }
                 }
             }
@@ -241,14 +241,14 @@ struct SimpleGuitarTabRow: View {
             if note.fret == 0 {
                 // 空弦
                 Circle()
-                    .stroke(AppColors.primary, lineWidth: 1.5)
+                    .stroke(AppTheme.primary, lineWidth: 1.5)
                     .frame(width: noteSize, height: noteSize)
             } else {
                 // 按弦
                 Circle()
                     .fill(
                         highlightedFret == note.fret ?
-                        AppColors.success : AppColors.primary
+                        AppTheme.success : AppTheme.primary
                     )
                     .frame(width: noteSize, height: noteSize)
 
@@ -288,7 +288,7 @@ struct GuitarChordDiagram: View {
             Text(chordName)
                 .font(.headline)
                 .fontWeight(.bold)
-                .foregroundStyle(AppColors.primary)
+                .foregroundStyle(AppTheme.primary)
 
             // 六线谱图
             GuitarTablatureView(

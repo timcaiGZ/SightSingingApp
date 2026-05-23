@@ -220,8 +220,7 @@ struct ProfileTab: View {
                 Text("视唱练耳 v2.0.0")
                     .font(.system(size: 13))
                     .foregroundStyle(AppTheme.tertiaryText)
-                    .padding(.top, 8)
-                    .padding(.bottom, 16)
+                    .padding(.vertical, 16)
             }
             .padding(.bottom, 24)
         }

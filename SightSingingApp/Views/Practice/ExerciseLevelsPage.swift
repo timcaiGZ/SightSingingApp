@@ -85,19 +85,26 @@ struct ExerciseLevelsPage: View {
     
     private var modeForExercise: ExerciseMode {
         switch exercise.id {
-        // 视唱类 → sightSinging
-        case "single-note-sing", "scale-sing", "interval-sing", "melody-sing":
+        // 视唱类 → sightSinging（按 exerciseId 细分）
+        case "single-note-sing": return .sightSinging       // T2 单音视唱
+        case "interval-singing": return .sightSinging      // T3 音程模唱
+        case "melody-singing": return .sightSinging        // T3 旋律模唱
+        case "chord-singing": return .sightSinging         // T3 和弦模唱
+        case "rhythm-sight": return .multipleChoice         // T6 节奏视唱
+        case "rhythm-memory": return .multipleChoice        // T6 节奏背唱
+        case "scale-sing", "interval-sing", "melody-sing":
             return .sightSinging
         // 键盘输入类 → keyboardInput
         case "note-name-keyboard":
             return .keyboardInput
-        // 节奏/音程/和弦 → multipleChoice
-        case "quarter-eighth", "rhythm-complex",
+        // 节奏类 → multipleChoice
+        case "quarter-eighth", "sixteenth-group", "syncopation",
+             "triplet", "strumming", "rhythm-complex",
              "ascending-interval", "descending-interval", "harmonic-interval",
              "triad-identify", "chord-inversion", "seventh-chord":
             return .multipleChoice
         default:
-            return .multipleChoice
+            return categoryId == "singing" ? .sightSinging : .multipleChoice
         }
     }
     

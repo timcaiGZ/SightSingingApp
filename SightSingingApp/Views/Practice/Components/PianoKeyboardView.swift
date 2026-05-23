@@ -51,12 +51,12 @@ struct PianoKeyboardView: View {
                         .frame(width: 50, height: 40)
                         .background(
                             selectedAccidental == acc ?
-                            AppColors.primary.opacity(0.15) :
+                            AppTheme.primary.opacity(0.15) :
                             Color(.systemGray4)
                         )
                         .foregroundStyle(
                             selectedAccidental == acc ?
-                            AppColors.primary : AppColors.primaryText
+                            AppTheme.primary: AppTheme.primaryText
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 8))
                 }
@@ -74,7 +74,7 @@ struct PianoKeyboardView: View {
                     .font(.system(size: 16))
                     .frame(width: 50, height: 40)
                     .background(Color(.systemGray4))
-                    .foregroundStyle(AppColors.error)
+                    .foregroundStyle(AppTheme.error)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             }
             .buttonStyle(.plain)
@@ -120,12 +120,12 @@ struct PianoKeyboardView: View {
                 .frame(height: 46)
                 .background(
                     selectedNote == note ?
-                    AppColors.primary :
+                    AppTheme.primary:
                     Color(.systemBackground)
                 )
                 .foregroundStyle(
                     selectedNote == note ?
-                    .white : AppColors.primaryText
+                    .white : AppTheme.primaryText
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
@@ -147,7 +147,7 @@ struct PianoKeyboardView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 48)
                     .background(Color(.systemGray4))
-                    .foregroundStyle(AppColors.primaryText)
+                    .foregroundStyle(AppTheme.primaryText)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             .buttonStyle(.plain)
@@ -164,8 +164,8 @@ struct PianoKeyboardView: View {
                     .frame(height: 48)
                     .background(
                         selectedNote != nil ?
-                        AppColors.primary :
-                        AppColors.primary.opacity(0.3)
+                        AppTheme.primary:
+                        AppTheme.primary.opacity(0.3)
                     )
                     .foregroundStyle(.white)
                     .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -246,7 +246,7 @@ struct FullPianoKeyboardView: View {
             onKeyTap(midiNote)
         } label: {
             RoundedRectangle(cornerRadius: 4)
-                .fill(highlightedKeys.contains(midiNote) ? AppColors.primary : Color(.systemBackground))
+                .fill(highlightedKeys.contains(midiNote) ? AppTheme.primary: Color(.systemBackground))
                 .frame(width: whiteKeyWidth, height: whiteKeyHeight)
                 .overlay(
                     Rectangle()
@@ -263,7 +263,7 @@ struct FullPianoKeyboardView: View {
             onKeyTap(midiNote)
         } label: {
             RoundedRectangle(cornerRadius: 4)
-                .fill(highlightedKeys.contains(midiNote) ? AppColors.primary : Color(.black))
+                .fill(highlightedKeys.contains(midiNote) ? AppTheme.primary: Color(.black))
                 .frame(width: blackKeyWidth, height: blackKeyHeight)
         }
         .buttonStyle(.plain)

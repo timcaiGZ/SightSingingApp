@@ -42,12 +42,12 @@ struct PitchMeterView: View {
         HStack(spacing: 8) {
             Text("目标音:")
                 .font(.subheadline)
-                .foregroundStyle(AppColors.secondaryText)
+                .foregroundStyle(AppTheme.secondaryText)
 
             Text("\(targetNote)\(octave)")
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundStyle(AppColors.primary)
+                .foregroundStyle(AppTheme.primary)
         }
     }
 
@@ -75,12 +75,12 @@ struct PitchMeterView: View {
 
             // 准确区域（中心绿色区）
             RoundedRectangle(cornerRadius: 4)
-                .fill(AppColors.success.opacity(0.2))
+                .fill(AppTheme.success.opacity(0.2))
                 .frame(width: 50, height: gaugeHeight)
 
             // 中心线
             Rectangle()
-                .fill(AppColors.success)
+                .fill(AppTheme.success)
                 .frame(width: 2, height: gaugeHeight + 10)
 
             // 刻度线
@@ -108,7 +108,7 @@ struct PitchMeterView: View {
         HStack {
             Text("偏低")
                 .font(.caption)
-                .foregroundStyle(AppColors.secondaryText)
+                .foregroundStyle(AppTheme.secondaryText)
 
             Spacer()
 
@@ -124,14 +124,14 @@ struct PitchMeterView: View {
             } else {
                 Text("— 音分")
                     .font(.caption)
-                    .foregroundStyle(AppColors.secondaryText)
+                    .foregroundStyle(AppTheme.secondaryText)
             }
 
             Spacer()
 
             Text("偏高")
                 .font(.caption)
-                .foregroundStyle(AppColors.secondaryText)
+                .foregroundStyle(AppTheme.secondaryText)
         }
         .frame(width: gaugeWidth)
     }
@@ -146,13 +146,13 @@ struct PitchMeterView: View {
     private func colorForDeviation(_ cents: Double) -> Color {
         let absCents = abs(cents)
         if absCents <= 10 {
-            return AppColors.success      // 绿色 - 准确
+            return AppTheme.success      // 绿色 - 准确
         } else if absCents <= 25 {
             return Color(hex: "A8D948")   // 浅绿 - 较准
         } else if absCents <= 35 {
-            return AppColors.warning      // 橙色 - 稍偏
+            return AppTheme.warning      // 橙色 - 稍偏
         } else {
-            return AppColors.error        // 红色 - 偏差大
+            return AppTheme.error        // 红色 - 偏差大
         }
     }
 
@@ -189,12 +189,12 @@ struct HorizontalPitchMeter: View {
 
                 // 准确区域
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(AppColors.success.opacity(0.2))
+                    .fill(AppTheme.success.opacity(0.2))
                     .frame(width: 40, height: meterHeight)
 
                 // 中心线
                 Rectangle()
-                    .fill(AppColors.success)
+                    .fill(AppTheme.success)
                     .frame(width: 2, height: meterHeight + 6)
 
                 // 刻度
@@ -220,15 +220,15 @@ struct HorizontalPitchMeter: View {
             HStack {
                 Text("-25")
                     .font(.caption2)
-                    .foregroundStyle(AppColors.secondaryText)
+                    .foregroundStyle(AppTheme.secondaryText)
                 Spacer()
                 Text("0")
                     .font(.caption2)
-                    .foregroundStyle(AppColors.secondaryText)
+                    .foregroundStyle(AppTheme.secondaryText)
                 Spacer()
                 Text("+25")
                     .font(.caption2)
-                    .foregroundStyle(AppColors.secondaryText)
+                    .foregroundStyle(AppTheme.secondaryText)
             }
             .frame(width: meterWidth)
         }
@@ -241,10 +241,10 @@ struct HorizontalPitchMeter: View {
 
     private func colorForDeviation(_ cents: Double) -> Color {
         let absCents = abs(cents)
-        if absCents <= 10 { return AppColors.success }
+        if absCents <= 10 { return AppTheme.success }
         else if absCents <= 25 { return Color(hex: "A8D948") }
-        else if absCents <= 35 { return AppColors.warning }
-        else { return AppColors.error }
+        else if absCents <= 35 { return AppTheme.warning }
+        else { return AppTheme.error }
     }
 }
 
