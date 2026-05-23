@@ -193,21 +193,21 @@ struct LevelDataProvider {
         // 音程听辨
         case "ascending-interval", "descending-interval":
             return [
-                ExerciseLevelData(id: "l1", name: "1组", description: "一度 / 小二度 / 大二度", items: ["一度", "小二度", "大二度"], progress: exerciseId == "ascending-interval" ? 100 : 80),
+                ExerciseLevelData(id: "l1", name: "1组", description: "纯一度 / 小二度 / 大二度", items: ["纯一度", "小二度", "大二度"], progress: exerciseId == "ascending-interval" ? 100 : 80),
                 ExerciseLevelData(id: "l2", name: "2组", description: "大二度 / 小三度 / 大三度", items: ["大二度", "小三度", "大三度"], progress: exerciseId == "ascending-interval" ? 75 : 45),
                 ExerciseLevelData(id: "l3", name: "3组", description: "大三度 / 纯四度 / 增四减五度", items: ["大三度", "纯四度", "增四减五度"], progress: exerciseId == "ascending-interval" ? 40 : 20),
                 ExerciseLevelData(id: "l4", name: "4组", description: "纯五度 / 小六度 / 大六度", items: ["纯五度", "小六度", "大六度"], progress: exerciseId == "ascending-interval" ? 20 : 0),
                 ExerciseLevelData(id: "l5", name: "5组", description: "大六度 / 小七度 / 大七度 / 纯八度", items: ["大六度", "小七度", "大七度", "纯八度"], progress: 0),
-                ExerciseLevelData(id: "l6", name: "综合", description: "八度内全音程随机", items: ["一度","小二度","大二度","小三度","大三度","纯四度","增四减五度","纯五度","小六度","大六度","小七度","大七度","纯八度"], progress: 0),
+                ExerciseLevelData(id: "l6", name: "综合", description: "八度内全音程随机", items: ["纯一度","小二度","大二度","小三度","大三度","纯四度","增四减五度","纯五度","小六度","大六度","小七度","大七度","纯八度"], progress: 0),
             ]
         case "harmonic-interval":
             return [
-                ExerciseLevelData(id: "l1", name: "1组", description: "一度 / 小二度 / 大二度", items: ["一度", "小二度", "大二度"], progress: 65),
+                ExerciseLevelData(id: "l1", name: "1组", description: "纯一度 / 小二度 / 大二度", items: ["纯一度", "小二度", "大二度"], progress: 65),
                 ExerciseLevelData(id: "l2", name: "2组", description: "大二度 / 小三度 / 大三度", items: ["大二度", "小三度", "大三度"], progress: 30),
                 ExerciseLevelData(id: "l3", name: "3组", description: "大三度 / 纯四度 / 增四减五度", items: ["大三度", "纯四度", "增四减五度"], progress: 10),
                 ExerciseLevelData(id: "l4", name: "4组", description: "纯五度 / 小六度 / 大六度", items: ["纯五度", "小六度", "大六度"], progress: 0),
                 ExerciseLevelData(id: "l5", name: "5组", description: "大六度 / 小七度 / 大七度 / 纯八度", items: ["大六度","小七度","大七度","纯八度"], progress: 0),
-                ExerciseLevelData(id: "l6", name: "综合", description: "八度内全音程随机", items: ["一度","小二度","大二度","小三度","大三度","纯四度","增四减五度","纯五度","小六度","大六度","小七度","大七度","纯八度"], progress: 0),
+                ExerciseLevelData(id: "l6", name: "综合", description: "八度内全音程随机", items: ["纯一度","小二度","大二度","小三度","大三度","纯四度","增四减五度","纯五度","小六度","大六度","小七度","大七度","纯八度"], progress: 0),
             ]
         // 视唱
         case "single-note-sing":

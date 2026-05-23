@@ -345,7 +345,7 @@ struct ExerciseContainerView: View {
         switch type {
         case .interval:
             let nameMap: [String: String] = [
-                "一度": "纯一度",
+                // 无需映射，已经是标准名
                 "小二度": "小二度",
                 "大二度": "大二度",
                 "小三度": "小三度",
