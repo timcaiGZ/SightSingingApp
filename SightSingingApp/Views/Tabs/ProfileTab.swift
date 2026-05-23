@@ -212,8 +212,8 @@ struct ProfileTab: View {
                     }
                 }
                 .background(Color.white)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(AppTheme.border, lineWidth: 0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.border, lineWidth: 0.5))
                 .padding(.horizontal, 16)
                 
                 // === 版本信息 text-[13px] center text-muted-foreground py-4 ===
