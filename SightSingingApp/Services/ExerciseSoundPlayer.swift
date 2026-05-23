@@ -133,21 +133,50 @@ struct ExerciseSoundPlayer {
         }
     }
 
-    /// 根据中文名称播放对应和弦
+    /// 根据中文名称播放对应和弦（支持转位和弦和六和弦）
     static func playChordNamed(_ name: String) {
-        let target: TriadQuality?
-        if name.contains("大三") { target = .major }
-        else if name.contains("小三") { target = .minor }
-        else if name.contains("减三") { target = .diminished }
-        else if name.contains("增三") { target = .augmented }
-        else if name.contains("大六") { target = .major }   // 大六和弦以大三为基础
-        else if name.contains("小六") { target = .minor }   // 小六和弦以小三为基础
-        else { target = nil }
+        // 转位和弦：按转位类型播放（实际音高排列不同，但基础音程性质相同）
+        // 注：当前播放引擎不支持精确转位音高排列，但至少保证和弦性质正确
+        if name.contains("大三原位") { playTriadQuality(.major); return }
+        if name.contains("大三一转") || name.contains("六和弦") && name.contains("大三") { playTriadQuality(.major); return }
+        if name.contains("大三大转") || name.contains("四六和弦") && name.contains("大三") { playTriadQuality(.major); return }
+        if name.contains("小三原位") { playTriadQuality(.minor); return }
+        if name.contains("小三一转") || name.contains("六和弦") && name.contains("小三") { playTriadQuality(.minor); return }
+        if name.contains("小三六转") || name.contains("四六和弦") && name.contains("小三") { playTriadQuality(.minor); return }
 
-        if let quality = target {
-            playTriadQuality(quality)
-        } else {
-            playTriadQuality(.major)
+        // 基础和弦类型
+        if name.contains("大三") { playTriadQuality(.major); return }
+        if name.contains("小三") { playTriadQuality(.minor); return }
+        if name.contains("减三") { playTriadQuality(.diminished); return }
+        if name.contains("增三") { playTriadQuality(.augmented); return }
+
+        // 六和弦（大六=大+大六度附加，小六=小+小六度附加，以基础三和弦性质播放）
+        if name.contains("大六") { playTriadQuality(.major); return }
+        if name.contains("小六") { playTriadQuality(.minor); return }
+
+        // 兜底
+        playTriadQuality(.major)
+    }
+
+    // MARK: - 节奏提示音
+
+    /// 节奏练习的提示音频：播放 4 拍标准节拍（强-弱-次强-弱）
+    static func playRhythmHint() {
+        Task {
+            // 标准音
+            await AudioEngineManager.shared.playMIDI(69, duration: 0.4)
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            // 4 拍：强(重) - 弱 - 次强 - 弱
+            let beats: [(midi: Int, vol: Float)] = [
+                (72, 1.0),   // C5 强拍
+                (72, 0.7),   // C5 弱拍
+                (72, 0.85),  // C5 次强拍
+                (72, 0.7),   // C5 弱拍
+            ]
+            for beat in beats {
+                await AudioEngineManager.shared.playMIDI(beat.midi, duration: 0.3)
+                try? await Task.sleep(nanoseconds: 350_000_000)
+            }
         }
     }
 }

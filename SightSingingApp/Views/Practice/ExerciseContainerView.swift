@@ -215,10 +215,17 @@ struct ExerciseContainerView: View {
     private func playMultipleChoiceAudio(correctName: String) {
         let isIntervalModule = moduleId.contains("interval") || exercise.id.contains("interval")
         let isChordModule = moduleId.contains("chord") || exercise.id.contains("chord") || exercise.id.contains("triad")
+        let isRhythmModule = moduleId.contains("rhythm") || exercise.id.contains("rhythm") || exercise.id.contains("quarter") || exercise.id.contains("sixteenth") || exercise.id.contains("syncopation") || exercise.id.contains("triplet") || exercise.id.contains("strumming")
 
         if isIntervalModule {
             // 从正确名称反查对应的 IntervalQuestion → 播放
-            let target = QuestionBank.intervalQuestions.first { $0.name == correctName }
+            // 特殊处理："增四减五度"在 QuestionBank 中存为 "增四度"/"减五度"，按 semitones=6 匹配
+            let target: IntervalQuestion?
+            if correctName == "增四减五度" {
+                target = QuestionBank.intervalQuestions.first { $0.semitones == 6 }
+            } else {
+                target = QuestionBank.intervalQuestions.first { $0.name == correctName }
+            }
             if let intervalQ = target,
                let interval = MusicTheoryInterval.allCases.first(where: { $0.semitones == intervalQ.semitones }) {
                 ExerciseSoundPlayer.playInterval(interval)
@@ -227,10 +234,13 @@ struct ExerciseContainerView: View {
                 ExerciseSoundPlayer.fallbackPlayInterval(named: correctName)
             }
         } else if isChordModule {
-            // 根据和弦名播放对应和弦
+            // 根据和弦名播放对应和弦（支持转位）
             ExerciseSoundPlayer.playChordNamed(correctName)
+        } else if isRhythmModule {
+            // 节奏：播放标准音 + 基础拍点提示（P2 改进）
+            ExerciseSoundPlayer.playRhythmHint()
         } else {
-            // 节奏等其他类型暂无对应音频，静默处理
+            // 其他类型静默处理
         }
     }
 
@@ -360,13 +370,15 @@ struct ExerciseContainerView: View {
         switch type {
         case .interval:
             let nameMap: [String: String] = [
-                // 无需映射，已经是标准名
+                "纯一度": "纯一度",
                 "小二度": "小二度",
                 "大二度": "大二度",
                 "小三度": "小三度",
                 "大三度": "大三度",
                 "纯四度": "纯四度",
-                "增四减五度": "增四度",
+                // 增四减五度 → 统一映射为"增四减五度"（与 MusicTheoryInterval.chineseName 对齐）
+                // QuestionBank 中同时存在"增四度"和"减五度"，播放时按 semitones=6 查找即可
+                "增四减五度": "增四减五度",
                 "纯五度": "纯五度",
                 "小六度": "小六度",
                 "大六度": "大六度",
@@ -377,32 +389,71 @@ struct ExerciseContainerView: View {
             mapped = items.compactMap { nameMap[$0] ?? $0 }
 
         case .chord:
+            // 转位和弦保留独立名称，不再坍塌
             let nameMap: [String: String] = [
                 "大三": "大三和弦",
                 "小三": "小三和弦",
                 "减三": "减三和弦",
                 "增三": "增三和弦",
-                "大三原位": "大三和弦",
-                "大三一转": "大三和弦",
-                "大三大转": "大三和弦",
-                "小三原位": "小三和弦",
-                "小三一转": "小三和弦",
-                "小三六转": "小三和弦",
+                // 转位：保留独立名称，与播放端 playChordNamed 配合
+                "大三原位": "大三原位和弦",
+                "大三一转": "大三一转和弦(六和弦)",
+                "大三大转": "大三大转和弦(四六和弦)",
+                "小三原位": "小三原位和弦",
+                "小三一转": "小三一转和弦(六和弦)",
+                "小三六转": "小三六转和弦(四六和弦)",
                 "大六": "大六和弦",
                 "小六": "小六和弦",
             ]
             mapped = items.compactMap { nameMap[$0] ?? $0 }
 
         case .rhythm:
-            // 节奏 items 通常直接就是显示名称
+            // 节奏 items → 直观的中文显示名
             let nameMap: [String: String] = [
                 "X": "四分音符",
                 "x": "八分音符",
                 "-": "休止符",
                 "0": "空拍",
                 ">": "重音",
-                "X x": "四分+八分组合",
-                "x X": "八分+四分组合",
+                "X x": "四分+八分",
+                "x X": "八分+四分",
+                "xxxx": "四个十六分",
+                "x xx": "八分+两个十六分",
+                "xx x": "两个十六分+八分",
+                "X.xx": "附点四分+十六分×2",
+                "x.XX": "附点八分+四分×2",
+                "x x.x": "十六分切分",
+                "x X.xx": "八分+附点组合",
+                "(xxx)": "三连音",
+                "X (xxx)": "四分+三连音",
+                "(xxx) X": "三连音+四分",
+                "(xxx)(xxx)": "连续三连音",
+                "(xx-)": "三连音休止(前两音)",
+                "(-xx)": "三连音休止(后两音)",
+                "↓↑↓↑": "下上下上扫弦",
+                "↓↓↓↑": "下下下上扫弦",
+                "↓↓↑↓": "下下上下扫弦",
+                "↓↑↓↓": "下上下下扫弦",
+                "分解T323": "分解 T323",
+                "分解T1323": "分解 T1323",
+                "分解532123": "分解 532123",
+                "分解135313": "分解 135313",
+                "123": "1-2-3 上行",
+                "234": "2-3-4 上行",
+                "345": "3-4-5 上行",
+                "456": "4-5-6 上行",
+                "135": "1-3-5 分解",
+                "351": "3-5-1 分解",
+                "531": "5-3-1 下行",
+                "132": "1-3-2 混合",
+                "143": "1-4-3 混合",
+                "356": "3-5-6 混合",
+                "653": "6-5-3 下行混合",
+                "#123": "#1-2-3 升号",
+                "4#56": "4-#5-6 升号",
+                "高1高2高3": "高音区上行",
+                "低5低6低7": "低音区下行",
+                // 音阶/和弦进行名称直接使用
             ]
             mapped = items.compactMap { nameMap[$0] ?? $0 }
         }
@@ -418,10 +469,13 @@ struct ExerciseContainerView: View {
                 extra = QuestionBank.intervalQuestions
                     .filter { !mapped.contains($0.name) }.randomElement()?.name
             case .chord:
-                extra = ["大三和弦","小三和弦","减三和弦","增三和弦","大六和弦","小六和弦"]
+                extra = ["大三和弦","小三和弦","减三和弦","增三和弦","大六和弦","小六和弦",
+                         "大三原位和弦","大三一转和弦(六和弦)","大三大转和弦(四六和弦)",
+                         "小三原位和弦","小三一转和弦(六和弦)","小三六转和弦(四六和弦)"]
                     .filter { !mapped.contains($0) }.randomElement()
             case .rhythm:
-                extra = ["四分音符","八分音符","附点节奏","切分节奏","三连音","十六分音符"]
+                extra = ["四分音符","八分音符","附点节奏","切分节奏","三连音","十六分音符",
+                         "四分+八分","八分+休止","重音","四个十六分","下上下上扫弦","分解T323"]
                     .filter { !mapped.contains($0) }.randomElement()
             }
             if let e = extra { mapped.append(e) } else { break }
@@ -436,8 +490,18 @@ struct ExerciseContainerView: View {
     }
 
     private func generateSightSingingQuestion() {
-        let notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"]
-        currentCorrectAnswer = notes.randomElement()!
+        let allowedItems = exercise.levelItems
+
+        if !allowedItems.isEmpty {
+            // 有 levelItems 约束 → 从约束项中随机选
+            // 支持多种格式：简谱数字("1","2","3")、音名("C4")、描述性名称("C大调上行")
+            let target = allowedItems.randomElement()!
+            currentCorrectAnswer = target
+        } else {
+            // 无约束 → 默认 C4-B4 范围随机
+            let notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"]
+            currentCorrectAnswer = notes.randomElement()!
+        }
     }
 
     // MARK: - Actions
