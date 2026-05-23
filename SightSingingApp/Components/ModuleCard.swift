@@ -17,7 +17,7 @@ struct ModuleCard<Content: View>: View {
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundStyle(AppColors.primaryText)
+                    .foregroundStyle(AppTheme.primaryText)
                 Spacer()
             }
             .padding(.horizontal, 16)
@@ -29,14 +29,14 @@ struct ModuleCard<Content: View>: View {
                 content()
             }
         }
-        .background(AppColors.cardBackground)
+        .background(AppTheme.cardBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 
 #Preview {
-    ModuleCard(title: "听力训练", icon: "music.note", color: AppColors.noteName) {
+    ModuleCard(title: "听力训练", icon: "music.note", color: AppTheme.Category.pitch) {
         Text("练习内容...")
             .padding()
     }
