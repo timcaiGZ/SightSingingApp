@@ -13,15 +13,19 @@ struct TestTab: View {
     }
     
     var body: some View {
+        NavigationStack {
         ScrollView {
             VStack(spacing: 16) {
-                // === 页面标题 28px bold ===
-                HStack {
+                // === 页面标题 28px bold + 副标题 ===
+                VStack(alignment: .leading, spacing: 4) {
                     Text("测试中心")
                         .font(.system(size: 28, weight: .bold))
                         .foregroundStyle(AppTheme.primaryText)
-                    Spacer()
+                    Text("轻松视唱练耳，自由畅快弹唱")
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppTheme.secondaryText)
                 }
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
                 
@@ -86,6 +90,7 @@ struct TestTab: View {
         .navigationDestination(item: $selectedTest) { test in
             TestContainerView(test: test)
         }
+        }  // NavigationStack
     }
 }
 
@@ -175,178 +180,133 @@ struct TestRowView: View {
     }
 }
 
-// MARK: - 测试容器视图
+// MARK: - 测试容器视图 (匹配 v0 test-session: ExerciseLayout + AudioPromptCard + ChoiceList)
 struct TestContainerView: View {
     let test: TestItemData
     @Environment(\.dismiss) private var dismiss
-    @State private var currentQuestion = 0
+    @State private var currentQuestion = 1
     @State private var correctCount = 0
+    @State private var score = 0
     @State private var isCompleted = false
     @State private var selectedOption: String?
     @State private var showResult = false
     @State private var startTime = Date()
-    
-    private let mockOptions = ["大三和弦", "小三和弦", "增三和弦", "减三和弦"]
-    private let correctAnswer = "大三和弦"
-    
+
+    // TestEngine 生成的题目
+    @State private var questions: [TestQuestion] = []
+    @State private var currentTestQuestion: TestQuestion?
+
+    private var currentOptions: [String] {
+        currentTestQuestion?.options.map(\.label) ?? []
+    }
+    private var correctAnswer: String {
+        guard let q = currentTestQuestion, q.correctAnswerIndex < q.options.count else { return "" }
+        return q.options[q.correctAnswerIndex].label
+    }
+    private var questionPrompt: String {
+        currentTestQuestion?.prompt ?? "请听辨音频，选择正确的答案。"
+    }
+
     var body: some View {
         ZStack {
-            VStack(spacing: 0) {
-                // 顶部导航栏
-                HStack {
-                    Button("← 返回") { dismiss() }
-                        .font(.system(size: 17))
-                        .foregroundStyle(AppTheme.accent)
-                    Spacer()
-                }
-                .padding(16)
-                .background(Color.white)
-                
-                ProgressDotsRow(total: test.questionCount, current: currentQuestion)
-                
-                if isCompleted {
-                    TestResultView(
-                        score: calculateScore(),
-                        correctCount: correctCount,
-                        totalQuestions: test.questionCount,
-                        timeSpent: Int(Date().timeIntervalSince(startTime) / 60),
-                        onViewAnalysis: {},
-                        onBack: { dismiss() }
-                    )
-                } else {
-                    ScrollView {
-                        VStack(spacing: 16) {
-                            Text("Q\(currentQuestion + 1)：请听音频判断和弦类型")
-                                .font(.system(size: 14))
-                                .foregroundStyle(AppTheme.secondaryText)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                            
-                            Button(action: {}) {
-                                HStack {
-                                    Image(systemName: "play.fill")
-                                    Text("点击播放")
-                                }
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundStyle(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(AppTheme.accent)
-                                .clipShape(RoundedRectangle(cornerRadius: 12))
-                            }
-                            
-                            VStack(spacing: 0) {
-                                ForEach(mockOptions, id: \.self) { option in
-                                    Button {
-                                        if !showResult {
-                                            selectedOption = option
-                                            showResult = true
-                                            if option == correctAnswer { correctCount += 1 }
-                                        }
-                                    } label: {
-                                        MCOptionView(text: option,
-                                            isSelected: selectedOption == option,
-                                            isCorrect: showResult && option == correctAnswer,
-                                            isWrong: showResult && selectedOption == option && option != correctAnswer,
-                                            showResult: showResult)
-                                    }
-                                    .buttonStyle(.plain)
-                                    .disabled(showResult)
-                                    if option != mockOptions.last {
-                                        Rectangle().fill(AppTheme.border).frame(height: 0.5)
-                                    }
-                                }
-                            }
-                            .background(Color.white)
-                            .clipShape(RoundedRectangle(cornerRadius: 14))
-                            
-                            if showResult {
-                                Button(action: nextQuestion) {
-                                    Text("下一题")
-                                        .font(.system(size: 15, weight: .semibold))
-                                        .foregroundStyle(.white)
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 13)
-                                        .background(AppTheme.accent)
-                                        .clipShape(RoundedRectangle(cornerRadius: 13))
-                                }
-                            }
-                        }
-                        .padding(16)
+            if isCompleted {
+                TestResultView(
+                    score: score,
+                    correctCount: correctCount,
+                    totalQuestions: questions.count,
+                    timeSpent: Int(Date().timeIntervalSince(startTime) / 60),
+                    onViewAnalysis: {},
+                    onBack: { dismiss() }
+                )
+            } else {
+                ExerciseLayout(
+                    title: test.title,
+                    questionNumber: currentQuestion,
+                    totalQuestions: questions.count,
+                    questionText: questionPrompt,
+                    score: score,
+                    showDecompose: false,
+                    onBack: { dismiss() },
+                    onNewQuestion: {
+                        if showResult { nextQuestion() }
+                    },
+                    onReplay: {
+                        playCurrentAudio()
+                    },
+                    replayLabel: "重听"
+                ) {
+                    VStack(spacing: 16) {
+                        AudioPromptCard(
+                            label: "点击播放",
+                            hint: "听辨音频",
+                            onPlay: { playCurrentAudio() }
+                        )
+
+                        ChoiceList(
+                            options: currentOptions,
+                            selectedOption: selectedOption,
+                            correctAnswer: correctAnswer,
+                            showResult: showResult,
+                            onSelect: { option in handleSelect(option) },
+                            onNext: nextQuestion
+                        )
                     }
-                }
-                
-                if !isCompleted {
-                    TestActionBar(onNewQuestion: { nextQuestion() }, showDecompose: false, onReplay: {})
+                    .padding(.vertical, 16)
                 }
             }
-            .background(AppTheme.background)
         }
-        .navigationBarHidden(true)
-        .onAppear { startTime = Date() }
+        .onAppear {
+            startTime = Date()
+            questions = TestEngine.generateDiagnosticTest()
+            if !questions.isEmpty {
+                currentTestQuestion = questions[0]
+            }
+        }
     }
-    
+
+    private func playCurrentAudio() {
+        guard let q = currentTestQuestion else { return }
+        // 根据维度播放对应音频
+        if let module = q.dimensionValue {
+            switch module {
+            case .chord:
+                ExerciseSoundPlayer.playTriadQuality(TriadQuality.random)
+            case .interval:
+                if let interval = MusicTheoryInterval.allCases.randomElement() {
+                    ExerciseSoundPlayer.playInterval(interval)
+                }
+            case .noteName:
+                if let note = QuestionBank.noteNameQuestions.randomElement() {
+                    ExerciseSoundPlayer.playStandardSequence(noteName: "\(note.noteName)\(note.octave)")
+                }
+            default:
+                ExerciseSoundPlayer.playReference()
+            }
+        }
+    }
+
+    private func handleSelect(_ option: String) {
+        guard !showResult else { return }
+        selectedOption = option
+        showResult = true
+        if option == correctAnswer {
+            correctCount += 1
+            score += 10
+        }
+    }
+
     private func nextQuestion() {
-        if currentQuestion + 1 >= test.questionCount {
+        let totalQuestions = questions.count
+        if currentQuestion >= totalQuestions {
             withAnimation { isCompleted = true }
         } else {
-            currentQuestion += 1; selectedOption = nil; showResult = false
-        }
-    }
-    
-    private func calculateScore() -> Int { Int((Double(correctCount) / Double(test.questionCount)) * 100) }
-}
-
-// MARK: - 选择题选项
-struct MCOptionView: View {
-    let text: String; let isSelected: Bool; let isCorrect: Bool; let isWrong: Bool; let showResult: Bool
-    
-    private var bgColor: Color {
-        if isCorrect { return AppTheme.success.opacity(0.1) }
-        if isWrong { return AppTheme.error.opacity(0.1) }
-        if isSelected { return AppTheme.accent.opacity(0.1) }
-        return .clear
-    }
-    private var fgColor: Color {
-        if isCorrect { return AppTheme.success }
-        if isWrong { return AppTheme.error }
-        return AppTheme.primaryText
-    }
-    
-    var body: some View {
-        HStack {
-            Text(text).font(.system(size: 14)).foregroundStyle(fgColor); Spacer()
-            if isCorrect { Image(systemName: "checkmark").foregroundStyle(AppTheme.success) }
-            else if isWrong { Image(systemName: "xmark").foregroundStyle(AppTheme.error) }
-        }
-        .padding(.horizontal, 14).padding(.vertical, 13).background(bgColor)
-    }
-}
-
-// MARK: - 进度圆点
-struct ProgressDotsRow: View {
-    let total: Int; let current: Int
-    var body: some View {
-        HStack(spacing: 5) {
-            ForEach(0..<total, id: \.self) { i in
-                Circle().fill(i < current ? AppTheme.accent.opacity(0.7) : (i == current ? AppTheme.accent : AppTheme.border)).frame(width: 7, height: 7)
+            currentQuestion += 1
+            selectedOption = nil
+            showResult = false
+            if currentQuestion <= totalQuestions {
+                currentTestQuestion = questions[currentQuestion - 1]
             }
-        }.padding(.vertical, 12)
-    }
-}
-
-// MARK: - 操作栏
-struct TestActionBar: View {
-    let onNewQuestion: () -> Void; let showDecompose: Bool; let onReplay: () -> Void
-    var body: some View {
-        HStack(spacing: 40) {
-            Button(action: onNewQuestion) { VStack(spacing: 4) {
-                Image(systemName: "arrow.clockwise").font(.system(size: 20)); Text("新问题").font(.system(size: 11))
-            }.foregroundStyle(AppTheme.primaryText) }
-            Button(action: onReplay) { VStack(spacing: 4) {
-                Image(systemName: "play.fill").font(.system(size: 20)); Text("重听").font(.system(size: 11))
-            }.foregroundStyle(.white).padding(10).background(AppTheme.accent).clipShape(Circle()) }
-        }.padding(.vertical, 12).frame(maxWidth: .infinity).background(Color.white)
-         .overlay(alignment: .top) { Rectangle().fill(AppTheme.border).frame(height: 0.5) }
+        }
     }
 }
 

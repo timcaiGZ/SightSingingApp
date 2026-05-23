@@ -138,14 +138,19 @@ struct CourseCardView: View {
     }
 }
 
-// MARK: - 课程详情页 (匹配 v0 CourseDetail 占位)
+// MARK: - 课程详情页 (扁平化: 课程头部 + 章节分段 + 课时列表 → fullScreenCover 练习)
 struct CourseDetailView: View {
     let course: CourseItemData
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedLesson: CourseLesson?
+    
+    private var percentage: Int {
+        course.total > 0 ? Int((Double(course.progress) / Double(course.total)) * 100) : 0
+    }
     
     var body: some View {
         VStack(spacing: 0) {
-            // NavBar 风格导航栏
+            // NavBar
             HStack {
                 Button("← 返回") { dismiss() }
                     .font(.system(size: 17))
@@ -161,10 +166,8 @@ struct CourseDetailView: View {
             .background(Color.white)
             
             ScrollView {
-                VStack(spacing: 24) {
-                    Spacer().frame(height: 40)
-                    
-                    // 课程信息卡片
+                VStack(spacing: 20) {
+                    // === 课程头部卡片: 图标 + 标题 + 章节数/课时数 + 完成度 ===
                     VStack(spacing: 12) {
                         Image(systemName: course.icon)
                             .font(.system(size: 40))
@@ -174,9 +177,17 @@ struct CourseDetailView: View {
                             .font(.system(size: 22, weight: .bold))
                             .foregroundStyle(AppTheme.primaryText)
                         
-                        Text("\(course.lessonCount) 课时")
-                            .font(.system(size: 14))
-                            .foregroundStyle(AppTheme.secondaryText)
+                        HStack(spacing: 16) {
+                            Label("\(course.chapters.count) 章节", systemImage: "rectangle.grid.1x2")
+                                .font(.system(size: 13))
+                                .foregroundStyle(AppTheme.secondaryText)
+                            Label("\(course.lessonCount) 课时", systemImage: "list.bullet")
+                                .font(.system(size: 13))
+                                .foregroundStyle(AppTheme.secondaryText)
+                            Label("\(percentage)%", systemImage: "chart.bar")
+                                .font(.system(size: 13))
+                                .foregroundStyle(AppTheme.accent)
+                        }
                     }
                     .padding(24)
                     .frame(maxWidth: .infinity)
@@ -184,52 +195,167 @@ struct CourseDetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                     .shadow(color: .black.opacity(0.05), radius: 6, x: 0, y: 2)
                     .padding(.horizontal, 16)
+                    .padding(.top, 16)
                     
-                    // 章节占位
-                    ForEach(0..<min(course.total, 9), id: \.self) { index in
-                        HStack(spacing: 12) {
-                            ZStack {
-                                Circle()
-                                    .stroke(index < course.progress ? AppTheme.accent : AppTheme.border, lineWidth: 1.5)
-                                    .frame(width: 28, height: 28)
-                                
-                                if index < course.progress {
-                                    Circle()
-                                        .fill(AppTheme.accent)
-                                        .frame(width: 18, height: 18)
-                                } else {
-                                    Text("\(index + 1)")
-                                        .font(.system(size: 11, weight: .medium))
-                                        .foregroundStyle(AppTheme.secondaryText)
+                    // === 章节分段 + 课时列表 ===
+                    ForEach(course.chapters) { chapter in
+                        VStack(spacing: 0) {
+                            // Section Header: 左侧彩色竖条 + 章节名 + 课时数 + 进度圆点
+                            ChapterSectionHeaderView(
+                                chapter: chapter,
+                                color: course.color,
+                                progress: chapter.completedCount,
+                                total: chapter.lessons.count
+                            )
+                            
+                            // 课时行列表
+                            VStack(spacing: 0) {
+                                ForEach(Array(chapter.lessons.enumerated()), id: \.element.id) { idx, lesson in
+                                    LessonRowView(
+                                        lesson: lesson,
+                                        index: idx + 1,
+                                        color: course.color,
+                                        onTap: { selectedLesson = lesson }
+                                    )
+                                    
+                                    if idx < chapter.lessons.count - 1 {
+                                        Divider().padding(.leading, 16)
+                                    }
                                 }
                             }
-                            
-                            Text("第\(index + 1)课: \(course.title)基础内容")
-                                .font(.system(size: 15))
-                                .foregroundStyle(AppTheme.primaryText)
-                            
-                            Spacer()
-                            
-                            Image(systemName: index < course.progress ? "checkmark.circle.fill" : "play.circle")
-                                .font(.system(size: 20))
-                                .foregroundStyle(index < course.progress ? AppTheme.success : AppTheme.secondaryText)
+                            .background(Color.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .shadow(color: .black.opacity(0.03), radius: 3, x: 0, y: 1)
                         }
                         .padding(.horizontal, 16)
-                        .padding(.vertical, 12)
-                        .background(Color.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
                     
-                    Spacer()
+                    Spacer().frame(height: 24)
                 }
             }
         }
         .background(AppTheme.background)
         .navigationBarHidden(true)
+        .fullScreenCover(item: $selectedLesson) { lesson in
+            ExerciseContainerView(
+                exercise: ExerciseItem(
+                    id: lesson.id,
+                    title: lesson.title,
+                    mode: .multipleChoice,
+                    percentage: lesson.isCompleted ? 100 : 0
+                ),
+                moduleId: course.id
+            )
+        }
     }
 }
 
-// MARK: - 课程数据模型 (匹配 v0 原型数据)
+// MARK: - 章节 Section Header (左侧彩色竖条 + 章节名 + 进度)
+struct ChapterSectionHeaderView: View {
+    let chapter: CourseChapter
+    let color: Color
+    let progress: Int
+    let total: Int
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            // 左侧彩色竖条
+            RoundedRectangle(cornerRadius: 2)
+                .fill(color)
+                .frame(width: 4, height: 20)
+            
+            Text(chapter.title)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(AppTheme.primaryText)
+            
+            Spacer()
+            
+            Text("\(progress)/\(total)")
+                .font(.system(size: 12))
+                .foregroundStyle(AppTheme.secondaryText)
+            
+            ProgressDotsRow(total: total, current: progress, color: color)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+}
+
+// MARK: - 课时行 (图标 + 编号 + 名称 + 难度 + 时长 + 进度 + 箭头)
+struct LessonRowView: View {
+    let lesson: CourseLesson
+    let index: Int
+    let color: Color
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 12) {
+                // 课时编号图标
+                ZStack {
+                    Circle()
+                        .fill(lesson.isCompleted ? color : color.opacity(0.12))
+                        .frame(width: 28, height: 28)
+                    
+                    if lesson.isCompleted {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(.white)
+                    } else {
+                        Text("\(index)")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(color)
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(lesson.title)
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.primaryText)
+                    
+                    HStack(spacing: 6) {
+                        Text(lesson.difficulty)
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        Text("·")
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppTheme.tertiaryText)
+                        Text(lesson.duration)
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                }
+                
+                Spacer()
+                
+                // 进度指示
+                if lesson.isCompleted {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(AppTheme.success)
+                } else {
+                    ProgressDotsRow(
+                        total: 5,
+                        current: Int.random(in: 0...4),
+                        color: color
+                    )
+                    .scaleEffect(0.7)
+                }
+                
+                // 右箭头
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(AppTheme.secondaryText.opacity(0.5))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(IOSPressStyle())
+    }
+}
+
+
+// MARK: - 课程数据模型 (匹配 v0 原型 + v2.2 章节/课时结构)
 struct CourseItemData: Identifiable, Hashable {
     let id: String
     let title: String
@@ -239,6 +365,7 @@ struct CourseItemData: Identifiable, Hashable {
     let status: CourseStatus
     let progress: Int
     let total: Int
+    let chapters: [CourseChapter]
     
     enum CourseStatus: String {
         case notStarted = "not-started"
@@ -251,41 +378,92 @@ struct CourseItemData: Identifiable, Hashable {
             id: "music-theory",
             title: "乐理基础",
             icon: "book",
-            color: AppTheme.accent,                   // bg-primary
+            color: AppTheme.accent,
             lessonCount: 9,
             status: .inProgress,
             progress: 4,
-            total: 9
+            total: 9,
+            chapters: [
+                CourseChapter(id: "mt-ch1", title: "音符与音名", lessons: [
+                    CourseLesson(id: "mt-l1", title: "认识音符", difficulty: "入门", duration: "5min", isCompleted: true),
+                    CourseLesson(id: "mt-l2", title: "音名与唱名", difficulty: "入门", duration: "5min", isCompleted: true),
+                    CourseLesson(id: "mt-l3", title: "全音与半音", difficulty: "基础", duration: "8min", isCompleted: true),
+                ]),
+                CourseChapter(id: "mt-ch2", title: "节奏与节拍", lessons: [
+                    CourseLesson(id: "mt-l4", title: "音符时值入门", difficulty: "基础", duration: "8min", isCompleted: true),
+                    CourseLesson(id: "mt-l5", title: "节拍与拍号", difficulty: "基础", duration: "7min", isCompleted: false),
+                    CourseLesson(id: "mt-l6", title: "常用节奏型", difficulty: "基础", duration: "10min", isCompleted: false),
+                ]),
+                CourseChapter(id: "mt-ch3", title: "进阶概念", lessons: [
+                    CourseLesson(id: "mt-l7", title: "休止符与延长", difficulty: "进阶", duration: "8min", isCompleted: false),
+                    CourseLesson(id: "mt-l8", title: "附点与连线", difficulty: "进阶", duration: "7min", isCompleted: false),
+                    CourseLesson(id: "mt-l9", title: "复杂节奏综合", difficulty: "进阶", duration: "10min", isCompleted: false),
+                ])
+            ]
         ),
         CourseItemData(
             id: "sight-singing",
             title: "视唱入门",
             icon: "mic.fill",
-            color: AppTheme.Module.melody,            // bg-module-melody
+            color: AppTheme.Category.singing,
             lessonCount: 5,
             status: .notStarted,
             progress: 0,
-            total: 5
+            total: 5,
+            chapters: [
+                CourseChapter(id: "ss-ch1", title: "单音视唱", lessons: [
+                    CourseLesson(id: "ss-l1", title: "自然音阶练习", difficulty: "入门", duration: "5min"),
+                    CourseLesson(id: "ss-l2", title: "C大调单音训练", difficulty: "入门", duration: "6min"),
+                    CourseLesson(id: "ss-l3", title: "级进音程视唱", difficulty: "基础", duration: "8min"),
+                ]),
+                CourseChapter(id: "ss-ch2", title: "旋律入门", lessons: [
+                    CourseLesson(id: "ss-l4", title: "简单旋律视唱", difficulty: "基础", duration: "10min"),
+                    CourseLesson(id: "ss-l5", title: "跨音程旋律", difficulty: "进阶", duration: "12min"),
+                ])
+            ]
         ),
         CourseItemData(
             id: "rhythm-course",
             title: "节奏训练",
             icon: "music.note",
-            color: AppTheme.Module.rhythm,            // bg-module-rhythm
+            color: AppTheme.Category.rhythm,
             lessonCount: 6,
             status: .notStarted,
             progress: 0,
-            total: 6
+            total: 6,
+            chapters: [
+                CourseChapter(id: "rc-ch1", title: "基础节奏", lessons: [
+                    CourseLesson(id: "rc-l1", title: "四分音符节奏", difficulty: "入门", duration: "5min"),
+                    CourseLesson(id: "rc-l2", title: "八分音符节奏", difficulty: "入门", duration: "6min"),
+                    CourseLesson(id: "rc-l3", title: "混合节奏基础", difficulty: "基础", duration: "8min"),
+                ]),
+                CourseChapter(id: "rc-ch2", title: "进阶节奏型", lessons: [
+                    CourseLesson(id: "rc-l4", title: "十六分音符", difficulty: "进阶", duration: "8min"),
+                    CourseLesson(id: "rc-l5", title: "切分节奏", difficulty: "进阶", duration: "10min"),
+                    CourseLesson(id: "rc-l6", title: "三连音入门", difficulty: "进阶", duration: "10min"),
+                ])
+            ]
         ),
         CourseItemData(
             id: "ear-training",
             title: "听力训练",
             icon: "headphones",
-            color: AppTheme.Module.pitch,             // bg-module-pitch
+            color: AppTheme.Category.pitch,
             lessonCount: 5,
             status: .notStarted,
             progress: 0,
-            total: 5
+            total: 5,
+            chapters: [
+                CourseChapter(id: "et-ch1", title: "单音听力", lessons: [
+                    CourseLesson(id: "et-l1", title: "音高辨别基础", difficulty: "入门", duration: "5min"),
+                    CourseLesson(id: "et-l2", title: "同音高色彩辨认", difficulty: "入门", duration: "6min"),
+                ]),
+                CourseChapter(id: "et-ch2", title: "音程与和弦", lessons: [
+                    CourseLesson(id: "et-l3", title: "音程听辨入门", difficulty: "基础", duration: "10min"),
+                    CourseLesson(id: "et-l4", title: "和弦色彩辨认", difficulty: "基础", duration: "10min"),
+                    CourseLesson(id: "et-l5", title: "和声进行听辨", difficulty: "进阶", duration: "12min"),
+                ])
+            ]
         )
     ]
 }

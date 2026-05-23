@@ -24,6 +24,7 @@ struct TheoryTab: View {
     }
     
     var body: some View {
+        NavigationStack {
         ScrollView {
             VStack(spacing: 16) {
                 // === 页面标题 34px bold + 副标题 15px ===
@@ -31,7 +32,7 @@ struct TheoryTab: View {
                     Text("乐理知识")
                         .font(.system(size: 34, weight: .bold))
                         .foregroundStyle(AppTheme.primaryText)
-                    Text("音乐理论词典与学习资料")
+                    Text("轻松视唱练耳，自由畅快弹唱")
                         .font(.system(size: 15))
                         .foregroundStyle(AppTheme.secondaryText)
                 }
@@ -125,6 +126,7 @@ struct TheoryTab: View {
                 Text("未知页面")
             }
         }
+        }  // NavigationStack
     }
 }
 

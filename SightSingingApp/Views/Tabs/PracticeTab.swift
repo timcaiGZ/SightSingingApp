@@ -1,172 +1,144 @@
 import SwiftUI
 
-// MARK: - Tab 1 练习首页 (匹配 v0 原型)
+// MARK: - Tab 1 练习首页 (严格匹配 v0.app 原型: 五大分类卡片)
 struct PracticeTab: View {
-    @State private var selectedExercise: ExerciseItem?
-    @State private var selectedModuleId: String?
+    @State private var selectedCategory: PracticeCategoryData?
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                // 页面标题 (28px bold)
-                HStack {
-                    Text("自由练习")
-                        .font(.system(size: 28, weight: .bold))
-                        .foregroundStyle(AppTheme.primaryText)
-                    Spacer()
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                
-                // 练习模块列表
-                VStack(spacing: 16) {
-                    ForEach(PracticeModuleData.allModules) { module in
-                        ModuleCardView(module: module) { exercise in
-                            selectedExercise = exercise
-                            selectedModuleId = module.id
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    // === 页面标题 28px bold ===
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("练习")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(AppTheme.primaryText)
+                        Text("轻松视唱练耳，自由畅快弹唱")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 16)
+                    
+                    // === 五大练习分类 space-y-3 ===
+                    VStack(spacing: 12) {
+                        ForEach(PracticeCategoryData.allCategories) { category in
+                            PracticeCategoryCard(category: category) {
+                                selectedCategory = category
+                            }
                         }
                     }
-                }
-                .padding(.horizontal, 16)
-            }
-            .padding(.bottom, 24)
-        }
-        .background(AppTheme.background)
-        .navigationDestination(item: $selectedExercise) { exercise in
-            ExerciseContainerView(
-                exercise: exercise,
-                moduleId: selectedModuleId ?? ""
-            )
-        }
-    }
-}
-
-// MARK: - 模块卡片 (匹配 v0 ModuleCard: 彩色顶条 + 标题栏 + 分割线 + 列表)
-struct ModuleCardView: View {
-    let module: PracticeModuleData
-    let onExerciseSelect: (ExerciseItem) -> Void
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            // === 顶部彩色条 h-1 (4pt) ===
-            Rectangle()
-                .fill(module.color)
-                .frame(height: 4)
-            
-            // === 标题栏: icon + title, border-b ===
-            HStack(spacing: 8) {
-                Image(systemName: module.icon)
-                    .font(.system(size: 15))
-                    .foregroundStyle(module.color)
-                
-                Text(module.title)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(AppTheme.primaryText)
-                
-                Spacer()
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color.white)
-            .overlay(alignment: .bottom) {
-                Rectangle().fill(AppTheme.border).frame(height: 0.5)
-            }
-            
-            // === 内容区: divide-y ===
-            VStack(spacing: 0) {
-                ForEach(Array(module.exercises.enumerated()), id: \.element.id) { index, exercise in
-                    ModuleItemView(exercise: exercise, onTap: { onExerciseSelect(exercise) })
+                    .padding(.horizontal, 16)
                     
-                    if index < module.exercises.count - 1 {
-                        Divider()
-                            .padding(.leading, 16)
+                    // === 底部提示 ===
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("训练建议")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundStyle(AppTheme.primaryText)
+                        Text("建议按照「音准 → 唱准 → 节奏 → 和弦 → 扒谱」的顺序循序渐进，每个分类从第一组开始练习。")
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .lineSpacing(2)
                     }
+                    .padding(16)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(AppTheme.secondaryBg.opacity(0.5))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(.horizontal, 16)
+                    .padding(.top, 24)
                 }
+                .padding(.bottom, 24)
             }
-            .background(Color.white)
+            .background(AppTheme.background)
+            .navigationBarHidden(true)
+            .navigationDestination(item: $selectedCategory) { category in
+                PracticeCategoryPage(category: category)
+            }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 14))   // rounded-2xl
-        .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 1)  // shadow-sm
     }
 }
 
-// MARK: - 模块项行 (匹配 v0 ModuleItem: title + ProgressRing + % + chevron)
-struct ModuleItemView: View {
-    let exercise: ExerciseItem
+// MARK: - 五大分类卡片 (匹配 v0: bg-card rounded-2xl p-4 border ios-press)
+struct PracticeCategoryCard: View {
+    let category: PracticeCategoryData
     let onTap: () -> Void
     
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 12) {
-                // 标题 text-[15px]
-                Text(exercise.title)
-                    .font(.system(size: 15))
-                    .foregroundStyle(AppTheme.primaryText)
-                
-                Spacer()
-                
-                // 进度环 size=sm(20pt)
-                if exercise.percentage >= 0 {
-                    ProgressRingView(
-                        percentage: exercise.percentage,
-                        size: 20,
-                        lineWidth: 2.5
-                    )
+            HStack(spacing: 16) {
+                // === 左侧彩色图标 w-14 h-14 rounded-xl ===
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(category.color)
+                        .frame(width: 56, height: 56)
+                    Image(systemName: category.systemImage)
+                        .font(.system(size: 24))
+                        .foregroundStyle(.white)
                 }
                 
-                // 百分比 text-[13px] min-w-[32px] text-right
-                Text(progressText)
-                    .font(.system(size: 13))
-                    .foregroundStyle(AppTheme.secondaryText)
-                    .frame(width: 32, alignment: .trailing)
+                // === 中间内容 flex-1 min-w-0 ===
+                VStack(alignment: .leading, spacing: 2) {
+                    // 标题 + 副标题徽章
+                    HStack(spacing: 6) {
+                        Text(category.title)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(AppTheme.primaryText)
+                        Text(category.subtitle)
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(AppTheme.secondaryBg)
+                            .clipShape(Capsule())
+                    }
+                    
+                    // 描述
+                    Text(category.description)
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .lineLimit(1)
+                    
+                    // 进度条
+                    HStack(spacing: 8) {
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(AppTheme.secondaryBg)
+                                    .frame(height: 6)
+                                RoundedRectangle(cornerRadius: 2)
+                                    .fill(category.color)
+                                    .frame(width: geo.size.width * CGFloat(category.progress) / 100, height: 6)
+                            }
+                        }
+                        .frame(height: 6)
+                        
+                        Text("\(category.progress)%")
+                            .font(.system(size: 11))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .frame(width: 30, alignment: .trailing)
+                    }
+                }
                 
-                // 右箭头 text-muted-foreground/50
+                // === 右箭头 ===
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(AppTheme.secondaryText.opacity(0.5))
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(AppTheme.secondaryText)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(16)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(AppTheme.border, lineWidth: 1)
+            )
         }
         .buttonStyle(IOSPressStyle())
     }
-    
-    private var progressText: String {
-        if exercise.percentage > 0 { return "\(exercise.percentage)%" }
-        return "—"
-    }
 }
 
-// MARK: - 进度环组件 (匹配 v0 ProgressRing: SVG circle + 颜色逻辑)
-struct ProgressRingView: View {
-    let percentage: Int
-    var size: CGFloat = 20
-    var lineWidth: CGFloat = 2.5
-    private var ringColor: Color { ProgressColor.ringColor(percentage: percentage) }
-    private var radius: CGFloat { (size - lineWidth) / 2 }
-    private var circumference: CGFloat { 2 * .pi * radius }
-    
-    var body: some View {
-        ZStack {
-            // 背景圆环 text-muted-foreground/20
-            Circle()
-                .stroke(AppTheme.secondaryText.opacity(0.15), lineWidth: lineWidth)
-            
-            // 进度圆环 strokeLinecap=round
-            Circle()
-                .trim(from: 0, to: CGFloat(max(percentage, 0)) / 100)
-                .stroke(
-                    ringColor,
-                    style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
-                )
-                .rotationEffect(.degrees(-90))
-                .animation(.easeOut(duration: 0.5), value: percentage)
-        }
-        .frame(width: size, height: size)
-    }
-}
-
-// MARK: - iOS 风格按压按钮样式 (匹配 v0 ios-press)
+// MARK: - iOS 风格按压按钮样式
 struct IOSPressStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

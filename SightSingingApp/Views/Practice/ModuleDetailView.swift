@@ -22,7 +22,7 @@ struct ModuleDetailView: View {
                 exercisesList
             }
         }
-        .background(Color(.systemGroupedBackground))
+        .background(AppTheme.background)
         .navigationTitle(module.rawValue)
         .navigationBarTitleDisplayMode(.large)
         .fullScreenCover(item: $showingExercise) { exercise in
@@ -60,18 +60,18 @@ struct ModuleDetailView: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
+        .background(AppTheme.cardBackground)
         .padding(.bottom, 16)
     }
 
     private var moduleColor: Color {
         switch module {
-        case .noteName: return AppColors.noteName
-        case .interval: return AppColors.interval
-        case .chord: return AppColors.chord
-        case .scale: return AppColors.scale
-        case .rhythm: return AppColors.rhythm
-        case .melody: return AppColors.melody
+        case .noteName: return Color(hex: "3B82F6")
+        case .interval: return Color(hex: "8B5CF6")
+        case .chord: return AppTheme.Category.chord
+        case .scale: return Color(hex: "14B8A6")
+        case .rhythm: return AppTheme.Category.rhythm
+        case .melody: return Color(hex: "22C55E")
         }
     }
 
@@ -88,7 +88,7 @@ struct ModuleDetailView: View {
                 }
             }
         }
-        .background(Color(.systemBackground))
+        .background(AppTheme.cardBackground)
     }
 
     private func exerciseRow(exercise: ExerciseType) -> some View {
@@ -107,7 +107,7 @@ struct ModuleDetailView: View {
                     Text(exercise.rawValue)
                         .font(.body)
                         .fontWeight(.medium)
-                        .foregroundStyle(AppColors.primaryText)
+                        .foregroundStyle(AppTheme.primaryText)
 
                     HStack(spacing: 8) {
                         // 难度标签
@@ -154,16 +154,16 @@ struct ModuleDetailView: View {
 
     private func difficultyColor(_ difficulty: Difficulty) -> Color {
         switch difficulty {
-        case .easy: return AppColors.success
-        case .medium: return AppColors.warning
-        case .hard: return AppColors.error
+        case .easy: return AppTheme.success
+        case .medium: return AppTheme.warning
+        case .hard: return AppTheme.error
         }
     }
 
     private func scoreColor(_ score: Int) -> Color {
-        if score >= 90 { return AppColors.success }
-        else if score >= 70 { return AppColors.warning }
-        else { return AppColors.error }
+        if score >= 90 { return AppTheme.success }
+        else if score >= 70 { return AppTheme.warning }
+        else { return AppTheme.error }
     }
 
     private func exerciseIcon(for exercise: ExerciseType) -> String {
@@ -172,9 +172,9 @@ struct ModuleDetailView: View {
         case .openStringRecognition: return "guitars"
         case .rootNoteRecognition: return "music.note.list"
         case .tablatureNoteReading: return "text.alignleft"
-        case .intervalRecognition, .fretboardIntervalComparison: return "music.note"
-        case .intervalSinging: return "mic.fill"
+        case .intervalRecognition: return "music.note"
         case .fretboardIntervalComparison: return "square.grid.3x3"
+        case .intervalSinging: return "mic.fill"
         case .hammerPullInterval: return "hand.tap"
         case .barreChordRecognition, .chordQualityRecognition: return "rectangle.3.group"
         case .chordTransitionSpeed: return "arrow.left.arrow.right"
@@ -195,7 +195,7 @@ struct ModuleDetailView: View {
     private func exerciseView(for exercise: ExerciseType) -> some View {
         switch exercise {
         case .singleNoteRecognition:
-            SingleNoteListeningView(module: module, viewModel: viewModel)
+            SingleNoteListeningView()
         case .rootNoteRecognition:
             RootNoteListeningView(module: module, viewModel: viewModel)
         case .intervalSinging:

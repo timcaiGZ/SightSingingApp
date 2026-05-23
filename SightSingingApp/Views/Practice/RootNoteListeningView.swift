@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 根音听辨练习页
+/// 根音听辨练习页 — 匹配 v0.app 设计
 /// 同时播放多个音（和弦），用户听辨并选择最低音（根音/低音）
 struct RootNoteListeningView: View {
     @Environment(\.dismiss) private var dismiss
@@ -10,26 +10,26 @@ struct RootNoteListeningView: View {
     let viewModel: PracticeViewModel
 
     // MARK: - 题目状态
-    @State private var rootNote: Int = 60          // 根音 MIDI
-    @State private var rootNoteName: String = "C"  // 根音音名
-    @State private var allNotes: [Int] = []         // 同时播放的所有音
+    @State private var rootNote: Int = 60
+    @State private var rootNoteName: String = "C"
+    @State private var allNotes: [Int] = []
     @State private var questionCount: Int = 0
     @State private var correctCount: Int = 0
-    @State private var totalQuestions: Int = 10
+    private let totalQuestions: Int = 10
     @State private var startTime: Date = Date()
 
     // MARK: - 用户输入状态
     @State private var selectedNoteName: String? = nil
     @State private var selectedAccidental: AccidentalType = .natural
     @State private var selectedOctave: Int = 4
-    @State private var showFeedback: Bool = false
-    @State private var isCorrect: Bool = false
-    @State private var feedbackMessage: String = ""
+    @State private var inputNotes: [String] = []
+    @State private var answerState: AnswerState = .idle
+    @State private var showNext = false
+    @State private var showComplete = false
 
-    // MARK: - 常量
-    private let referenceNote: Int = 69 // A4
-    private let whiteKeyNotes = ["C", "D", "E", "F", "G", "A", "B"]
-    private let whiteKeyMIDIs = [60, 62, 64, 65, 67, 69, 71]
+    enum AnswerState {
+        case idle, correct, wrong
+    }
 
     enum AccidentalType: String, CaseIterable {
         case natural = "♮"
@@ -37,41 +37,121 @@ struct RootNoteListeningView: View {
         case flat = "♭"
     }
 
+    private let referenceNote: Int = 69 // A4
+    private let whiteKeyNotes = ["C", "D", "E", "F", "G", "A", "B"]
+
     private var currentScore: Int {
         guard questionCount > 0 else { return 0 }
         return Int(Double(correctCount) / Double(questionCount) * 100)
     }
 
     private var userAnswerDisplay: String {
-        guard let note = selectedNoteName else { return "点击键盘输入答案" }
+        guard let note = selectedNoteName else { return "" }
         let accidental = selectedAccidental == .natural ? "" : selectedAccidental.rawValue
         return "\(note)\(accidental)"
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerView
-            Divider()
+        ZStack {
+            ExerciseLayout(
+                title: "根音听辨",
+                questionNumber: min(questionCount + 1, totalQuestions),
+                totalQuestions: totalQuestions,
+                questionText: "请问和弦的根音是什么? 先听标准音再听和弦，找出最低的音（根音）。",
+                score: currentScore,
+                showDecompose: true,
+                onBack: { saveAndDismiss() },
+                onNewQuestion: handleNewQuestion,
+                onDecompose: { playQuestion() },
+                onReplay: { playQuestion() },
+                replayLabel: "重听"
+            ) {
+                VStack(spacing: 16) {
+                    // 标准音 + 和弦播放
+                    VStack(spacing: 8) {
+                        ReferenceNoteCard(
+                            note: "A",
+                            frequency: "440 Hz",
+                            onPlay: {
+                                Task {
+                                    await AudioEngineManager.shared.playMIDI(referenceNote, duration: 0.8)
+                                }
+                            }
+                        )
 
-            ScrollView {
-                VStack(spacing: 20) {
-                    instructionView
-                    progressView
-                    playbackControlView
-                    answerDisplayView
-
-                    if showFeedback {
-                        feedbackView
+                        AudioPromptCard(
+                            label: "点击播放和弦",
+                            hint: "同时播放 \(allNotes.count) 个音",
+                            onPlay: { playQuestion() }
+                        )
                     }
 
-                    actionButtonsView
+                    // 答案反馈区
+                    if answerState != .idle {
+                        VStack(spacing: 12) {
+                            HStack(spacing: 12) {
+                                Image(systemName: answerState == .correct ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundStyle(answerState == .correct ? AppTheme.success : AppTheme.error)
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(answerState == .correct ? "正确！" : "错误")
+                                        .font(.system(size: 17, weight: .semibold))
+                                        .foregroundStyle(answerState == .correct ? AppTheme.success : AppTheme.error)
+
+                                    if answerState == .wrong {
+                                        Text("正确根音是 \(rootNoteName)")
+                                            .font(.system(size: 14))
+                                            .foregroundStyle(AppTheme.secondaryText)
+                                    }
+                                }
+                                Spacer()
+                            }
+                        }
+                        .padding(16)
+                        .background(
+                            (answerState == .correct ? AppTheme.success : AppTheme.error).opacity(0.08)
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+
+                    // 下一题按钮
+                    if showNext {
+                        Button {
+                            goNext()
+                        } label: {
+                            Text("下一题")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .background(AppTheme.accent)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.vertical, 16)
+            } bottomContent: {
+                MusicKeyboard(
+                    onNotePress: handleNotePress,
+                    onClear: handleClear,
+                    onSubmit: handleSubmit,
+                    canSubmit: selectedNoteName != nil && answerState == .idle
+                )
+                .padding(.bottom, 8)
             }
 
-            Divider()
-            musicKeyboardView
+            // 完成覆盖层
+            if showComplete {
+                ExerciseCompletionOverlay(
+                    correctCount: correctCount,
+                    totalQuestions: totalQuestions,
+                    onRetry: handleRetryRound,
+                    onBack: { dismiss() }
+                )
+                .transition(.opacity)
+            }
         }
         .onAppear {
             viewModel.setModelContext(modelContext)
@@ -79,279 +159,86 @@ struct RootNoteListeningView: View {
         }
     }
 
-    // MARK: - 子视图
+    // MARK: - Actions
 
-    private var headerView: some View {
-        HStack {
-            Button {
-                saveAndDismiss()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.left")
-                    Text("自由练习")
-                }
-                .font(.body)
-                .foregroundStyle(AppColors.primary)
-            }
-
-            Spacer()
-
-            Text("根音听辨")
-                .font(.headline)
-                .fontWeight(.semibold)
-
-            Spacer()
-
-            Button { } label: {
-                Image(systemName: "gear")
-                    .font(.title3)
-                    .foregroundStyle(AppColors.primary)
-            }
+    private func goNext() {
+        if questionCount >= totalQuestions {
+            withAnimation { showComplete = true }
+            return
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color(.systemBackground))
+        inputNotes = []
+        selectedNoteName = nil
+        selectedAccidental = .natural
+        answerState = .idle
+        showNext = false
+        generateNewQuestion()
     }
 
-    private var instructionView: some View {
-        Text("先听标准音，再听一组音。\n找出其中最低的那个音（根音）。")
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-            .multilineTextAlignment(.center)
-            .lineSpacing(4)
+    private func handleNewQuestion() {
+        if showNext { goNext() }
     }
 
-    private var progressView: some View {
-        HStack {
-            Text("第 \(questionCount + 1) / \(totalQuestions) 题")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            Spacer()
-
-            Text("得分: \(currentScore)")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(AppColors.primary)
+    private func handleNotePress(_ note: String) {
+        guard answerState == .idle else { return }
+        // Parse note input to determine note name and accidental
+        let cleaned = note.replacingOccurrences(of: "#", with: "").replacingOccurrences(of: "b", with: "")
+        if cleaned.count == 1, whiteKeyNotes.contains(cleaned) {
+            selectedNoteName = cleaned
+            selectedAccidental = note.contains("#") ? .sharp : (note.contains("b") ? .flat : .natural)
         }
+        inputNotes = [note]
     }
 
-    private var playbackControlView: some View {
-        VStack(spacing: 16) {
-            Button {
-                playQuestion()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [AppColors.primary, AppColors.primary.opacity(0.7)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 90, height: 90)
-                        .shadow(color: AppColors.primary.opacity(0.3), radius: 12, x: 0, y: 6)
-
-                    Image(systemName: "speaker.wave.2.fill")
-                        .font(.system(size: 32))
-                        .foregroundStyle(.white)
-                }
-            }
-
-            Text("点击播放")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.vertical, 8)
+    private func handleClear() {
+        guard answerState == .idle else { return }
+        inputNotes = []
+        selectedNoteName = nil
+        selectedAccidental = .natural
     }
 
-    private var answerDisplayView: some View {
-        VStack(spacing: 8) {
-            Text("你的答案")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+    private func handleSubmit() {
+        guard let userNote = selectedNoteName, answerState == .idle else { return }
+        // 根据 rootNote 计算正确的八度，确保用户选对音名即算正确
+        let rootOctave = (rootNote / 12) - 1
+        let userMIDI = midiNoteFromAnswer(note: userNote, accidental: selectedAccidental, octave: rootOctave)
 
-            Text(userAnswerDisplay)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(selectedNoteName == nil ? .secondary : AppColors.primary)
-                .frame(minHeight: 44)
-                .animation(.easeInOut(duration: 0.2), value: selectedNoteName)
+        let isCorrect = (userMIDI == rootNote)
+        questionCount += 1
+
+        if isCorrect {
+            correctCount += 1
+            answerState = .correct
+        } else {
+            answerState = .wrong
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+
+        showNext = true
+
+        let generator = UIImpactFeedbackGenerator(style: isCorrect ? .medium : .heavy)
+        generator.impactOccurred()
     }
 
-    private var feedbackView: some View {
-        VStack(spacing: 8) {
-            Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(isCorrect ? AppColors.success : AppColors.error)
-
-            Text(feedbackMessage)
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(isCorrect ? AppColors.success : AppColors.error)
-
-            if !isCorrect {
-                Text("正确根音是 \(rootNoteName)")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(
-            (isCorrect ? AppColors.success : AppColors.error).opacity(0.08)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-    }
-
-    private var actionButtonsView: some View {
-        HStack {
-            Button { generateNewQuestion() } label: {
-                Label("新问题", systemImage: "shuffle")
-                    .font(.body)
-                    .foregroundStyle(AppColors.primary)
-            }
-            Spacer()
-            Button { playQuestion() } label: {
-                Label("重听", systemImage: "arrow.counterclockwise")
-                    .font(.body)
-                    .foregroundStyle(AppColors.primary)
-            }
-        }
-        .padding(.horizontal, 8)
-    }
-
-    // MARK: - 音乐键盘
-    private var musicKeyboardView: some View {
-        VStack(spacing: 6) {
-            durationRow
-
-            keyboardRow(
-                leftKeys: [("♮", { selectedAccidental = .natural })],
-                centerKeys: [("C", { selectNote("C") }), ("D", { selectNote("D") }), ("E", { selectNote("E") })],
-                rightKeys: [("删除", { deleteLastInput() })]
-            )
-
-            keyboardRow(
-                leftKeys: [("♯", { selectedAccidental = .sharp })],
-                centerKeys: [("F", { selectNote("F") }), ("G", { selectNote("G") }), ("A", { selectNote("A") })],
-                rightKeys: [("↑", { selectedOctave = min(selectedOctave + 1, 6) })]
-            )
-
-            keyboardRow(
-                leftKeys: [("♭", { selectedAccidental = .flat })],
-                centerKeys: [("B", { selectNote("B") }), ("+8va", { selectedOctave = min(selectedOctave + 1, 6) }), ("-8va", { selectedOctave = max(selectedOctave - 1, 2) })],
-                rightKeys: []
-            )
-
-            Button {
-                submitAnswer()
-            } label: {
-                Text("完成")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 52)
-                    .background(
-                        LinearGradient(
-                            colors: [AppColors.primary, AppColors.primary.opacity(0.85)],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
-            .disabled(selectedNoteName == nil)
-            .opacity(selectedNoteName == nil ? 0.5 : 1)
-            .padding(.horizontal, 4)
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
-        .background(Color(.systemGray5))
-    }
-
-    private var durationRow: some View {
-        HStack(spacing: 8) {
-            ForEach([("𝅝", "全音符"), ("𝅗𝅥", "二分音符"), ("𝅘𝅥", "四分音符"), ("𝅘𝅥𝅮", "八分音符"), ("𝅘𝅥𝅯", "十六分音符")], id: \.1) { symbol, _ in
-                Text(symbol)
-                    .font(.system(size: 16, weight: .medium))
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 40)
-                    .background(Color(.systemGray4))
-                    .foregroundStyle(.secondary)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .opacity(0.5)
-            }
-        }
-    }
-
-    private func keyboardRow(
-        leftKeys: [(String, () -> Void)],
-        centerKeys: [(String, () -> Void)],
-        rightKeys: [(String, () -> Void)]
-    ) -> some View {
-        HStack(spacing: 6) {
-            ForEach(leftKeys.indices, id: \.self) { i in
-                let key = leftKeys[i]
-                keyboardKey(key.0, action: key.1, style: .accent)
-            }
-            ForEach(centerKeys.indices, id: \.self) { i in
-                let key = centerKeys[i]
-                keyboardKey(key.0, action: key.1, style: .primary)
-            }
-            ForEach(rightKeys.indices, id: \.self) { i in
-                let key = rightKeys[i]
-                keyboardKey(key.0, action: key.1, style: .accent)
-            }
-        }
-    }
-
-    private func keyboardKey(_ title: String, action: @escaping () -> Void, style: KeyStyle) -> some View {
-        Button(action: action) {
-            Text(title)
-                .font(.system(size: title.count > 1 ? 12 : 15, weight: .medium))
-                .frame(maxWidth: .infinity)
-                .frame(height: 46)
-                .background(style.backgroundColor)
-                .foregroundStyle(style.foregroundColor)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-        }
-        .buttonStyle(.plain)
-    }
-
-    enum KeyStyle {
-        case primary, accent
-
-        var backgroundColor: Color {
-            switch self {
-            case .primary: return Color(.systemBackground)
-            case .accent: return Color(.systemGray3)
-            }
-        }
-
-        var foregroundColor: Color {
-            switch self {
-            case .primary: return .primary
-            case .accent: return .primary
-            }
-        }
+    private func handleRetryRound() {
+        questionCount = 0
+        correctCount = 0
+        inputNotes = []
+        selectedNoteName = nil
+        selectedAccidental = .natural
+        answerState = .idle
+        showNext = false
+        showComplete = false
+        generateNewQuestion()
     }
 
     // MARK: - 业务逻辑
 
     private func generateNewQuestion() {
-        showFeedback = false
+        answerState = .idle
         selectedNoteName = nil
         selectedAccidental = .natural
         selectedOctave = 4
+        inputNotes = []
 
-        // 随机选择一个根音（C3 ~ D5）
         let baseNotes: [(name: String, midi: Int)] = [
             ("C", 48), ("D", 50), ("E", 52), ("F", 53), ("G", 55), ("A", 57), ("B", 59),
             ("C", 60), ("D", 62), ("E", 64), ("F", 65), ("G", 67), ("A", 69), ("B", 71),
@@ -362,10 +249,8 @@ struct RootNoteListeningView: View {
         rootNote = chosen.midi
         rootNoteName = chosen.name
 
-        // 生成 2~4 个音，根音 + 上方音（2~24 半音范围内随机）
         let noteCount = Int.random(in: 2...4)
         var notes = [rootNote]
-
         let possibleUpper = (rootNote + 2)...(rootNote + 24)
         var upperNotes: [Int] = []
         while upperNotes.count < noteCount - 1 {
@@ -403,47 +288,6 @@ struct RootNoteListeningView: View {
         ]
         let solfege = mapping[noteInOctave] ?? "1"
         return (solfege, octave)
-    }
-
-    private func selectNote(_ note: String) {
-        selectedNoteName = note
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
-    }
-
-    private func deleteLastInput() {
-        selectedNoteName = nil
-        selectedAccidental = .natural
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
-    }
-
-    private func submitAnswer() {
-        guard let userNote = selectedNoteName else { return }
-        let userMIDI = midiNoteFromAnswer(note: userNote, accidental: selectedAccidental, octave: selectedOctave)
-
-        isCorrect = (userMIDI == rootNote)
-        questionCount += 1
-
-        if isCorrect {
-            correctCount += 1
-            feedbackMessage = "正确！"
-        } else {
-            feedbackMessage = "错误"
-        }
-
-        showFeedback = true
-
-        let generator = UIImpactFeedbackGenerator(style: isCorrect ? .medium : .heavy)
-        generator.impactOccurred()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            if questionCount >= totalQuestions {
-                saveAndDismiss()
-            } else {
-                generateNewQuestion()
-            }
-        }
     }
 
     private func saveAndDismiss() {

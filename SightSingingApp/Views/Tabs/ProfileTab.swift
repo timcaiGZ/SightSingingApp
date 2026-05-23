@@ -15,6 +15,7 @@ struct ProfileTab: View {
     }
     
     var body: some View {
+        NavigationStack {
         ScrollView {
             VStack(spacing: 16) {
                 // === 页面标题 28px bold ===
@@ -83,7 +84,7 @@ struct ProfileTab: View {
                         
                         Rectangle().fill(AppTheme.border).frame(width: 0.5)
                         
-                        StatCell(value: "15", label: "连续天数", color: AppTheme.Module.interval)
+                        StatCell(value: "15", label: "连续天数", color: AppTheme.Theory.interval)
                     }
                 }
                 .background(Color.white)
@@ -227,6 +228,7 @@ struct ProfileTab: View {
         .navigationDestination(item: $selectedSettingsRow) { dest in
             SettingsDetailView(destination: dest)
         }
+        }  // NavigationStack
     }
 }
 

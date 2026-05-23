@@ -14,4 +14,19 @@ struct MelodyNote: Identifiable, Equatable {
         self.octave = octave
         self.duration = duration
     }
+
+    /// 显示名称（如 "C4", "D#5" 等）
+    var displayName: String {
+        let solfegeToNote: [String: String] = [
+            "1": "C", "#1": "C#", "♭2": "Db",
+            "2": "D", "#2": "D#", "♭3": "Eb",
+            "3": "E",
+            "4": "F", "#4": "F#",
+            "5": "G", "#5": "G#", "♭6": "Ab",
+            "6": "A", "#6": "A#", "♭7": "Bb",
+            "7": "B",
+        ]
+        let noteName = solfegeToNote[solfege] ?? solfege
+        return "\(noteName)\(octave)"
+    }
 }

@@ -1,463 +1,245 @@
 import SwiftUI
-import SwiftData
 
-/// 练习详情页（集成谱式切换器和多谱式展示）
+// MARK: - 练习详情页 (匹配 v0 exercise-detail 选择题设计)
+
 struct ExerciseDetailView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let exercise: ExerciseType
     let module: ExerciseModule
     let viewModel: PracticeViewModel
 
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
+    private let totalQuestions = 10
 
-    @State private var state: ExerciseState = .question
-    @State private var currentScore: Int = 0
-    @State private var questionCount: Int = 0
-    @State private var correctCount: Int = 0
-    @State private var selectedAnswer: Int?
-    @State private var isCorrect: Bool?
-    @State private var startTime: Date = Date()
-    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
+    @State private var currentQuestion = 1
+    @State private var score = 0
+    @State private var correctCount = 0
+    @State private var selectedOption: String?
+    @State private var showResult = false
+    @State private var showComplete = false
 
-    enum ExerciseState {
-        case question
-        case feedback
-        case finished
+    @State private var currentQuestionData: QuestionData = QuestionData(displayContent: "点击播放", displayLabel: "加载中...", options: [], correctAnswer: "")
+
+    private var showDecompose: Bool {
+        !["rhythm-hear", "melody-dictation", "interval-compare"].contains(exerciseID)
     }
 
-    private struct QuestionItem {
-        let question: String
-        let answer: Int
-        let options: [String]
-        let solfege: String
-        let octave: Int
+    private var exerciseID: String {
+        switch exercise {
+        case .intervalRecognition: return "interval"
+        case .chordQualityRecognition: return "chord"
+        case .commonChordRecognition: return "triad"
+        case .barreChordRecognition: return "seventh-chord"
+        case .scaleRecognition: return "chord-inversion"
+        case .syncopationRecognition: return "rhythm-hear"
+        case .tablatureMelodySinging: return "melody-dictation"
+        case .fretboardIntervalComparison: return "interval-compare"
+        default: return "interval-identify"
+        }
     }
 
-    private var questions: [QuestionItem] { loadQuestions() }
+    private var questionPrompt: String {
+        let prompts: [String: String] = [
+            "interval": "请听辨以下音程，选择正确的答案。",
+            "chord": "请听辨以下和弦，选择正确的和弦类型。",
+            "triad": "请听辨以下三和弦，选择正确的和弦类型。",
+            "seventh-chord": "请听辨以下七和弦，选择正确的和弦类型。",
+            "chord-inversion": "请听辨以下和弦，判断其转位。",
+            "rhythm-hear": "请听辨以下节奏型，选择正确的答案。",
+            "melody-dictation": "请先听标准音校准音高，然后听取旋律并记录。",
+            "interval-compare": "请比较两个音程，选择哪个更大。",
+            "interval-identify": "请听辨音程，选择正确的音程名称。",
+        ]
+        return prompts[exerciseID] ?? "请听辨音频，选择正确的答案。"
+    }
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerView
-            Divider()
-            contentView
-        }
-        .background(Color(.systemGroupedBackground))
-        .onAppear {
-            viewModel.setModelContext(modelContext)
-        }
-    }
-
-    // MARK: - Header
-
-    private var headerView: some View {
-        VStack(spacing: 0) {
-            // 顶部导航栏
-            HStack {
-                Button { dismiss() } label: {
-                    Image(systemName: "xmark")
-                        .font(.title3)
-                        .foregroundStyle(AppColors.secondaryText)
+        ZStack {
+            ExerciseLayout(
+                title: exercise.rawValue,
+                questionNumber: currentQuestion,
+                totalQuestions: totalQuestions,
+                questionText: questionPrompt,
+                score: score,
+                showDecompose: showDecompose,
+                onBack: { dismiss() },
+                onNewQuestion: handleNewQuestion,
+                onDecompose: {
+                    playCurrentQuestion()
+                },
+                onReplay: {
+                    playCurrentQuestion()
                 }
-
-                Spacer()
-
-                Text(exercise.rawValue)
-                    .font(.headline)
-
-                Spacer()
-
-                Text("\(currentScore) 分")
-                    .font(.headline)
-                    .foregroundStyle(AppColors.primary)
-            }
-            .padding()
-
-            // 谱式切换器
-            NotationSwitcher(selectedNotation: $selectedNotation)
-                .padding(.horizontal)
-                .padding(.bottom, 12)
-        }
-        .background(Color(.systemBackground))
-    }
-
-    // MARK: - Content
-
-    @ViewBuilder
-    private var contentView: some View {
-        switch state {
-        case .question:
-            questionView
-        case .feedback:
-            feedbackView
-        case .finished:
-            finishedView
-        }
-    }
-
-    // MARK: - Question View
-
-    private var questionView: some View {
-        VStack(spacing: 20) {
-            // 进度圆点
-            progressDots
-
-            Spacer()
-
-            // 题目内容
-            let current = questions[questionCount % questions.count]
-
-            // 谱式展示区
-            notationDisplayArea
-
-            // 播放按钮
-            Button {
-                Task {
-                    await AudioEngineManager.shared.playSolfege(current.solfege, octave: current.octave)
-                }
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(AppColors.primary)
-                        .frame(width: 72, height: 72)
-
-                    Image(systemName: "speaker.wave.2.fill")
-                        .font(.title2)
-                        .foregroundStyle(.white)
-                }
-            }
-
-            // 题目文字
-            Text(current.question)
-                .font(.body)
-                .fontWeight(.medium)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(AppColors.primaryText)
-                .padding(.horizontal)
-
-            Spacer()
-
-            // 选项
-            optionsList(current: current)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 32)
-        }
-    }
-
-    /// 进度圆点
-    private var progressDots: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 6) {
-                ForEach(0..<questions.count, id: \.self) { index in
-                    Circle()
-                        .fill(dotColor(for: index))
-                        .frame(width: 8, height: 8)
-                }
-            }
-
-            Text("\(questionCount + 1) / \(questions.count)")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondaryText)
-        }
-        .padding(.top, 16)
-    }
-
-    private func dotColor(for index: Int) -> Color {
-        if index < questionCount {
-            return isCorrect == true ? AppColors.success : AppColors.error
-        } else if index == questionCount {
-            return AppColors.primary
-        }
-        return AppColors.tertiaryText
-    }
-
-    /// 谱式展示区
-    private var notationDisplayArea: some View {
-        Group {
-            switch selectedNotation {
-            case .tabWithSolfege:
-                // 六线谱+简谱组合视图
-                VStack(spacing: 12) {
-                    GuitarTablatureView(
-                        notes: tabNotesForCurrent,
-                        fretRange: 0...5
-                    )
-                    Divider()
-                    SolfegeView(
-                        notes: solfegeNotesForCurrent,
-                        highlightedIndex: 0
-                    )
-                }
-            case .staff:
-                StaffNotationView(notes: staffNotesForCurrent)
-            }
-        }
-        .padding(.horizontal, 24)
-    }
-
-    /// 六线谱音符
-    private var tabNotesForCurrent: [GuitarTabNote] {
-        [
-            GuitarTabNote(string: 1, fret: 0, technique: nil),
-            GuitarTabNote(string: 2, fret: 1, technique: nil),
-            GuitarTabNote(string: 3, fret: 2, technique: nil),
-        ]
-    }
-
-    /// 五线谱音符
-    private var staffNotesForCurrent: [StaffNote] {
-        [
-            StaffNote(pitch: StaffPitch(line: 0), duration: .quarter, accidental: nil),
-            StaffNote(pitch: StaffPitch(line: 2), duration: .quarter, accidental: nil),
-            StaffNote(pitch: StaffPitch(line: 4), duration: .quarter, accidental: nil),
-        ]
-    }
-
-    /// 简谱音符
-    private var solfegeNotesForCurrent: [SolfegeNote] {
-        [
-            SolfegeNote(solfege: "1", octave: 4, duration: .quarter),
-            SolfegeNote(solfege: "2", octave: 4, duration: .quarter),
-            SolfegeNote(solfege: "3", octave: 4, duration: .quarter),
-        ]
-    }
-
-    /// 选项列表
-    private func optionsList(current: QuestionItem) -> some View {
-        VStack(spacing: 10) {
-            Text("请选择")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondaryText)
-                .frame(maxWidth: .infinity, alignment: .leading)
-
-            ForEach(Array(current.options.enumerated()), id: \.offset) { index, option in
-                Button {
-                    selectAnswer(index)
-                } label: {
-                    HStack {
-                        Text(optionLetter(index))
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .frame(width: 24, height: 24)
-                            .background(AppColors.primary.opacity(0.7))
-                            .clipShape(Circle())
-
-                        Text(option)
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundStyle(AppColors.primaryText)
-
-                        Spacer()
+            ) {
+                VStack(spacing: 16) {
+                    // 标准音（旋律听写）
+                    if exerciseID == "melody-dictation" {
+                        ReferenceNoteCard(note: "A", frequency: "440Hz", onPlay: {
+                            ExerciseSoundPlayer.playReference()
+                        })
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .background(Color(.systemBackground))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-    }
 
-    private func optionLetter(_ index: Int) -> String {
-        let letters = ["A", "B", "C", "D", "E", "F"]
-        return index < letters.count ? letters[index] : "\(index + 1)"
-    }
-
-    // MARK: - Feedback View
-
-    private var feedbackView: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            Image(systemName: isCorrect == true ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 72))
-                .foregroundStyle(isCorrect == true ? AppColors.success : AppColors.error)
-
-            Text(isCorrect == true ? "正确！" : "错误")
-                .font(.title)
-                .fontWeight(.bold)
-
-            if isCorrect == false {
-                let correct = questions[questionCount % questions.count].options[
-                    questions[questionCount % questions.count].answer
-                ]
-                Text("正确答案：\(correct)")
-                    .font(.body)
-                    .foregroundStyle(AppColors.secondaryText)
-            }
-
-            Spacer()
-
-            Button {
-                nextQuestion()
-            } label: {
-                Text("下一题")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(AppColors.primary)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 32)
-        }
-    }
-
-    // MARK: - Finished View
-
-    private var finishedView: some View {
-        VStack(spacing: 24) {
-            Spacer()
-
-            Image(systemName: "star.circle.fill")
-                .font(.system(size: 80))
-                .foregroundStyle(.yellow)
-
-            Text("练习完成！")
-                .font(.title)
-                .fontWeight(.bold)
-
-            Text("得分：\(currentScore) / 100")
-                .font(.title2)
-                .foregroundStyle(AppColors.primary)
-
-            Text("正确率：\(correctCount)/\(questions.count)")
-                .font(.body)
-                .foregroundStyle(AppColors.secondaryText)
-
-            Spacer()
-
-            VStack(spacing: 12) {
-                Button {
-                    viewModel.savePracticeRecord(
-                        module: module,
-                        exerciseType: exercise,
-                        score: currentScore,
-                        durationSeconds: Int(Date().timeIntervalSince(startTime))
+                    // 音频提示卡片
+                    AudioPromptCard(
+                        label: currentQuestionData.displayContent,
+                        hint: currentQuestionData.displayLabel,
+                        onPlay: {
+                            playCurrentQuestion()
+                        }
                     )
-                    dismiss()
-                } label: {
-                    Text("保存并退出")
-                        .font(.headline)
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(AppColors.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
-                }
 
-                Button {
-                    questionCount = 0
-                    correctCount = 0
-                    currentScore = 0
-                    state = .question
-                    startTime = Date()
-                } label: {
-                    Text("再练一次")
-                        .font(.headline)
-                        .foregroundStyle(AppColors.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color(.systemGray5))
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    // 选择题
+                    ChoiceList(
+                        options: currentQuestionData.options,
+                        selectedOption: selectedOption,
+                        correctAnswer: currentQuestionData.correctAnswer,
+                        showResult: showResult,
+                        onSelect: handleSelect,
+                        onNext: goNext
+                    )
                 }
+                .padding(.vertical, 16)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 32)
+
+            // 完成覆盖层
+            if showComplete {
+                ExerciseCompletionOverlay(
+                    correctCount: correctCount,
+                    totalQuestions: totalQuestions,
+                    onRetry: handleRetryRound,
+                    onBack: { dismiss() }
+                )
+                .transition(.opacity)
+            }
         }
+        .onAppear { generateQuestionFromBank() }
     }
 
     // MARK: - Actions
 
-    private func selectAnswer(_ index: Int) {
-        let current = questions[questionCount % questions.count]
-        let correct = index == current.answer
-        selectedAnswer = index
-        isCorrect = correct
-        questionCount += 1
-
-        if correct {
+    private func handleSelect(_ option: String) {
+        guard !showResult else { return }
+        selectedOption = option
+        showResult = true
+        if option == currentQuestionData.correctAnswer {
             correctCount += 1
-            currentScore = Int(Double(correctCount) / Double(questionCount) * 100)
+            score += 10
         }
+    }
 
-        let generator = UIImpactFeedbackGenerator(style: correct ? .medium : .heavy)
-        generator.impactOccurred()
+    private func goNext() {
+        if currentQuestion >= totalQuestions {
+            withAnimation { showComplete = true }
+            return
+        }
+        selectedOption = nil
+        showResult = false
+        currentQuestion += 1
+        generateQuestionFromBank()
+    }
 
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 300_000_000)
-            if questionCount >= questions.count {
-                state = .finished
-            } else {
-                state = .feedback
+    private func handleNewQuestion() {
+        if showResult { goNext() }
+    }
+
+    private func handleRetryRound() {
+        currentQuestion = 1
+        correctCount = 0
+        score = 0
+        selectedOption = nil
+        showResult = false
+        showComplete = false
+        generateQuestionFromBank()
+    }
+
+    // MARK: - Demo Data
+
+    private func playCurrentQuestion() {
+        switch exerciseID {
+        case "interval", "interval-identify":
+            guard let q = QuestionBank.intervalQuestions.randomElement() else { return }
+            if let interval = MusicTheoryInterval.allCases.first(where: { $0.semitones == q.semitones }) {
+                ExerciseSoundPlayer.playInterval(interval)
             }
+        case "chord", "triad", "seventh-chord", "chord-inversion":
+            let quality = TriadQuality.allCases.randomElement()!
+            ExerciseSoundPlayer.playTriadQuality(quality)
+        default:
+            ExerciseSoundPlayer.playReference()
         }
     }
 
-    private func nextQuestion() {
-        selectedAnswer = nil
-        isCorrect = nil
-        state = .question
-    }
-
-    // MARK: - Data Loading
-
-    private func loadQuestions() -> [QuestionItem] {
-        switch exercise {
-        case .singleNoteRecognition:
-            return QuestionBank.noteNameQuestions.prefix(10).map { q in
-                let options = generateNoteNameOptions(correct: q.noteName)
-                return QuestionItem(
-                    question: "简谱 \(q.solfege) 对应哪个音名？",
-                    answer: options.firstIndex(of: q.noteName) ?? 0,
+    private func generateQuestionFromBank() {
+        switch exerciseID {
+        case "interval", "interval-identify":
+            let pool = QuestionBank.intervalQuestions.shuffled().prefix(4)
+            let options = pool.map { $0.name }
+            let correct = pool.first!
+            currentQuestionData = QuestionData(
+                displayContent: "点击播放音频",
+                displayLabel: "听辨音程",
+                options: options,
+                correctAnswer: correct.name
+            )
+        case "chord", "triad", "seventh-chord", "chord-inversion":
+            let optionNames = ["大三和弦", "小三和弦", "增三和弦", "减三和弦"]
+            let correct = optionNames.randomElement()!
+            currentQuestionData = QuestionData(
+                displayContent: "点击播放音频",
+                displayLabel: "听辨和弦",
+                options: optionNames,
+                correctAnswer: correct
+            )
+        case "rhythm-hear", "melody-dictation", "interval-compare":
+            if exerciseID == "rhythm-hear" {
+                let pool = QuestionBank.rhythmQuestions.shuffled().prefix(4)
+                let options = pool.map { $0.name }
+                currentQuestionData = QuestionData(
+                    displayContent: "点击播放音频",
+                    displayLabel: "听辨节奏",
                     options: options,
-                    solfege: q.solfege,
-                    octave: q.octave
+                    correctAnswer: pool.first?.name ?? ""
                 )
-            }
-        case .openStringRecognition:
-            let openStrings = [
-                (6, "3", "E", 2), (5, "6", "A", 2), (4, "2", "D", 3),
-                (3, "5", "G", 3), (2, "7", "B", 3), (1, "3", "E", 4)
-            ]
-            return openStrings.shuffled().prefix(10).map { string in
-                let options = generateNoteNameOptions(correct: string.2)
-                return QuestionItem(
-                    question: "第 \(string.0) 弦空弦是什么音？",
-                    answer: options.firstIndex(of: string.2) ?? 0,
+            } else {
+                let pool = QuestionBank.intervalQuestions.shuffled().prefix(4)
+                let options = pool.map { $0.name }
+                let correct = pool.first!
+                currentQuestionData = QuestionData(
+                    displayContent: "点击播放音频",
+                    displayLabel: "听辨音程",
                     options: options,
-                    solfege: string.1,
-                    octave: string.3
+                    correctAnswer: correct.name
                 )
             }
         default:
-            return [
-                QuestionItem(question: "简谱 1 对应哪个音名？", answer: 0, options: ["C", "D", "E", "G"], solfege: "1", octave: 4),
-                QuestionItem(question: "第6弦空弦是什么音？", answer: 2, options: ["A", "E", "D", "G"], solfege: "3", octave: 3),
-                QuestionItem(question: "C 和弦包含哪些音？", answer: 0, options: ["C-E-G", "D-F-A", "E-G-B", "F-A-C"], solfege: "1", octave: 4),
-            ]
+            let pool = QuestionBank.intervalQuestions.shuffled().prefix(4)
+            let options = pool.map { $0.name }
+            let correct = pool.first!
+            currentQuestionData = QuestionData(
+                displayContent: "点击播放音频",
+                displayLabel: exercise.rawValue,
+                options: options,
+                correctAnswer: correct.name
+            )
         }
     }
 
-    private func generateNoteNameOptions(correct: String) -> [String] {
-        let allNotes = ["C", "D", "E", "F", "G", "A", "B"]
-        var options = [correct]
-        while options.count < 4 {
-            let note = allNotes.randomElement() ?? "C"
-            if !options.contains(note) {
-                options.append(note)
-            }
-        }
-        return options.shuffled()
+    private struct QuestionData {
+        let displayContent: String
+        let displayLabel: String
+        let options: [String]
+        let correctAnswer: String
     }
 }
 
+// MARK: - 预览
+
 #Preview {
-    ExerciseDetailView(
-        exercise: .singleNoteRecognition,
-        module: .noteName,
-        viewModel: PracticeViewModel()
-    )
+    NavigationStack {
+        ExerciseDetailView(
+            exercise: .intervalRecognition,
+            module: .interval,
+            viewModel: PracticeViewModel()
+        )
+    }
 }

@@ -1,45 +1,19 @@
 import SwiftUI
-import SwiftData
 
-/// 视唱练习视图（集成谱式展示和音准指示器）
+// MARK: - 视唱练习页 (匹配 v0 sight-singing-view, 接入真实 PitchDetector + ViewModel)
+
 struct SightSingingView: View {
+    @Environment(\.dismiss) private var dismiss
+
     let exercise: ExerciseType
     let module: ExerciseModule
     let viewModel: PracticeViewModel
 
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
-
-    // MARK: - 状态
-    @State private var state: SightSingingState = .intro
-    @State private var currentNoteIndex: Int = 0
-    @State private var pitchScore: Int = 0
-    @State private var rhythmScore: Int = 0
-    @State private var totalScore: Int = 0
-    @State private var noteScores: [Int] = []
-    @State private var rhythmScores: [Int] = []
-    @State private var startTime: Date = Date()
-    @State private var permissionDenied: Bool = false
-    @State private var singingTimer: Timer?
-
-    @State private var melody: [MelodyNote] = []
-    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
-
-    private let pitchDetector = PitchDetector.shared
-
-    init(exercise: ExerciseType, module: ExerciseModule, viewModel: PracticeViewModel) {
-        self.exercise = exercise
-        self.module = module
-        self.viewModel = viewModel
-        _melody = State(initialValue: generateMelody(for: exercise))
-    }
+    @State private var localVM = SightSingingViewModel()
 
     var body: some View {
-        ZStack {
-            Color(.systemGroupedBackground)
-                .ignoresSafeArea()
-
-            switch state {
+        Group {
+            switch localVM.state {
             case .intro:
                 introView
             case .playingDemo:
@@ -49,473 +23,517 @@ struct SightSingingView: View {
             case .singing:
                 singingView
             case .result:
-                SightSingingResultView(
-                    pitchScore: pitchScore,
-                    rhythmScore: rhythmScore,
-                    noteScores: noteScores,
-                    melody: melody,
-                    onRetry: resetPractice,
-                    onSave: saveAndExit
+                SightSingingResult(
+                    score: localVM.totalScore,
+                    pitchScore: localVM.pitchScore,
+                    rhythmScore: localVM.rhythmScore,
+                    onRetry: {
+                        localVM.resetPractice()
+                    },
+                    onNext: {
+                        localVM.cleanup()
+                        dismiss()
+                    },
+                    onBack: {
+                        localVM.cleanup()
+                        dismiss()
+                    },
+                    exerciseTitle: exercise.rawValue
                 )
             }
         }
         .onAppear {
-            viewModel.setModelContext(modelContext)
+            localVM.generateMelody(for: exercise)
+            // 保存练习记录
+            localVM.onPracticeComplete = { pitch, rhythm, total in
+                Task {
+                    viewModel.savePracticeRecord(
+                        module: module,
+                        exerciseType: exercise,
+                        score: total,
+                        durationSeconds: 0
+                    )
+                }
+            }
         }
         .onDisappear {
-            cleanup()
+            localVM.cleanup()
         }
     }
 
-    // MARK: - Intro View
+    // MARK: - 介绍页
 
     private var introView: some View {
-        VStack(spacing: 32) {
-            Spacer()
+        ExerciseLayout(
+            title: exercise.rawValue,
+            questionNumber: 1,
+            totalQuestions: localVM.melody.count,
+            questionText: "即将播放示范旋律，仔细聆听后演唱。",
+            score: 0,
+            showDecompose: false,
+            onBack: {
+                localVM.cleanup()
+                dismiss()
+            },
+            onNewQuestion: {},
+            onReplay: {},
+            replayLabel: "示范"
+        ) {
+            VStack(spacing: 24) {
+                Spacer()
 
-            Image(systemName: "music.mic")
-                .font(.system(size: 80))
-                .foregroundStyle(AppColors.primary)
+                VStack(spacing: 12) {
+                    Image(systemName: "music.mic")
+                        .font(.system(size: 48))
+                        .foregroundStyle(AppTheme.accent)
 
-            VStack(spacing: 12) {
-                Text("视唱练习")
-                    .font(.title)
-                    .fontWeight(.bold)
+                    Text("视唱练习")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(AppTheme.primaryText)
 
-                Text("跟着简谱演唱，系统实时评分")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
+                    Text("请戴好耳机，准备好麦克风")
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
 
-            // 旋律预览
-            SolfegeView(notes: melody.map { SolfegeNote(solfege: $0.solfege, octave: $0.octave, duration: .quarter) }, highlightedIndex: 0)
-                .padding(.horizontal, 24)
-
-            Spacer()
-
-            VStack(spacing: 12) {
                 Button {
-                    checkPermissionAndStart()
+                    localVM.checkPermissionAndStart()
                 } label: {
                     Text("开始练习")
-                        .font(.headline)
+                        .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(AppColors.primary)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .frame(height: 48)
+                        .background(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 32)
+
+                if localVM.permissionDenied {
+                    Text("麦克风权限被拒绝，请在系统设置中开启。")
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.error)
+                        .multilineTextAlignment(.center)
                 }
 
-                Button {
-                    dismiss()
-                } label: {
-                    Text("取消")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                }
+                Spacer()
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 32)
+            .padding(.vertical, 16)
         }
     }
 
-    // MARK: - Demo Playing View
+    // MARK: - 播放示范页
 
     private var demoPlayingView: some View {
-        VStack(spacing: 32) {
-            Spacer()
+        ExerciseLayout(
+            title: exercise.rawValue,
+            questionNumber: 1,
+            totalQuestions: localVM.melody.count,
+            questionText: "请仔细聆听示范旋律...",
+            score: 0,
+            showDecompose: false,
+            onBack: {
+                localVM.cleanup()
+                dismiss()
+            },
+            onNewQuestion: {},
+            onReplay: {
+                localVM.playDemoMelody()
+            },
+            replayLabel: "重播"
+        ) {
+            VStack(spacing: 24) {
+                Spacer()
 
-            // 当前谱式展示
-            notationDisplay
-
-            Image(systemName: "waveform")
-                .font(.system(size: 60))
-                .foregroundStyle(AppColors.primary)
-                .symbolEffect(.variableColor.iterative.reversing)
-                .padding()
-
-            Text("正在播放示范...")
-                .font(.headline)
-                .foregroundStyle(.secondary)
-
-            Spacer()
-
-            ProgressView()
-                .scaleEffect(1.5)
-                .padding(.bottom, 64)
-        }
-        .onAppear {
-            playDemoMelody()
-        }
-    }
-
-    /// 谱式展示
-    private var notationDisplay: some View {
-        VStack(spacing: 16) {
-            // 谱式切换器
-            CompactNotationSwitcher(selectedNotation: $selectedNotation, availableNotations: NotationType.allCases)
-                .frame(width: 200)
-
-            // 谱式内容
-            Group {
-                switch selectedNotation {
-                case .tabWithSolfege:
-                    // 六线谱+简谱组合视图
-                    VStack(spacing: 12) {
-                        GuitarTablatureView(
-                            notes: guitarNotesForCurrent,
-                            fretRange: 0...5
-                        )
-                        Divider()
-                        SolfegeView(
-                            notes: melody.map { SolfegeNote(solfege: $0.solfege, octave: $0.octave, duration: .quarter) },
-                            highlightedIndex: currentNoteIndex
-                        )
+                // 当前播放音符
+                if localVM.currentNoteIndex < localVM.melody.count {
+                    let note = localVM.melody[localVM.currentNoteIndex]
+                    VStack(spacing: 8) {
+                        Text("示范旋律")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        Text("\(note.displayName)")
+                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.accent)
                     }
-                case .staff:
-                    StaffNotationView(notes: staffNotesForCurrent)
                 }
+
+                // 旋律进度
+                HStack(spacing: 6) {
+                    ForEach(Array(localVM.melody.enumerated()), id: \.offset) { index, note in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(index <= localVM.currentNoteIndex ? AppTheme.accent : AppTheme.border)
+                            .frame(height: 4)
+                    }
+                }
+                .padding(.horizontal, 32)
+
+                Text("准备演唱...")
+                    .font(.system(size: 15))
+                    .foregroundStyle(AppTheme.secondaryText)
+
+                Spacer()
             }
-            .padding(.horizontal, 24)
+            .padding(.vertical, 16)
+            .onAppear {
+                localVM.playDemoMelody()
+            }
         }
     }
 
-    private var guitarNotesForCurrent: [GuitarTabNote] {
-        melody.prefix(4).enumerated().map { index, note in
-            GuitarTabNote(
-                string: 6 - (index % 6),
-                fret: Int.random(in: 0...3),
-                technique: nil
-            )
-        }
-    }
-
-    private var staffNotesForCurrent: [StaffNote] {
-        melody.prefix(4).enumerated().map { index, note in
-            StaffNote(
-                pitch: StaffPitch(line: index * 2),
-                duration: .quarter,
-                accidental: nil
-            )
-        }
-    }
-
-    // MARK: - Waiting View
+    // MARK: - 等待演唱页
 
     private var waitingToSingView: some View {
-        VStack(spacing: 32) {
-            Spacer()
+        ExerciseLayout(
+            title: exercise.rawValue,
+            questionNumber: 1,
+            totalQuestions: localVM.melody.count,
+            questionText: "请看目标音符，按住麦克风按钮演唱该音。",
+            score: 0,
+            showDecompose: false,
+            onBack: {
+                localVM.cleanup()
+                dismiss()
+            },
+            onNewQuestion: {},
+            onReplay: {
+                localVM.playDemoMelody()
+            },
+            replayLabel: "重播"
+        ) {
+            VStack(spacing: 24) {
+                Spacer()
 
-            notationDisplay
+                if !localVM.melody.isEmpty {
+                    VStack(spacing: 8) {
+                        Text("目标旋律")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.secondaryText)
 
-            VStack(spacing: 12) {
-                Text("点击下方按钮开始演唱")
-                    .font(.headline)
+                        HStack(spacing: 12) {
+                            ForEach(Array(localVM.melody.enumerated()), id: \.offset) { _, note in
+                                Text(note.displayName)
+                                    .font(.system(size: 24, weight: .semibold, design: .rounded))
+                                    .foregroundStyle(AppTheme.accent)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(AppTheme.accent.opacity(0.1))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                            }
+                        }
+                    }
 
-                Text("请对着麦克风模唱旋律")
-                    .font(.body)
-                    .foregroundStyle(.secondary)
-            }
+                    PitchMeter(centsDeviation: 0, isListening: false)
 
-            Spacer()
-
-            Button {
-                startSinging()
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: "mic.fill")
-                        .font(.title2)
-                    Text("开始演唱")
-                        .font(.title2)
-                        .fontWeight(.semibold)
+                    Text("按住下方按钮开始演唱")
+                        .font(.system(size: 14))
+                        .foregroundStyle(AppTheme.tertiaryText)
                 }
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-                .background(AppColors.primary)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+
+                Spacer()
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 48)
+            .padding(.vertical, 16)
+        } bottomContent: {
+            SingButton(
+                isPressed: false,
+                onPressStart: {
+                    localVM.startSinging()
+                },
+                onPressEnd: {}
+            )
+            .padding(.bottom, 8)
         }
     }
 
-    // MARK: - Singing View
-
-    @State private var detectedFrequency: Double = 0
-    @State private var centsDeviation: Double = 0
+    // MARK: - 演唱进行中页 (真实音高检测)
 
     private var singingView: some View {
-        VStack(spacing: 0) {
-            // 顶部进度
-            HStack {
-                Text("第 \(currentNoteIndex + 1) / \(melody.count) 音")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Text("演唱中...")
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.primary)
-            }
-            .padding()
-            .background(Color(.systemBackground))
-
-            Divider()
-
+        ExerciseLayout(
+            title: exercise.rawValue,
+            questionNumber: localVM.currentNoteIndex + 1,
+            totalQuestions: localVM.melody.count,
+            questionText: "请在音高指示器的引导下演唱。",
+            score: 0,
+            showDecompose: false,
+            onBack: {
+                localVM.stopSinging()
+                localVM.cleanup()
+                dismiss()
+            },
+            onNewQuestion: {},
+            onReplay: {
+                localVM.playDemoMelody()
+            },
+            replayLabel: "示范"
+        ) {
             VStack(spacing: 24) {
-                // 谱式展示
-                notationDisplay
+                Spacer()
 
-                // 音准指示器
-                PitchMeterView(
-                    centsDeviation: centsDeviation,
-                    isActive: true,
-                    targetNote: melody[currentNoteIndex].solfege,
-                    octave: melody[currentNoteIndex].octave
-                )
-
-                // 当前目标音
-                VStack(spacing: 4) {
-                    Text("目标音")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text("\(melody[currentNoteIndex].solfege)\(melody[currentNoteIndex].octave)")
-                        .font(.title)
-                        .fontWeight(.bold)
-                        .foregroundStyle(AppColors.primary)
-                }
-            }
-            .frame(maxHeight: .infinity)
-            .padding()
-
-            // 停止按钮
-            Button {
-                stopSinging()
-            } label: {
-                Text("完成演唱")
-                    .font(.headline)
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(AppColors.error)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
-            }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 32)
-        }
-    }
-
-    // MARK: - 权限检查
-
-    private func checkPermissionAndStart() {
-        Task {
-            let granted = await pitchDetector.requestMicrophonePermission()
-            if granted {
-                await MainActor.run {
-                    state = .playingDemo
-                }
-            } else {
-                await MainActor.run {
-                    permissionDenied = true
-                }
-            }
-        }
-    }
-
-    // MARK: - 播放示范旋律
-
-    private func playDemoMelody() {
-        var delay: Double = 0
-        for (index, note) in melody.enumerated() {
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-                self.currentNoteIndex = index
-                await AudioEngineManager.shared.playSolfege(note.solfege, octave: note.octave)
-            }
-            delay += note.duration
-        }
-
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: UInt64((delay + 0.5) * 1_000_000_000))
-            self.state = .waitingToSing
-            self.currentNoteIndex = 0
-        }
-    }
-
-    // MARK: - 演唱计时
-
-    @State private var singingStartTime: Date = Date()
-    @State private var currentNoteStartTime: Date = Date()
-
-    private func startSinging() {
-        pitchDetector.startDetection()
-        state = .singing
-        startTime = Date()
-        singingStartTime = Date()
-        currentNoteIndex = 0
-        currentNoteStartTime = Date()
-        noteScores = []
-        rhythmScores = []
-
-        singingTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [self] timer in
-            guard self.state == .singing else {
-                timer.invalidate()
-                return
-            }
-
-            let currentNote = self.melody[self.currentNoteIndex]
-            let elapsedTime = Date().timeIntervalSince(self.currentNoteStartTime)
-
-            if elapsedTime >= currentNote.duration {
-                let rhythmNoteScore = self.calculateRhythmScore(
-                    actualDuration: elapsedTime,
-                    expectedDuration: currentNote.duration
-                )
-                self.rhythmScores.append(rhythmNoteScore)
-
-                if self.currentNoteIndex < self.melody.count - 1 {
-                    self.currentNoteIndex += 1
-                    self.currentNoteStartTime = Date()
-                } else {
-                    timer.invalidate()
-                    DispatchQueue.main.async {
-                        self.stopSinging()
+                // 当前目标音符
+                if localVM.currentNoteIndex < localVM.melody.count {
+                    let note = localVM.melody[localVM.currentNoteIndex]
+                    VStack(spacing: 8) {
+                        Text("目标音")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        Text(note.displayName)
+                            .font(.system(size: 56, weight: .bold, design: .rounded))
+                            .foregroundStyle(AppTheme.accent)
                     }
-                    return
+
+                    // 实时音高反馈
+                    PitchMeter(
+                        centsDeviation: localVM.centsDeviation,
+                        isListening: true
+                    )
+
+                    // 频率显示
+                    if localVM.detectedFrequency > 0 {
+                        Text(String(format: "%.1f Hz", localVM.detectedFrequency))
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                }
+
+                // 旋律进度
+                HStack(spacing: 6) {
+                    ForEach(Array(localVM.melody.enumerated()), id: \.offset) { index, _ in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(
+                                index < localVM.currentNoteIndex ? AppTheme.success :
+                                index == localVM.currentNoteIndex ? AppTheme.accent :
+                                AppTheme.border
+                            )
+                            .frame(height: 4)
+                    }
+                }
+                .padding(.horizontal, 32)
+
+                Spacer()
+            }
+            .padding(.vertical, 16)
+        } bottomContent: {
+            SingButton(
+                isPressed: true,
+                onPressStart: {},
+                onPressEnd: {
+                    localVM.stopSinging()
+                }
+            )
+            .padding(.bottom, 8)
+        }
+    }
+}
+
+// MARK: - 演唱按钮
+
+struct SingButton: View {
+    let isPressed: Bool
+    let onPressStart: () -> Void
+    let onPressEnd: () -> Void
+
+    var body: some View {
+        Button {
+            // 使用手势控制
+        } label: {
+            ZStack {
+                Circle()
+                    .fill(isPressed ? AppTheme.accent.opacity(0.8) : AppTheme.accent)
+                    .frame(width: 80, height: 80)
+                    .shadow(color: AppTheme.accent.opacity(0.3), radius: 12, x: 0, y: 6)
+
+                Image(systemName: "mic.fill")
+                    .font(.system(size: 32))
+                    .foregroundStyle(.white)
+            }
+        }
+        .buttonStyle(.plain)
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in
+                    if !isPressed { onPressStart() }
+                }
+                .onEnded { _ in
+                    onPressEnd()
+                }
+        )
+    }
+}
+
+// MARK: - 音准指示器
+
+struct PitchMeter: View {
+    let centsDeviation: Double
+    let isListening: Bool
+
+    var body: some View {
+        VStack(spacing: 8) {
+            // 刻度条
+            ZStack {
+                // 背景条
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(AppTheme.secondaryBg)
+                    .frame(height: 8)
+
+                // 指示器
+                GeometryReader { geo in
+                    let width = geo.size.width
+                    let centerX = width / 2
+                    let clampedCents = max(-50, min(50, centsDeviation))
+                    let offset = CGFloat(clampedCents / 50) * (width / 2)
+
+                    Circle()
+                        .fill(isListening ? indicatorColor : AppTheme.tertiaryText)
+                        .frame(width: 16, height: 16)
+                        .position(x: centerX + offset, y: 4)
+                }
+                .frame(height: 8)
+
+                // 中心标记
+                Rectangle()
+                    .fill(AppTheme.success)
+                    .frame(width: 2, height: 16)
+            }
+            .frame(height: 16)
+            .padding(.horizontal, 32)
+
+            // 音分值
+            Text(isListening ? String(format: "%.1f ¢", centsDeviation) : "按住按钮开始")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(isListening ? indicatorColor : AppTheme.secondaryText)
+        }
+    }
+
+    private var indicatorColor: Color {
+        if abs(centsDeviation) <= 10 { return AppTheme.success }
+        else if abs(centsDeviation) <= 30 { return AppTheme.warning }
+        else { return AppTheme.error }
+    }
+}
+
+// MARK: - 视唱结果页
+
+struct SightSingingResult: View {
+    let score: Int
+    let pitchScore: Int
+    let rhythmScore: Int
+    let onRetry: () -> Void
+    let onNext: () -> Void
+    let onBack: () -> Void
+    let exerciseTitle: String
+
+    private var grade: (text: String, color: Color) {
+        if score >= 95 { return ("完美!", AppTheme.success) }
+        if score >= 85 { return ("优秀", AppTheme.success) }
+        if score >= 70 { return ("良好", AppTheme.warning) }
+        if score >= 60 { return ("及格", AppTheme.warning) }
+        return ("继续加油", AppTheme.error)
+    }
+
+    var body: some View {
+        ExerciseLayout(
+            title: exerciseTitle,
+            questionNumber: 10,
+            totalQuestions: 10,
+            questionText: "本次练习已完成，以下是您的成绩。",
+            score: score,
+            showDecompose: false,
+            onBack: onBack,
+            onNewQuestion: onRetry,
+            onReplay: onNext,
+            replayLabel: "下一题"
+        ) {
+            VStack(spacing: 32) {
+                Spacer(minLength: 24)
+
+                // 总分
+                VStack(spacing: 8) {
+                    Text("本次得分")
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.secondaryText)
+
+                    Text("\(score)")
+                        .font(.system(size: 72, weight: .bold, design: .rounded))
+                        .foregroundStyle(grade.color)
+
+                    Text(grade.text)
+                        .font(.system(size: 20, weight: .medium))
+                        .foregroundStyle(grade.color)
+                }
+
+                // 分项得分
+                HStack(spacing: 0) {
+                    VStack(spacing: 8) {
+                        Text("音准")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        Text("\(pitchScore)")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(AppTheme.accent)
+                    }
+                    .frame(maxWidth: .infinity)
+
+                    Rectangle()
+                        .fill(AppTheme.border)
+                        .frame(width: 1, height: 48)
+
+                    VStack(spacing: 8) {
+                        Text("节奏")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        Text("\(rhythmScore)")
+                            .font(.system(size: 28, weight: .bold))
+                            .foregroundStyle(AppTheme.warning)
+                    }
+                    .frame(maxWidth: .infinity)
+                }
+                .padding(.vertical, 20)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 22))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 22)
+                        .stroke(AppTheme.border, lineWidth: 1)
+                )
+                .padding(.horizontal, 8)
+
+                Spacer(minLength: 40)
+
+                // 操作按钮
+                VStack(spacing: 12) {
+                    Button {
+                        onNext()
+                    } label: {
+                        Text("退出练习")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .background(AppTheme.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        onRetry()
+                    } label: {
+                        Text("重新练习")
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(AppTheme.primaryText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .background(AppTheme.secondaryBg)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
                 }
             }
-
-            let note = self.melody[self.currentNoteIndex]
-            self.pitchDetector.setTarget(solfege: note.solfege, octave: note.octave)
-
-            DispatchQueue.main.async {
-                self.detectedFrequency = self.pitchDetector.detectedFrequency
-                self.centsDeviation = self.pitchDetector.centsDeviation
-                self.noteScores.append(self.pitchDetector.currentScore)
-            }
+            .padding(.vertical, 16)
         }
-    }
-
-    private func stopSinging() {
-        singingTimer?.invalidate()
-        singingTimer = nil
-        pitchDetector.stopDetection()
-
-        let avgPitchScore = noteScores.isEmpty ? 0 : noteScores.reduce(0, +) / noteScores.count
-        pitchScore = avgPitchScore
-
-        let currentNote = melody[currentNoteIndex]
-        let elapsedTime = Date().timeIntervalSince(currentNoteStartTime)
-        let finalRhythmScore = calculateRhythmScore(
-            actualDuration: elapsedTime,
-            expectedDuration: currentNote.duration
-        )
-        rhythmScores.append(finalRhythmScore)
-        rhythmScore = rhythmScores.isEmpty ? 100 : rhythmScores.reduce(0, +) / rhythmScores.count
-
-        totalScore = Int(Double(pitchScore) * 0.7 + Double(rhythmScore) * 0.3)
-        state = .result
-    }
-
-    private func calculateRhythmScore(actualDuration: Double, expectedDuration: Double) -> Int {
-        guard expectedDuration > 0 else { return 100 }
-        let deviation = abs(actualDuration - expectedDuration) / expectedDuration
-        if deviation <= 0.1 { return 100 }
-        else if deviation <= 0.2 { return 85 }
-        else if deviation <= 0.3 { return 70 }
-        else if deviation <= 0.5 { return 50 }
-        else { return 30 }
-    }
-
-    // MARK: - 资源清理
-
-    private func cleanup() {
-        singingTimer?.invalidate()
-        singingTimer = nil
-        pitchDetector.stopDetection()
-        pitchDetector.reset()
-    }
-
-    private func resetPractice() {
-        singingTimer?.invalidate()
-        singingTimer = nil
-        pitchDetector.reset()
-        noteScores = []
-        rhythmScores = []
-        currentNoteIndex = 0
-        pitchScore = 0
-        rhythmScore = 0
-        totalScore = 0
-        state = .playingDemo
-    }
-
-    private func saveAndExit() {
-        viewModel.savePracticeRecord(
-            module: module,
-            exerciseType: exercise,
-            score: totalScore,
-            durationSeconds: Int(Date().timeIntervalSince(startTime))
-        )
-        dismiss()
-    }
-
-    private var targetFrequency: Double {
-        guard currentNoteIndex < melody.count else { return 0 }
-        let note = melody[currentNoteIndex]
-        return MusicTheory.frequencyFromMIDI(
-            MusicTheory.midiNote(from: note.solfege, octave: note.octave) ?? 60
-        )
-    }
-
-    // MARK: - 旋律生成
-
-    private func generateMelody(for exercise: ExerciseType) -> [MelodyNote] {
-        switch exercise {
-        case .intervalSinging:
-            if let intervalQ = QuestionBank.intervalQuestions.randomElement() {
-                let semitones = intervalQ.semitones
-                let rootMIDI = 60
-                let targetMIDI = rootMIDI + semitones
-                let (targetSolfege, targetOctave) = midiToSolfege(targetMIDI)
-                let (rootSolfege, rootOctave) = midiToSolfege(rootMIDI)
-                return [
-                    MelodyNote(solfege: rootSolfege, octave: rootOctave, duration: 1.0),
-                    MelodyNote(solfege: targetSolfege, octave: targetOctave, duration: 2.0),
-                ]
-            }
-            return defaultMelody()
-        default:
-            return defaultMelody()
-        }
-    }
-
-    private func midiToSolfege(_ midi: Int) -> (String, Int) {
-        let octave = (midi / 12) - 1
-        let noteInOctave = midi % 12
-        let mapping: [Int: String] = [
-            0: "1", 1: "#1", 2: "2", 3: "#2", 4: "3",
-            5: "4", 6: "#4", 7: "5", 8: "#5", 9: "6", 10: "#6", 11: "7"
-        ]
-        return (mapping[noteInOctave] ?? "1", octave)
-    }
-
-    private func defaultMelody() -> [MelodyNote] {
-        [
-            MelodyNote(solfege: "1", octave: 4, duration: 1.0),
-            MelodyNote(solfege: "2", octave: 4, duration: 1.0),
-            MelodyNote(solfege: "3", octave: 4, duration: 1.0),
-            MelodyNote(solfege: "5", octave: 4, duration: 2.0),
-        ]
     }
 }
 
-// MARK: - 扩展
-
-extension SolfegeView {
-    init(notes: [SolfegeNote], highlightedIndex: Int?) {
-        self.init(notes: notes, keySignature: "1=C", timeSignature: "4/4", highlightedIndex: highlightedIndex)
-    }
-}
+// MARK: - 预览
 
 #Preview {
     NavigationStack {

@@ -1,334 +1,525 @@
 import SwiftUI
 
-/// 单音听辨练习页（集成钢琴键盘和谱式切换）
+// MARK: - 单音辨认练习页 (匹配 v0 single-note-exercise)
+
 struct SingleNoteListeningView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
+    @ObservedObject private var notationPrefs = NotationPreferences.shared
 
-    let module: ExerciseModule
-    let viewModel: PracticeViewModel
+    private let totalQuestions = 10
 
-    // MARK: - 状态
-    @State private var targetNote: Int = 60
-    @State private var targetOctave: Int = 4
-    @State private var targetNoteName: String = "C"
-    @State private var questionCount: Int = 0
-    @State private var correctCount: Int = 0
-    @State private var totalQuestions: Int = 10
-    @State private var startTime: Date = Date()
+    @State private var currentQuestion = 1
+    @State private var inputNotes: [String] = []
+    @State private var currentAccidental = ""
+    @State private var score = 0
+    @State private var correctCount = 0
+    @State private var answerState: AnswerState = .idle
+    @State private var showNext = false
+    @State private var showComplete = false
+    @State private var currentAnswer: NoteNameQuestion?
 
-    // 键盘状态
-    @State private var selectedNoteName: String?
-    @State private var selectedAccidental: PianoKeyboardView.AccidentalState = .natural
-    @State private var showFeedback: Bool = false
-    @State private var isCorrect: Bool = false
-
-    // 谱式切换
-    @State private var selectedNotation: NotationType = NotationPreferences.shared.preferredNotation
-
-    private let referenceNote = 69 // A4 = 440Hz
-    private let whiteKeyNotes = ["C", "D", "E", "F", "G", "A", "B"]
-    private let whiteKeyMIDIs = [60, 62, 64, 65, 67, 69, 71]
-
-    private var userAnswerDisplay: String {
-        guard let note = selectedNoteName else { return "点击键盘输入答案" }
-        let accidental = selectedAccidental == .natural ? "" : selectedAccidental.rawValue
-        return "\(note)\(accidental)"
-    }
-
-    private var currentScore: Int {
-        guard questionCount > 0 else { return 0 }
-        return Int(Double(correctCount) / Double(questionCount) * 100)
+    enum AnswerState {
+        case idle, correct, wrong
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            // 顶部导航栏
-            headerView
-
-            // 谱式切换器
-            NotationSwitcher(selectedNotation: $selectedNotation)
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-
-            Divider()
-
-            // 内容区
-            ScrollView {
-                VStack(spacing: 20) {
+        ZStack {
+            ExerciseLayout(
+                title: "单音辨认",
+                questionNumber: currentQuestion,
+                totalQuestions: totalQuestions,
+                questionText: "请问演奏了哪个单音? 你听到的第一个音是标准音 (无须录入)。",
+                score: score,
+                showDecompose: false,
+                onBack: { dismiss() },
+                onNewQuestion: handleNewQuestion,
+                onReplay: handleReplay,
+                replayLabel: "重听"
+            ) {
+                VStack(spacing: 16) {
                     // 谱式展示
-                    notationDisplay
+                    if notationPrefs.preferredNotation == .staff {
+                        StaffNotationDisplay(inputNotes: inputNotes, feedback: answerState)
+                    } else {
+                        TabSolfegeDisplay(inputNotes: inputNotes, feedback: answerState)
+                    }
 
-                    // 播放控制
-                    playbackControl
-
-                    // 答案显示
-                    answerDisplay
-
-                    // 反馈区域
-                    if showFeedback {
-                        feedbackView
+                    // 下一题按钮
+                    if showNext {
+                        Button {
+                            goNext()
+                        } label: {
+                            Text("下一题")
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .background(AppTheme.accent)
+                                .clipShape(RoundedRectangle(cornerRadius: 12))
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
+                .padding(.vertical, 16)
+            } bottomContent: {
+                MusicKeyboard(
+                    onNotePress: handleNotePress,
+                    onClear: handleClear,
+                    onSubmit: handleSubmit,
+                    canSubmit: !inputNotes.isEmpty && answerState == .idle
+                )
+                .padding(.bottom, 8)
             }
 
-            // 钢琴键盘
-            PianoKeyboardView(
-                selectedNote: $selectedNoteName,
-                selectedAccidental: $selectedAccidental,
-                onConfirm: submitAnswer,
-                onDelete: deleteLastInput
-            )
+            // 完成覆盖层
+            if showComplete {
+                ExerciseCompletionOverlay(
+                    correctCount: correctCount,
+                    totalQuestions: totalQuestions,
+                    onRetry: handleRetryRound,
+                    onBack: { dismiss() }
+                )
+                .transition(.opacity)
+            }
         }
-        .onAppear {
-            viewModel.setModelContext(modelContext)
-            generateNewQuestion()
+        .onAppear { generateNewQuestion() }
+    }
+
+    // MARK: - Actions
+
+    private func goNext() {
+        if currentQuestion >= totalQuestions {
+            withAnimation { showComplete = true }
+            return
+        }
+        inputNotes = []
+        currentAccidental = ""
+        answerState = .idle
+        showNext = false
+        currentQuestion += 1
+        generateNewQuestion()
+    }
+
+    private func handleNewQuestion() {
+        if showNext { goNext() }
+    }
+
+    private func handleReplay() {
+        guard let q = currentAnswer else { return }
+        ExerciseSoundPlayer.playStandardSequence(noteName: "\(q.noteName)\(q.octave)")
+    }
+
+    private func handleNotePress(_ note: String) {
+        guard answerState == .idle else { return }
+        inputNotes.append(note)
+        currentAccidental = ""
+    }
+
+    private func handleClear() {
+        guard answerState == .idle else { return }
+        if !inputNotes.isEmpty {
+            inputNotes.removeLast()
         }
     }
 
-    // MARK: - Header
-
-    private var headerView: some View {
-        HStack {
-            Button {
-                if questionCount > 0 {
-                    viewModel.savePracticeRecord(
-                        module: module,
-                        exerciseType: .singleNoteRecognition,
-                        score: currentScore,
-                        durationSeconds: Int(Date().timeIntervalSince(startTime))
-                    )
-                }
-                dismiss()
-            } label: {
-                HStack(spacing: 4) {
-                    Image(systemName: "chevron.left")
-                    Text("返回")
-                }
-                .font(.body)
-                .foregroundStyle(AppColors.primary)
-            }
-
-            Spacer()
-
-            Text("单音听辨")
-                .font(.headline)
-                .fontWeight(.semibold)
-
-            Spacer()
-
-            Text("\(currentScore) 分")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.primary)
-        }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(Color(.systemBackground))
-    }
-
-    // MARK: - 谱式展示
-
-    private var notationDisplay: some View {
-        VStack(spacing: 16) {
-            // 进度
-            HStack {
-                Text("第 \(questionCount + 1) / \(totalQuestions) 题")
-                    .font(.subheadline)
-                    .foregroundStyle(AppColors.secondaryText)
-                Spacer()
-            }
-
-            // 谱式展示
-            Group {
-                switch selectedNotation {
-                case .tabWithSolfege:
-                    // 六线谱+简谱组合视图
-                    VStack(spacing: 12) {
-                        GuitarTablatureView(
-                            notes: [GuitarTabNote(string: 5, fret: 0, technique: nil)],
-                            fretRange: 0...3
-                        )
-                        Divider()
-                        SolfegeView(
-                            notes: [SolfegeNote(solfege: targetNoteName, octave: targetOctave, duration: .quarter)],
-                            highlightedIndex: 0
-                        )
-                    }
-                case .staff:
-                    StaffNotationView(
-                        notes: [StaffNote(pitch: StaffPitch(line: 0), duration: .quarter, accidental: nil)]
-                    )
-                }
-            }
+    private func handleSubmit() {
+        guard !inputNotes.isEmpty, answerState == .idle, let q = currentAnswer else { return }
+        let last = inputNotes.last?.replacingOccurrences(of: "#", with: "").replacingOccurrences(of: "b", with: "") ?? ""
+        let expectedNote = q.noteName
+        let ok = last == expectedNote
+        answerState = ok ? .correct : .wrong
+        showNext = true
+        if ok {
+            correctCount += 1
+            score += 10
         }
     }
-
-    // MARK: - 播放控制
-
-    private var playbackControl: some View {
-        VStack(spacing: 16) {
-            Button {
-                playQuestion()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(AppColors.primary)
-                        .frame(width: 80, height: 80)
-                        .shadow(color: AppColors.primary.opacity(0.3), radius: 8, x: 0, y: 4)
-
-                    Image(systemName: "speaker.wave.2.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(.white)
-                }
-            }
-
-            Text("点击播放")
-                .font(.caption)
-                .foregroundStyle(AppColors.secondaryText)
-        }
-        .padding(.vertical, 8)
-    }
-
-    // MARK: - 答案显示
-
-    private var answerDisplay: some View {
-        VStack(spacing: 8) {
-            Text("你的答案")
-                .font(.caption)
-                .foregroundStyle(AppColors.secondaryText)
-
-            Text(userAnswerDisplay)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundStyle(selectedNoteName == nil ? AppColors.secondaryText : AppColors.primary)
-                .frame(minHeight: 44)
-                .animation(.easeInOut(duration: 0.2), value: selectedNoteName)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-    }
-
-    // MARK: - 反馈
-
-    private var feedbackView: some View {
-        VStack(spacing: 8) {
-            Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(isCorrect ? AppColors.success : AppColors.error)
-
-            Text(isCorrect ? "正确！" : "错误")
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(isCorrect ? AppColors.success : AppColors.error)
-
-            if !isCorrect {
-                Text("正确答案是 \(targetNoteName)")
-                    .font(.body)
-                    .foregroundStyle(AppColors.secondaryText)
-            }
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(
-            (isCorrect ? AppColors.success : AppColors.error).opacity(0.08)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-    }
-
-    // MARK: - 业务逻辑
 
     private func generateNewQuestion() {
-        showFeedback = false
-        selectedNoteName = nil
-        selectedAccidental = .natural
-
-        let index = Int.random(in: 0..<whiteKeyMIDIs.count)
-        targetNote = whiteKeyMIDIs[index]
-        targetNoteName = whiteKeyNotes[index]
-        targetOctave = 4
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            playQuestion()
-        }
+        // 从题库随机抽取（优先初级难度）
+        let easyQuestions = QuestionBank.noteNameQuestions.filter { $0.difficulty == .easy }
+        let pool = easyQuestions.isEmpty ? QuestionBank.noteNameQuestions : easyQuestions
+        currentAnswer = pool.randomElement()
     }
 
-    private func playQuestion() {
-        Task {
-            await AudioEngineManager.shared.playMIDI(referenceNote, duration: 0.8)
-            try? await Task.sleep(nanoseconds: 600_000_000)
-            await AudioEngineManager.shared.playMIDI(targetNote, duration: 1.0)
-        }
-    }
-
-    private func selectNote(_ note: String) {
-        selectedNoteName = note
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
-    }
-
-    private func deleteLastInput() {
-        selectedNoteName = nil
-        selectedAccidental = .natural
-        let generator = UIImpactFeedbackGenerator(style: .light)
-        generator.impactOccurred()
-    }
-
-    private func submitAnswer() {
-        guard let userNote = selectedNoteName else { return }
-
-        let userMIDI = midiNoteFromAnswer(note: userNote, accidental: selectedAccidental, octave: 4)
-        isCorrect = (userMIDI == targetNote)
-        questionCount += 1
-
-        if isCorrect {
-            correctCount += 1
-        }
-
-        showFeedback = true
-
-        let generator = UIImpactFeedbackGenerator(style: isCorrect ? .medium : .heavy)
-        generator.impactOccurred()
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            if questionCount >= totalQuestions {
-                viewModel.savePracticeRecord(
-                    module: module,
-                    exerciseType: .singleNoteRecognition,
-                    score: currentScore,
-                    durationSeconds: Int(Date().timeIntervalSince(startTime))
-                )
-                dismiss()
-            } else {
-                generateNewQuestion()
-            }
-        }
-    }
-
-    private func midiNoteFromAnswer(note: String, accidental: PianoKeyboardView.AccidentalState, octave: Int) -> Int {
-        let baseNotes: [String: Int] = [
-            "C": 0, "D": 2, "E": 4, "F": 5, "G": 7, "A": 9, "B": 11
-        ]
-        guard let base = baseNotes[note] else { return 60 }
-
-        var semitone = base
-        switch accidental {
-        case .sharp: semitone += 1
-        case .flat: semitone -= 1
-        case .natural: break
-        }
-
-        return (octave + 1) * 12 + semitone
+    private func handleRetryRound() {
+        currentQuestion = 1
+        correctCount = 0
+        score = 0
+        inputNotes = []
+        answerState = .idle
+        showNext = false
+        showComplete = false
+        generateNewQuestion()
     }
 }
 
+// MARK: - 五线谱展示 (匹配 v0 StaffNotation)
+
+struct StaffNotationDisplay: View {
+    let inputNotes: [String]
+    let feedback: SingleNoteListeningView.AnswerState
+
+    private let notePositions: [String: Int] = [
+        "C": 0, "D": 1, "E": 2, "F": 3, "G": 4, "A": 5, "B": 6,
+    ]
+
+    private var borderColor: Color {
+        switch feedback {
+        case .correct: return AppTheme.success
+        case .wrong: return AppTheme.error
+        case .idle: return AppTheme.border
+        }
+    }
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 12)
+                .fill(AppTheme.cardBackground)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(borderColor, lineWidth: 1)
+                )
+
+            GeometryReader { geo in
+                let w = geo.size.width
+                let h = geo.size.height
+                let lineH = h * 0.5
+                let lineSpacing = lineH / 4
+                let centerY = h / 2
+
+                ZStack {
+                    // 5 条谱线
+                    VStack(spacing: 0) {
+                        ForEach(0..<5, id: \.self) { i in
+                            Rectangle()
+                                .fill(AppTheme.accent)
+                                .frame(height: 1)
+                            if i < 4 {
+                                Spacer().frame(height: lineSpacing - 1)
+                            }
+                        }
+                    }
+                    .frame(height: lineH)
+                    .position(x: w / 2, y: centerY)
+
+                    // 高音谱号 (简化 SVG path)
+                    TrebleClefShape()
+                        .fill(AppTheme.accent)
+                        .frame(width: 24, height: 45)
+                        .position(x: 30, y: centerY - 2)
+
+                    // 输入的音符
+                    HStack(spacing: 20) {
+                        ForEach(Array(inputNotes.enumerated()), id: \.offset) { _, note in
+                            let baseNote = note.replacingOccurrences(of: "#", with: "").replacingOccurrences(of: "b", with: "")
+                            let accidental = note.contains("#") ? "♯" : note.contains("b") ? "♭" : ""
+                            let _ = notePositions[baseNote] ?? 0
+
+                            HStack(spacing: 1) {
+                                if !accidental.isEmpty {
+                                    Text(accidental)
+                                        .font(.system(size: 12))
+                                        .foregroundStyle(AppTheme.accent)
+                                }
+                                Ellipse()
+                                    .fill(AppTheme.accent)
+                                    .frame(width: 12, height: 9)
+                                    .rotationEffect(.degrees(-15))
+                            }
+                        }
+                    }
+                    .position(x: w / 2 + 10, y: centerY + 10)
+                }
+            }
+        }
+        .frame(height: 100)
+    }
+}
+
+// 高音谱号简化形状
+struct TrebleClefShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let w = rect.width
+        let h = rect.height
+        let scale = min(w, h) / 50
+
+        // 简化的高音谱号轮廓
+        path.move(to: CGPoint(x: 20 * scale, y: 10 * scale))
+        path.addCurve(
+            to: CGPoint(x: 30 * scale, y: 15 * scale),
+            control1: CGPoint(x: 25 * scale, y: 5 * scale),
+            control2: CGPoint(x: 35 * scale, y: 8 * scale)
+        )
+        path.addCurve(
+            to: CGPoint(x: 18 * scale, y: 30 * scale),
+            control1: CGPoint(x: 25 * scale, y: 22 * scale),
+            control2: CGPoint(x: 15 * scale, y: 25 * scale)
+        )
+        path.addCurve(
+            to: CGPoint(x: 28 * scale, y: 38 * scale),
+            control1: CGPoint(x: 22 * scale, y: 35 * scale),
+            control2: CGPoint(x: 32 * scale, y: 32 * scale)
+        )
+        path.addCurve(
+            to: CGPoint(x: 20 * scale, y: 48 * scale),
+            control1: CGPoint(x: 25 * scale, y: 44 * scale),
+            control2: CGPoint(x: 15 * scale, y: 46 * scale)
+        )
+
+        // 谱号底部的点
+        path.addEllipse(in: CGRect(x: 17 * scale, y: 48 * scale, width: 6 * scale, height: 6 * scale))
+
+        return path
+    }
+}
+
+// MARK: - 六线谱+简谱展示 (匹配 v0 TabSolfegeNotation)
+
+struct TabSolfegeDisplay: View {
+    let inputNotes: [String]
+    let feedback: SingleNoteListeningView.AnswerState
+
+    private let noteToSolfege: [String: String] = [
+        "C": "1", "D": "2", "E": "3", "F": "4", "G": "5", "A": "6", "B": "7",
+    ]
+
+    private let noteToFret: [String: (string: Int, fret: Int)] = [
+        "C": (5, 3), "D": (4, 0), "E": (4, 2), "F": (4, 3),
+        "G": (3, 0), "A": (3, 2), "B": (2, 0),
+    ]
+
+    private var borderColor: Color {
+        switch feedback {
+        case .correct: return AppTheme.success
+        case .wrong: return AppTheme.error
+        case .idle: return AppTheme.border
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 12) {
+            // 六线谱
+            tablatureCard
+
+            // 简谱
+            solfegeCard
+        }
+    }
+
+    private var tablatureCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("六线谱")
+                .font(.system(size: 11))
+                .foregroundStyle(AppTheme.secondaryText)
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppTheme.cardBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(borderColor, lineWidth: 1)
+                    )
+
+                GeometryReader { geo in
+                    let h = geo.size.height
+                    let lineSpacing = (h - 20) / 5
+
+                    ZStack {
+                        // 左侧数字 1-6 + 6 条线
+                        HStack(spacing: 6) {
+                            // 弦号列
+                            VStack(spacing: 0) {
+                                ForEach(1...6, id: \.self) { num in
+                                    Text("\(num)")
+                                        .font(.system(size: 9))
+                                        .foregroundStyle(AppTheme.secondaryText)
+                                        .frame(height: lineSpacing)
+                                }
+                            }
+                            .frame(width: 16)
+
+                            // 6 条线
+                            VStack(spacing: 0) {
+                                ForEach(0..<6, id: \.self) { i in
+                                    Rectangle()
+                                        .fill(Color(hex: "94A3B8"))
+                                        .frame(height: 0.8 + CGFloat(i) * 0.1)
+                                    if i < 5 {
+                                        Spacer().frame(height: lineSpacing - 0.8 - CGFloat(i) * 0.1)
+                                    }
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
+                        }
+                        .padding(.horizontal, 12)
+
+                        // 输入的音符（品位标记）
+                        HStack(spacing: 28) {
+                            ForEach(Array(inputNotes.enumerated()), id: \.offset) { _, note in
+                                let baseNote = note.replacingOccurrences(of: "#", with: "").replacingOccurrences(of: "b", with: "")
+                                if let pos = noteToFret[baseNote] {
+                                    let yOffset = CGFloat(pos.string - 1) * lineSpacing - (h - 20) / 2 + 10
+                                    Circle()
+                                        .fill(Color.white)
+                                        .frame(width: 18, height: 18)
+                                        .overlay(
+                                            Text("\(pos.fret)")
+                                                .font(.system(size: 10, weight: .medium))
+                                                .foregroundStyle(AppTheme.primaryText)
+                                        )
+                                        .offset(x: 0, y: yOffset)
+                                }
+                            }
+                        }
+                        .position(x: geo.size.width / 2 + 10, y: h / 2)
+                    }
+                }
+            }
+            .frame(height: 80)
+        }
+    }
+
+    private var solfegeCard: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("简谱")
+                .font(.system(size: 11))
+                .foregroundStyle(AppTheme.secondaryText)
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(AppTheme.cardBackground)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(borderColor, lineWidth: 1)
+                    )
+
+                HStack(spacing: 20) {
+                    if inputNotes.isEmpty {
+                        Text("等待输入...")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    } else {
+                        ForEach(Array(inputNotes.enumerated()), id: \.offset) { _, note in
+                            let baseNote = note.replacingOccurrences(of: "#", with: "").replacingOccurrences(of: "b", with: "")
+                            let solfege = noteToSolfege[baseNote] ?? "?"
+                            let hasSharp = note.contains("#")
+                            let hasFlat = note.contains("b")
+
+                            VStack(spacing: 2) {
+                                HStack(alignment: .lastTextBaseline, spacing: 1) {
+                                    if hasSharp {
+                                        Text("♯")
+                                            .font(.system(size: 12))
+                                            .foregroundStyle(AppTheme.accent)
+                                    }
+                                    if hasFlat {
+                                        Text("♭")
+                                            .font(.system(size: 12))
+                                            .foregroundStyle(AppTheme.accent)
+                                    }
+                                    Text(solfege)
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundStyle(AppTheme.accent)
+                                }
+
+                                Text(solfegeName(baseNote))
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(AppTheme.secondaryText)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 16)
+            }
+            .frame(height: 80)
+        }
+    }
+
+    private func solfegeName(_ note: String) -> String {
+        switch note {
+        case "C": return "do"
+        case "D": return "re"
+        case "E": return "mi"
+        case "F": return "fa"
+        case "G": return "sol"
+        case "A": return "la"
+        case "B": return "si"
+        default: return ""
+        }
+    }
+}
+
+// MARK: - 练习完成覆盖层
+
+struct ExerciseCompletionOverlay: View {
+    let correctCount: Int
+    let totalQuestions: Int
+    let onRetry: () -> Void
+    let onBack: () -> Void
+
+    private var percentage: Int {
+        Int(Double(correctCount) / Double(totalQuestions) * 100)
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.4)
+                .ignoresSafeArea()
+
+            VStack(spacing: 24) {
+                Text("练习完成")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(AppTheme.primaryText)
+
+                VStack(spacing: 8) {
+                    Text("\(correctCount)/\(totalQuestions)")
+                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .foregroundStyle(AppTheme.accent)
+
+                    Text("正确率 \(percentage)%")
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+
+                VStack(spacing: 12) {
+                    Button {
+                        onRetry()
+                    } label: {
+                        Text("重新练习")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .background(AppTheme.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        onBack()
+                    } label: {
+                        Text("返回")
+                            .font(.system(size: 17))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(32)
+            .background(AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 20))
+            .padding(.horizontal, 40)
+        }
+    }
+}
+
+// MARK: - 预览
+
 #Preview {
     NavigationStack {
-        SingleNoteListeningView(
-            module: .noteName,
-            viewModel: PracticeViewModel()
-        )
+        SingleNoteListeningView()
     }
 }
