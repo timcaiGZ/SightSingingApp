@@ -16,7 +16,7 @@ struct ScoreResultView: View {
             VStack(spacing: 8) {
                 Text("本题得分")
                     .font(.headline)
-                    .foregroundStyle(AppColors.secondaryText)
+                    .foregroundStyle(AppTheme.secondaryText)
                 
                 Text("\(totalScore)")
                     .font(.system(size: 72, weight: .bold, design: .rounded))
@@ -33,7 +33,7 @@ struct ScoreResultView: View {
                 scoreItem(title: "节奏", score: rhythmScore, icon: "metronome")
             }
             .padding()
-            .background(AppColors.cardBackground)
+            .background(AppTheme.cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 16))
             .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
             
@@ -49,29 +49,29 @@ struct ScoreResultView: View {
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(AppColors.primaryBlue)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .background(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                 }
-                
+
                 Button {
                     onRetry()
                 } label: {
                     Text("重新练习")
                         .font(.headline)
-                        .foregroundStyle(AppColors.primaryBlue)
+                        .foregroundStyle(AppTheme.accent)
                 }
             }
             .padding(.horizontal, 16)
         }
         .padding()
-        .background(AppColors.pageBackground)
+        .background(AppTheme.background)
     }
     
     private func scoreItem(title: String, score: Int, icon: String) -> some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundStyle(AppColors.primaryBlue)
+                .foregroundStyle(AppTheme.accent)
             
             Text("\(score)")
                 .font(.title)
@@ -80,14 +80,14 @@ struct ScoreResultView: View {
             
             Text(title)
                 .font(.caption)
-                .foregroundStyle(AppColors.secondaryText)
+                .foregroundStyle(AppTheme.secondaryText)
         }
     }
     
     private func scoreColor(_ score: Int) -> Color {
-        if score >= 90 { return AppColors.success }
-        else if score >= 70 { return AppColors.warning }
-        else { return AppColors.error }
+        if score >= 90 { return AppTheme.success }
+        else if score >= 70 { return AppTheme.warning }
+        else { return AppTheme.error }
     }
     
     private func scoreLabel(_ score: Int) -> String {

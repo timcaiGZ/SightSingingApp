@@ -77,7 +77,8 @@ struct ExerciseContainerView: View {
                                         selectedOption = answer
                                         showResult = true
                                     },
-                                    onPlay: { playCurrentExerciseAudio() }
+                                    onPlay: { playCurrentExerciseAudio() },
+                                    onNext: { nextQuestion() }
                                 )
                             }
 
@@ -158,8 +159,8 @@ struct ExerciseContainerView: View {
         .background(.regularMaterial)
     }
 
-    // MARK: - 底部操作栏 (匹配 v0 ExerciseLayout: 纯文字按钮, 两端对齐)
-
+    // MARK: - 底部操作栏 (匹配 v0 ExerciseLayout: border-t border-border bg-card + 纯文字按钮)
+    
     private var bottomActionBar: some View {
         HStack {
             // 新问题 (左对齐)
@@ -194,6 +195,8 @@ struct ExerciseContainerView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .background(Color.white)  // bg-card
+        .overlay(Rectangle().fill(AppTheme.border).frame(height: 0.5), alignment: .top)  // border-t
     }
 
     private func playCurrentExerciseAudio() {
@@ -322,6 +325,7 @@ struct MultipleChoiceContent: View {
     let correctAnswer: String
     let onAnswer: (String) -> Void
     let onPlay: () -> Void
+    let onNext: () -> Void
 
     var body: some View {
         VStack(spacing: 16) {
@@ -396,7 +400,7 @@ struct MultipleChoiceContent: View {
             // 下一题按钮
             if showResult {
                 Button {
-                    // handled by parent
+                    onNext()
                 } label: {
                     Text("下一题")
                         .font(.system(size: 17, weight: .semibold))
@@ -563,7 +567,7 @@ struct KeyboardInputContent: View {
     }
 }
 
-// MARK: - 视唱内容 (匹配 v0 SightSingingView)
+// MARK: - 视唱内容 (严格匹配 v0 SightSingingView: PitchMeter圆形卡片 + SingButton圆形)
 
 struct SightSingingContent: View {
     @Binding var phase: ExerciseContainerView.SightSingingPhase
@@ -575,129 +579,145 @@ struct SightSingingContent: View {
     @State private var timer: Timer?
 
     private var cursorColor: Color {
+        if phase == .idle { return AppTheme.tertiaryText }
         let absCents = abs(cents)
         if absCents <= 10 { return AppTheme.success }
         if absCents <= 20 { return AppTheme.warning }
         return AppTheme.error
     }
 
-    private var feedbackText: String {
-        let absCents = abs(cents)
-        if phase == .idle { return "等待演唱..." }
-        if absCents <= 10 { return "音准良好!" }
-        return cents < 0 ? "偏低 \(Int(absCents)) 音分" : "偏高 \(Int(absCents)) 音分"
-    }
+    private var isAccurate: Bool { abs(cents) <= 10 && phase == .singing }
 
     var body: some View {
-        VStack(spacing: 16) {
-            // 目标音符卡片 (匹配 v0: bg-card rounded-xl)
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("请演唱")
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppTheme.secondaryText)
-                    HStack(alignment: .bottom, spacing: 8) {
-                        Text(targetNote)
-                            .font(.system(size: 48, weight: .bold))
-                            .foregroundStyle(AppTheme.primaryText)
-                        Text("Mi · 3")
-                            .font(.system(size: 15))
-                            .foregroundStyle(AppTheme.secondaryText)
-                            .padding(.bottom, 8)
-                    }
+        VStack(spacing: 20) {
+            // === v0 PitchMeter 卡片 ===
+            VStack(spacing: 16) {
+                Text("目标音符")
+                    .font(.system(size: 13))
+                    .foregroundStyle(AppTheme.secondaryText)
+
+                ZStack {
+                    Circle()
+                        .fill(AppTheme.accent.opacity(0.1))
+                        .frame(width: 96, height: 96)
+                    Text(targetNote)
+                        .font(.system(size: 48, weight: .bold))
+                        .foregroundStyle(AppTheme.primaryText)
                 }
 
-                Spacer()
+                Text(phase == .singing ? "正在聆听..." : "请唱出此音")
+                    .font(.system(size: 13))
+                    .foregroundStyle(AppTheme.secondaryText)
 
-                Button {
-                    onPlayDemo()
-                } label: {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 44))
-                        .foregroundStyle(AppTheme.accent.opacity(0.2))
-                }
-            }
-            .padding(16)
-            .background(AppTheme.cardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
-
-            // 音高指示器 (匹配 v0 PitchMeter)
-            VStack(spacing: 12) {
-                Text(phase == .idle ? "—" : targetNote)
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(AppTheme.primaryText)
-
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(AppTheme.border)
-                            .frame(height: 8)
-
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(AppTheme.success.opacity(0.3))
-                            .frame(width: geometry.size.width * 0.2, height: 8)
-                            .position(x: geometry.size.width / 2, y: 4)
-
-                        if phase == .singing {
-                            let position = (cents / 50 + 1) / 2
-                            Circle()
-                                .fill(cursorColor)
-                                .frame(width: 20, height: 20)
-                                .position(
-                                    x: min(max(position * geometry.size.width, 10), geometry.size.width - 10),
-                                    y: 4
-                                )
-                                .shadow(color: cursorColor.opacity(0.3), radius: 4)
-                        }
-                    }
-                }
-                .frame(height: 24)
+                pitchMeterBar
 
                 HStack {
-                    Text("偏低")
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppTheme.error)
+                    Text("-50").font(.system(size: 12)).foregroundStyle(AppTheme.tertiaryText)
                     Spacer()
-                    Text(feedbackText)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(cursorColor)
+                    Text("准").font(.system(size: 12, weight: .medium)).foregroundStyle(AppTheme.success)
                     Spacer()
-                    Text("偏高")
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppTheme.error)
+                    Text("+50").font(.system(size: 12)).foregroundStyle(AppTheme.tertiaryText)
                 }
-            }
-            .padding(16)
-            .background(AppTheme.secondaryBg)
-            .clipShape(RoundedRectangle(cornerRadius: 18))
 
-            // 演唱按钮 (匹配 v0 SingButton: 按住演唱/松开结束)
-            Button {
-                if phase == .idle {
-                    startSinging()
-                } else if phase == .singing {
-                    stopSinging()
-                }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: phase == .singing ? "stop.fill" : "mic.fill")
-                    Text(phase == .singing ? "松开结束" : "按住演唱")
-                }
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(phase == .singing ? AppTheme.error : AppTheme.accent)
-                .clipShape(RoundedRectangle(cornerRadius: 16))
+                feedbackArea
             }
-            .buttonStyle(IOSPressStyle())
+            .padding(24)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 20))  // rounded-2xl
+            .overlay(RoundedRectangle(cornerRadius: 20).stroke(AppTheme.border, lineWidth: 0.5))
+            .shadow(color: .black.opacity(0.05), radius: 4, x: 0, y: 1)
+
+            // === v0 SingButton 圆形按钮 ===
+            VStack(spacing: 8) {
+                Button {
+                    if phase == .idle { startSinging() }
+                    else { stopSinging() }
+                } label: {
+                    ZStack {
+                        if phase == .singing {
+                            Circle().fill(AppTheme.error.opacity(0.3)).frame(width: 96, height: 96)
+                            Circle().stroke(AppTheme.error.opacity(0.5), lineWidth: 2).frame(width: 104, height: 104)
+                        }
+                        Circle()
+                            .fill(phase == .singing ? AppTheme.error : AppTheme.accent)
+                            .frame(width: 80, height: 80)
+                            .shadow(color: (phase == .singing ? AppTheme.error : AppTheme.accent).opacity(0.3), radius: phase == .singing ? 8 : 4)
+                        Image(systemName: phase == .singing ? "stop.fill" : "mic.fill")
+                            .font(.system(size: 32))
+                            .foregroundStyle(.white)
+                    }
+                }
+                .buttonStyle(IOSPressStyle())
+                Text(phase == .singing ? "松开结束" : "按住演唱")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(phase == .singing ? AppTheme.error : AppTheme.secondaryText)
+            }
         }
+        .padding(.horizontal, 16)
+    }
+
+    private var pitchMeterBar: some View {
+        GeometryReader { geometry in
+            let w = geometry.size.width
+            ZStack(alignment: .leading) {
+                Capsule().fill(AppTheme.mutedBackground).frame(height: 8)
+                Capsule().fill(AppTheme.success.opacity(0.3)).frame(width: w / 5, height: 8).position(x: w / 2, y: 4)
+                Rectangle().fill(AppTheme.success).frame(width: 1, height: 8).position(x: w / 2, y: 4)
+                if phase != .idle {
+                    let pos = max(0, min(1, (cents / 50 + 1) / 2))
+                    Circle()
+                        .fill(cursorColor).frame(width: 20, height: 20)
+                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                        .shadow(color: cursorColor.opacity(0.4), radius: 4)
+                        .position(x: pos * w, y: 4)
+                }
+            }
+        }
+        .frame(height: 24)
+    }
+
+    private var feedbackArea: some View {
+        Group {
+            if phase == .idle {
+                Text("按住下方按钮开始演唱").font(.system(size: 15)).foregroundStyle(AppTheme.secondaryText)
+            } else if isAccurate {
+                HStack(spacing: 6) {
+                    Circle().fill(AppTheme.success).frame(width: 8, height: 8)
+                    Text("音准良好!").font(.system(size: 17, weight: .semibold)).foregroundStyle(AppTheme.success)
+                }
+            } else if cents < 0 {
+                HStack(spacing: 4) {
+                    Text("偏低").font(.system(size: 15)).foregroundStyle(AppTheme.warning)
+                    Text("\(abs(Int(cents)))").font(.system(size: 17, weight: .bold)).foregroundStyle(AppTheme.warning)
+                    Text("音分").font(.system(size: 15)).foregroundStyle(AppTheme.warning)
+                }
+            } else {
+                HStack(spacing: 4) {
+                    Text("偏高").font(.system(size: 15)).foregroundStyle(AppTheme.error)
+                    Text("\(Int(cents))").font(.system(size: 17, weight: .bold)).foregroundStyle(AppTheme.error)
+                    Text("音分").font(.system(size: 15)).foregroundStyle(AppTheme.error)
+                }
+            }
+        }
+        .padding(.vertical, 12).padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .background((phase != .idle) ? AppTheme.mutedBackground : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
     private func startSinging() {
         phase = .singing
+        var tick = 0
+        let totalTicks = 30
         timer = Timer.scheduledTimer(withTimeInterval: 0.08, repeats: true) { _ in
-            cents = Double.random(in: -44...44)
+            tick += 1
+            let progress = Double(tick) / Double(totalTicks)
+            let convergence = sin(progress * .pi * 0.7)
+            let noiseRange: Double = 35.0 * (1.0 - progress)
+            cents = convergence * Double.random(in: -noiseRange...noiseRange)
+            if tick >= totalTicks {
+                stopSinging()
+            }
         }
     }
 
@@ -709,6 +729,27 @@ struct SightSingingContent: View {
         let pitch = max(0, 50 - Int(absCents))
         let rhythm = Int.random(in: 35...50)
         onComplete(pitch, rhythm)
+    }
+    
+    /// 根据音名动态计算唱名 (如 "C4" → "Do · 4", "E4" → "Mi · 3")
+    private func solfegeName(for note: String) -> String {
+        let noteToSolfege = [
+            "C": "Do", "D": "Re", "E": "Mi", "F": "Fa",
+            "G": "Sol", "A": "La", "B": "Si"
+        ]
+        
+        // 提取音名和八度
+        let name = String(note.prefix(1).uppercased())
+        var octaveStr = ""
+        if note.count > 1 {
+            octaveStr = String(note.dropFirst())
+        }
+        
+        let solfege = noteToSolfege[name] ?? name
+        if !octaveStr.isEmpty, let octave = Int(octaveStr) {
+            return "\(solfege) · \(octave)"
+        }
+        return solfege
     }
 }
 
@@ -770,7 +811,7 @@ struct ExerciseCompletionView: View {
                 .padding(20)
                 .frame(maxWidth: .infinity)
                 .background(AppTheme.cardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .clipShape(RoundedRectangle(cornerRadius: 24))
                 .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
 
                 // 按钮
@@ -782,7 +823,7 @@ struct ExerciseCompletionView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .background(AppTheme.accent)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
                     .buttonStyle(IOSPressStyle())
 
@@ -793,7 +834,7 @@ struct ExerciseCompletionView: View {
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .background(AppTheme.secondaryBg)
-                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                            .clipShape(RoundedRectangle(cornerRadius: 18))
                     }
                     .buttonStyle(IOSPressStyle())
                 }

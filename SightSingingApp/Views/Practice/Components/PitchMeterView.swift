@@ -209,7 +209,8 @@ struct HorizontalPitchMeter: View {
                 if isActive {
                     Circle()
                         .fill(colorForDeviation(centsDeviation))
-                        .frame(width: 16, height: 16)
+                        .frame(width: 20, height: 20)
+                        .shadow(color: colorForDeviation(centsDeviation).opacity(0.5), radius: 4)
                         .offset(x: offsetForCents(centsDeviation))
                         .animation(.spring(response: 0.15), value: centsDeviation)
                 }

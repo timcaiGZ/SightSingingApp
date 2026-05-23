@@ -5,6 +5,7 @@ struct CourseTab: View {
     @State private var selectedCourse: CourseItemData?
     
     var body: some View {
+        NavigationStack {
         ScrollView {
             VStack(spacing: 16) {
                 // === 页面标题 28px bold ===
@@ -33,6 +34,7 @@ struct CourseTab: View {
         .navigationDestination(item: $selectedCourse) { course in
             CourseDetailView(course: course)
         }
+        }  // NavigationStack close
     }
 }
 

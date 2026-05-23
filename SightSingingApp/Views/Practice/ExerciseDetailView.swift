@@ -120,10 +120,17 @@ struct ExerciseDetailView: View {
     private func handleSelect(_ option: String) {
         guard !showResult else { return }
         selectedOption = option
-        showResult = true
-        if option == currentQuestionData.correctAnswer {
-            correctCount += 1
-            score += 10
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            withAnimation(.easeInOut(duration: 0.2)) { showResult = true }
+            if option == currentQuestionData.correctAnswer {
+                correctCount += 1
+                score += 10
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+            } else {
+                let generator = UIImpactFeedbackGenerator(style: .heavy)
+                generator.impactOccurred()
+            }
         }
     }
 

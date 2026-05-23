@@ -32,7 +32,7 @@ struct TestTab: View {
                 // === 统计卡片 grid-cols-3 gap-3 ===
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
                     TestStatCard(
-                        icon: "trophy.fill",
+                        icon: "trophy",
                         value: "\(completedCount)",
                         label: "已完成",
                         color: AppTheme.warning
@@ -44,7 +44,7 @@ struct TestTab: View {
                         color: AppTheme.success
                     )
                     TestStatCard(
-                        icon: "clock.fill",
+                        icon: "clock",
                         value: "45",
                         label: "分钟",
                         color: AppTheme.accent
@@ -80,8 +80,8 @@ struct TestTab: View {
                     }
                 }
                 .background(Color.white)       // bg-card
-                .clipShape(RoundedRectangle(cornerRadius: 14))   // rounded-2xl
-                .overlay(RoundedRectangle(cornerRadius: 14).stroke(AppTheme.border, lineWidth: 0.5))  // border-border
+                .clipShape(RoundedRectangle(cornerRadius: 16))   // rounded-2xl
+                .overlay(RoundedRectangle(cornerRadius: 16).stroke(AppTheme.border, lineWidth: 0.5))  // border-border
                 .padding(.horizontal, 16)
             }
             .padding(.bottom, 24)
@@ -104,9 +104,8 @@ struct TestStatCard: View {
     var body: some View {
         VStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.system(size: 20))
+                .font(.system(size: 24))
                 .foregroundStyle(color)
-                .frame(width: 28, height: 28)  // 固定尺寸确保图标可见
             
             Text(value)
                 .font(.system(size: 20, weight: .bold))  // text-[20px] font-bold
@@ -124,48 +123,83 @@ struct TestStatCard: View {
     }
 }
 
-// MARK: - 测试行 (匹配 v0: title+badge + info + chevron-right)
+// MARK: - 测试行 (匹配 v0: 图标+title+badge + info + chevron-right)
 struct TestRowView: View {
     let test: TestItemData
     let onTap: () -> Void
     
+    /// 每个测试的图标 (使用确定存在的 SF Symbol)
+    private var testIcon: String {
+        switch test.id {
+        case "basic-theory": return "book"              // BookOpen
+        case "interval-test": return "ear"               // Ear
+        case "chord-test": return "music.note"           // Music → music.note (确定存在)
+        case "rhythm-test": return "metronome"           // Drum → metronome (确定存在)
+        case "sight-singing-test": return "mic"           // Mic
+        default: return "doc.text"
+        }
+    }
+    
+    private var testIconBgColor: Color {
+        switch test.id {
+        case "basic-theory": return Color(hex: "3B82F6")   // blue-500
+        case "interval-test": return Color(hex: "8B5CF6")   // purple-500
+        case "chord-test": return Color(hex: "EC4899")      // pink-500
+        case "rhythm-test": return Color(hex: "F97316")     // orange-500
+        case "sight-singing-test": return Color(hex: "22C55E") // green-500
+        default: return AppTheme.accent
+        }
+    }
+    
     var body: some View {
         Button(action: onTap) {
-            HStack(spacing: 0) {
-                // 左侧信息 flex-1 min-w-0
+            HStack(alignment: .center, spacing: 12) {  // v0: items-center + 左对齐
+                // === 左侧彩色图标 w-14 h-14 rounded-xl (v0: flex-shrink-0) ===
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(testIconBgColor)
+                        .frame(width: 56, height: 56)
+                    Image(systemName: testIcon)
+                        .font(.system(size: 26))
+                        .foregroundStyle(.white)
+                }
+                .frame(width: 56, height: 56)
+                
+                // 中间信息 flex-1 min-w-0
                 VStack(alignment: .leading, spacing: 4) {
                     // 标题 + 分类标签
                     HStack(spacing: 6) {
                         Text(test.title)
-                            .font(.system(size: 15, weight: .medium))   // text-[15px] font-medium
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(AppTheme.primaryText)
                         
-                        // 分类标签 px-2 py-0.5 bg-secondary rounded-full text-[11px]
                         Text(test.category)
-                            .font(.system(size: 11))
+                            .font(.system(size: 12))
                             .foregroundStyle(AppTheme.secondaryText)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
-                            .background(AppTheme.mutedBackground)
+                            .background(AppTheme.secondaryBg)
                             .clipShape(Capsule())
                     }
                     
-                    // 信息行 text-[13px] gap-3
-                    HStack(spacing: 10) {
-                                Text("\(test.questionCount) 题")
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(AppTheme.secondaryText)
-                                
-                                Text("\(test.timeLimit) 分钟")
-                                    .font(.system(size: 13))
-                                    .foregroundStyle(AppTheme.secondaryText)
-                                
-                                if let best = test.bestScore {
-                                    Text("最高 \(best) 分")
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(AppTheme.success)
-                                }
-                            }
+                    // 信息行 (v0 单行: X题 · Y分钟 · 最高Z分)
+                    HStack(spacing: 4) {
+                        Text("\(test.questionCount) 题")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        Text("·")
+                            .foregroundStyle(AppTheme.tertiaryText)
+                        Text("\(test.timeLimit) 分钟")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        if let best = test.bestScore {
+                            Text("·")
+                                .foregroundStyle(AppTheme.tertiaryText)
+                            Text("最高 \(best) 分")
+                                .font(.system(size: 13))
+                                .foregroundStyle(AppTheme.success)
+                        }
+                    }
                 }
                 
                 // 右箭头
@@ -174,7 +208,8 @@ struct TestRowView: View {
                     .foregroundStyle(AppTheme.secondaryText.opacity(0.5))
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)             // py-3
+            .padding(.vertical, 16)   // py-4 (v0)
+            .frame(maxWidth: .infinity, alignment: .leading)  // w-full text-left
         }
         .buttonStyle(IOSPressStyle())
     }
@@ -333,7 +368,7 @@ struct TestResultView: View {
                     VStack(spacing: 4) { Text("\(timeSpent)分钟").font(.system(size: 24, weight: .bold)).foregroundStyle(AppTheme.primaryText); Text("用时").font(.system(size: 12)).foregroundStyle(AppTheme.secondaryText) }
                 }.padding(20).background(Color.white).clipShape(RoundedRectangle(cornerRadius: 16)).shadow(color: .black.opacity(0.08), radius: 8)
                 VStack(spacing: 10) {
-                    Button(action: onViewAnalysis) { Text("查看解析").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 13).background(AppTheme.accent).clipShape(RoundedRectangle(cornerRadius: 13)) }
+                    Button(action: onViewAnalysis) { Text("查看解析").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white).frame(maxWidth: .infinity).padding(.vertical, 13).background(AppTheme.accent).clipShape(RoundedRectangle(cornerRadius: 16)) }
                     Button(action: onBack) { Text("返回").font(.system(size: 14)).foregroundStyle(AppTheme.primaryText).frame(maxWidth: .infinity).padding(.vertical, 12).background(AppTheme.mutedBackground).clipShape(RoundedRectangle(cornerRadius: 13)) }
                 }; Spacer()
             }.padding(16)

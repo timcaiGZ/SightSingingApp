@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Tab 2 乐理知识 (匹配 v0 原型: 标题34px + 副标题15px + 搜索框 + 手风琴)
 struct TheoryTab: View {
-    @State private var expandedCategories: Set<String> = ["basic"]
+    @State private var expandedCategories: Set<String> = []  // 默认全部收拢
     @State private var selectedTopic: TheoryTopicData?
     @State private var navigateToSpecial: String?
     @State private var searchQuery = ""
@@ -17,8 +17,8 @@ struct TheoryTab: View {
             }
             if filteredTopics.isEmpty { return nil }
             return TheoryCategoryData(
-                id: cat.id, title: cat.title, icon: cat.icon,
-                color: cat.color, topics: filteredTopics
+                id: cat.id, title: cat.title, description: cat.description,
+                icon: cat.icon, color: cat.color, topics: filteredTopics
             )
         }
     }
@@ -43,7 +43,7 @@ struct TheoryTab: View {
                 // === 搜索框 h-11 rounded-xl bg-secondary/50 ===
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 17, weight: .regular))
+                        .font(.system(size: 20, weight: .regular))
                         .foregroundStyle(AppTheme.secondaryText)
                     
                     TextField("搜索乐理知识...", text: $searchQuery)
@@ -139,27 +139,33 @@ struct TheoryCategoryAccordionView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // === 分类标题行 ===
+            // === 分类标题行 (v0: gap-4 + description) ===
             Button(action: onToggle) {
-                HStack(spacing: 10) {
-                    // 彩色图标背景 w-8 h-8 rounded-lg
+                HStack(spacing: 16) {
+                    // 彩色图标背景 w-14 h-14 rounded-xl
                     ZStack {
-                        RoundedRectangle(cornerRadius: 8)
+                        RoundedRectangle(cornerRadius: 12)
                             .fill(category.color)
-                            .frame(width: 32, height: 32)
+                            .frame(width: 56, height: 56)
                         Image(systemName: category.icon)
-                            .font(.system(size: 14))
+                            .font(.system(size: 28))
                             .foregroundStyle(.white)
                     }
                     
-                    // 标题 text-[17px] font-semibold flex-1
-                    Text(category.title)
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundStyle(AppTheme.primaryText)
+                    // 标题+描述 flex-1
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(category.title)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(AppTheme.primaryText)
+                        Text(category.description)
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .lineLimit(1)
+                    }
                     
                     Spacer()
                     
-                    // 数量 text-[13px]
+                    // 数量 text-[13px] + padding
                     Text("\(category.topics.count)")
                         .font(.system(size: 13))
                         .foregroundStyle(AppTheme.secondaryText)
@@ -210,7 +216,7 @@ struct TopicCardRow: View {
                 // 左侧内容 flex-1
                 VStack(alignment: .leading, spacing: 4) {
                     Text(topic.title)
-                        .font(.system(size: 15, weight: .medium))  // text-[15px] font-medium
+                        .font(.system(size: 17, weight: .semibold))   // text-[17px] font-semibold
                         .foregroundStyle(AppTheme.primaryText)
                     
                     Text(topic.description)
