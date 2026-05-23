@@ -99,6 +99,9 @@ final class PitchDetector: ObservableObject {
                 return
             }
 
+            // 确保 AudioEngineManager 也使用 playAndRecord，避免录音冲突
+            await AudioEngineManager.shared.activatePlayAndRecord()
+
             await MainActor.run {
                 self.setupEngine()
             }
@@ -142,6 +145,15 @@ final class PitchDetector: ObservableObject {
             print("无法获取音频输入")
             state = .idle
             return
+        }
+
+        // 配置音频会话支持录音
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord, mode: .measurement, options: [.allowBluetoothHFP, .defaultToSpeaker])
+            try session.setActive(true)
+        } catch {
+            print("音频会话配置失败: \(error)")
         }
 
         let format = inputNode.outputFormat(forBus: 0)

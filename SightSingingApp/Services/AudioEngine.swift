@@ -4,24 +4,54 @@ import Foundation
 /// 音频引擎 actor — 负责播放吉他音色音符，线程安全
 actor AudioEngineManager {
     static let shared = AudioEngineManager()
-    
+
     private var audioEngine: AVAudioEngine?
     private var playerNode: AVAudioPlayerNode?
     private var isSetup = false
+    private var currentCategory: AVAudioSession.Category = .playback
 
     private init() {}
 
-    /// 初始化音频引擎（懒加载，线程安全）
+    /// 初始化音频引擎（.playback 模式，仅播放，默认）
     func setup() {
-        guard !isSetup else { return }
+        setup(category: .playback, options: [.mixWithOthers])
+    }
+
+    /// 初始化音频引擎（.playAndRecord 模式，支持同时播放和录音）
+    func setupPlayAndRecord() {
+        setup(category: .playAndRecord, options: [.mixWithOthers, .allowBluetoothHFP, .defaultToSpeaker])
+    }
+
+    /// 切换音频会话为 .playAndRecord（已初始化后通过 PitchDetector 场景调用）
+    func activatePlayAndRecord() {
+        guard isSetup else {
+            setup(category: .playAndRecord, options: [.mixWithOthers, .allowBluetoothHFP, .defaultToSpeaker])
+            return
+        }
+        do {
+            let session = AVAudioSession.sharedInstance()
+            try session.setCategory(.playAndRecord, mode: .default, options: [.mixWithOthers, .allowBluetoothHFP, .defaultToSpeaker])
+            try session.setActive(true)
+            currentCategory = .playAndRecord
+        } catch {
+            print("切换音频会话到 playAndRecord 失败: \(error)")
+        }
+    }
+
+    /// 私有初始化方法
+    private func setup(category: AVAudioSession.Category, options: AVAudioSession.CategoryOptions) {
+        guard !isSetup || currentCategory != category else { return }
 
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [.mixWithOthers])
+            try session.setCategory(category, mode: .default, options: options)
             try session.setActive(true)
+            currentCategory = category
         } catch {
             print("音频会话配置失败: \(error)")
         }
+
+        guard audioEngine == nil else { return }
 
         audioEngine = AVAudioEngine()
         playerNode = AVAudioPlayerNode()

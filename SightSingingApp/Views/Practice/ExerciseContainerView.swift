@@ -1,487 +1,815 @@
 import SwiftUI
-import AVFoundation
 
-/// 练习模式
-enum ExerciseMode: String, CaseIterable {
-    case multipleChoice = "选择题"
-    case keyboardInput = "键盘输入"
-    case sightSinging = "视唱"
-    
-    var icon: String {
-        switch self {
-        case .multipleChoice: return "list.bullet"
-        case .keyboardInput: return "pianokeys"
-        case .sightSinging: return "mic.fill"
-        }
-    }
-}
+// MARK: - 练习容器视图 (匹配 v0 ExerciseContainer)
 
-/// 交互模式
-enum InteractionMode {
-    case multipleChoice(options: [String], correctIndex: Int)
-    case keyboardInput
-    case sightSinging
-}
-
-/// 统一练习容器（参考 Solfeggio 设计）
 struct ExerciseContainerView: View {
-    let exercise: CourseExercise
-    
+    let exercise: ExerciseItem
+    let moduleId: String
+
     @Environment(\.dismiss) private var dismiss
-    @State private var currentQuestion: Int = 0
-    @State private var score: Int = 0
-    @State private var correctCount: Int = 0
-    @State private var selectedAnswer: Int?
-    @State private var keyboardInput: String = ""
-    @State private var showFeedback: Bool = false
-    @State private var isCorrect: Bool = false
-    @State private var exerciseMode: ExerciseMode = .multipleChoice
-    @State private var isPlaying: Bool = false
-    @State private var showResult: Bool = false
+
+    @State private var currentQuestion = 1
+    @State private var correctCount = 0
+    @State private var isCompleted = false
+
+    // 选择题状态
+    @State private var selectedOption: String?
+    @State private var showResult = false
+
+    // 键盘输入状态
+    @State private var inputNotes: [String] = []
+    @State private var keyboardAccidental: String = "—"
+
+    // 视唱状态
+    @State private var sightSingingPhase: SightSingingPhase = .idle
+    @State private var currentCents: Double = 0
+    @State private var pitchScore: Int = 0
+    @State private var rhythmScore: Int = 0
+
+    enum SightSingingPhase {
+        case idle, singing, done
+    }
+
+    // 题目数据（从 QuestionBank 按需生成）
+    @State private var currentQuestionData: ExerciseQuestionData?
+    @State private var currentCorrectAnswer: String = ""
     
-    // 视唱相关
-    @State private var pitchDetector = PitchDetector.shared
-    @State private var detectedPitch: String = ""
-    @State private var pitchDeviation: Double = 0
-    @State private var isRecording: Bool = false
-    
-    private let totalQuestions = 10
-    
+    struct ExerciseQuestionData {
+        let options: [String]           // 选项列表
+        let correctAnswer: String       // 正确答案
+        let audioText: String           // 音频播放文本（如音名）
+        let displayHint: String         // 提示文字
+    }
+
+    private var totalQuestions: Int { exercise.totalQuestions }
+
+    // MARK: - Body (匹配 v0 ExerciseContainer 结构)
+
     var body: some View {
         VStack(spacing: 0) {
-            // 顶部导航
-            headerView
-            
-            Divider()
-            
-            // 内容区
-            contentArea
-            
-            Divider()
-            
-            // 操作栏
-            actionBar
-        }
-        .background(Color(.systemGroupedBackground))
-        .onAppear {
-            determineExerciseMode()
-        }
-    }
-    
-    // MARK: - Header
-    
-    private var headerView: some View {
-        VStack(spacing: 0) {
-            HStack {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "xmark")
-                        .font(.title3)
-                        .foregroundStyle(AppColors.secondaryText)
-                }
-                
-                Spacer()
-                
-                Text(exercise.title)
-                    .font(.headline)
-                
-                Spacer()
-                
-                Text("\(score) 分")
-                    .font(.headline)
-                    .foregroundStyle(AppColors.accentBlue)
-            }
-            .padding()
-            
-            // 谱式切换器（如果有）
-            CompactNotationSwitcher(selectedNotation: .constant(.staff), availableNotations: [.staff, .tabWithSolfege])
-                .padding(.horizontal)
-                .padding(.bottom, 12)
-        }
-        .background(Color(.systemBackground))
-    }
-    
-    // MARK: - Content Area
-    
-    private var contentArea: some View {
-        VStack(spacing: 20) {
-            // 进度圆点
-            progressDots
-            
-            Spacer()
-            
-            // 问题内容
-            questionContent
-            
-            // 交互区域
-            interactionArea
-            
-            Spacer()
-        }
-        .padding(.horizontal, 24)
-        .padding(.vertical, 16)
-    }
-    
-    /// 进度圆点
-    private var progressDots: some View {
-        VStack(spacing: 8) {
-            HStack(spacing: 6) {
-                ForEach(0..<totalQuestions, id: \.self) { index in
-                    Circle()
-                        .fill(dotColor(for: index))
-                        .frame(width: 8, height: 8)
-                }
-            }
-            
-            Text("\(currentQuestion + 1) / \(totalQuestions)")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondaryText)
-        }
-    }
-    
-    private func dotColor(for index: Int) -> Color {
-        if index < currentQuestion {
-            return AppColors.success
-        } else if index == currentQuestion {
-            return AppColors.accentBlue
-        }
-        return Color(.systemGray4)
-    }
-    
-    /// 问题内容
-    @ViewBuilder
-    private var questionContent: some View {
-        VStack(spacing: 16) {
-            // 播放按钮
-            Button {
-                playQuestion()
-            } label: {
-                ZStack {
-                    Circle()
-                        .fill(AppColors.accentBlue)
-                        .frame(width: 72, height: 72)
-                    
-                    Image(systemName: isPlaying ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
-                        .font(.title2)
-                        .foregroundStyle(.white)
-                }
-            }
-            .disabled(isPlaying)
-            
-            // 谱式展示区
-            notationDisplay
-            
-            // 问题文字
-            Text(exercise.content)
-                .font(.body)
-                .fontWeight(.medium)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(AppColors.primaryText)
-                .lineLimit(4)
-        }
-    }
-    
-    /// 谱式展示区
-    private var notationDisplay: some View {
-        Group {
-            switch exercise.type {
-            case .theory:
-                StaffNotationView(notes: sampleStaffNotes)
-            case .singing:
-                SolfegeView(notes: sampleSolfegeNotes, highlightedIndex: nil)
-            case .earTraining:
-                GuitarTablatureView(notes: sampleTabNotes, fretRange: 0...5)
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-    
-    // 示例数据
-    private var sampleStaffNotes: [StaffNote] {
-        [
-            StaffNote(pitch: StaffPitch(line: 0), duration: .quarter, accidental: nil),
-            StaffNote(pitch: StaffPitch(line: 2), duration: .quarter, accidental: nil),
-            StaffNote(pitch: StaffPitch(line: 4), duration: .quarter, accidental: nil),
-        ]
-    }
-    
-    private var sampleSolfegeNotes: [SolfegeNote] {
-        [
-            SolfegeNote(solfege: "1", octave: 4, duration: .quarter),
-            SolfegeNote(solfege: "2", octave: 4, duration: .quarter),
-            SolfegeNote(solfege: "3", octave: 4, duration: .quarter),
-        ]
-    }
-    
-    private var sampleTabNotes: [GuitarTabNote] {
-        [
-            GuitarTabNote(string: 6, fret: 0, technique: nil),
-            GuitarTabNote(string: 5, fret: 2, technique: nil),
-            GuitarTabNote(string: 4, fret: 3, technique: nil),
-        ]
-    }
-    
-    // MARK: - Interaction Area
-    
-    @ViewBuilder
-    private var interactionArea: some View {
-        switch exerciseMode {
-        case .multipleChoice:
-            multipleChoiceView
-        case .keyboardInput:
-            keyboardInputView
-        case .sightSinging:
-            sightSingingView
-        }
-    }
-    
-    /// 选择题视图
-    private var multipleChoiceView: some View {
-        VStack(spacing: 10) {
-            Text("请选择")
-                .font(.subheadline)
-                .foregroundStyle(AppColors.secondaryText)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            let options = ["C", "D", "E", "G"]
-            ForEach(Array(options.enumerated()), id: \.offset) { index, option in
-                Button {
-                    selectAnswer(index)
-                } label: {
-                    HStack {
-                        Text(optionLetter(index))
-                            .font(.caption)
-                            .fontWeight(.bold)
-                            .foregroundStyle(.white)
-                            .frame(width: 24, height: 24)
-                            .background(optionColor(for: index))
-                            .clipShape(Circle())
-                        
-                        Text(option)
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundStyle(AppColors.primaryText)
-                        
-                        Spacer()
-                        
-                        if selectedAnswer == index {
-                            Image(systemName: isCorrect ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                .foregroundStyle(isCorrect ? .green : .red)
+            // 导航栏 (匹配 v0 NavBar)
+            navBar
+
+            // 内容区域 (匹配 v0: flex-1 px-4 overflow-auto)
+            if isCompleted {
+                ExerciseCompletionView(
+                    correctCount: correctCount,
+                    totalQuestions: totalQuestions,
+                    onRetry: resetExercise,
+                    onBack: { dismiss() }
+                )
+            } else {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // 根据模式渲染不同内容
+                        switch exercise.mode {
+                        case .multipleChoice:
+                            if let q = currentQuestionData {
+                                MultipleChoiceContent(
+                                    options: q.options,
+                                    selectedOption: $selectedOption,
+                                    showResult: $showResult,
+                                    correctAnswer: q.correctAnswer,
+                                    onAnswer: { answer in
+                                        if answer == q.correctAnswer {
+                                            correctCount += 1
+                                        }
+                                        selectedOption = answer
+                                        showResult = true
+                                    },
+                                    onPlay: { playCurrentExerciseAudio() }
+                                )
+                            }
+
+                        case .keyboardInput:
+                            KeyboardInputContent(
+                                inputNotes: $inputNotes,
+                                accidental: $keyboardAccidental,
+                                notationType: NotationPreferences.shared.preferredNotation.rawValue,
+                                correctAnswer: currentCorrectAnswer,
+                                onSubmit: { isCorrect in
+                                    if isCorrect {
+                                        correctCount += 1
+                                    }
+                                },
+                                onReplay: { playCurrentExerciseAudio() }
+                            )
+
+                        case .sightSinging:
+                            SightSingingContent(
+                                phase: $sightSingingPhase,
+                                cents: $currentCents,
+                                targetNote: currentCorrectAnswer,
+                                onComplete: { p, r in
+                                    pitchScore = p
+                                    rhythmScore = r
+                                    correctCount += 1
+                                },
+                                onPlayDemo: { playCurrentExerciseAudio() }
+                            )
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 14)
-                    .background(optionBackground(for: index))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .padding(16)
+                }
+            }
+
+            // 底部操作栏 (匹配 v0: border-t border-border bg-card + mb spacing)
+            if !isCompleted {
+                bottomActionBar
+            }
+        }
+        .background(AppTheme.background)
+        .navigationBarHidden(true)
+        .onAppear {
+            generateNewQuestion()
+        }
+    }
+
+    // MARK: - 导航栏 (匹配 v0 NavBar: iOS 模糊 + 居中标题 + 右侧分数)
+
+    private var navBar: some View {
+        HStack {
+            Button(action: { dismiss() }) {
+                HStack(spacing: 2) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .semibold))
+                    Text("返回")
+                        .font(.system(size: 17))
+                }
+                .foregroundStyle(AppTheme.accent)
+            }
+
+            Spacer()
+
+            Text(exercise.title)
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundStyle(AppTheme.primaryText)
+                .lineLimit(1)
+
+            Spacer()
+
+            // 右侧分数
+            Text("\(max(0, correctCount * 10)) 分")
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(AppTheme.accent)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(.regularMaterial)
+    }
+
+    // MARK: - 底部操作栏 (匹配 v0 ExerciseLayout: 纯文字按钮, 两端对齐)
+
+    private var bottomActionBar: some View {
+        HStack {
+            // 新问题 (左对齐)
+            Button(action: { nextQuestion() }) {
+                Text("新问题")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(AppTheme.accent)
+            }
+            .buttonStyle(.plain)
+
+            Spacer()
+
+            // 分解 (居中，如果有)
+            if exercise.mode.showDecompose {
+                Button(action: { playCurrentExerciseAudio() }) {
+                    Text("分解")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(AppTheme.accent)
                 }
                 .buttonStyle(.plain)
-                .disabled(selectedAnswer != nil)
-            }
-        }
-    }
-    
-    private func optionLetter(_ index: Int) -> String {
-        let letters = ["A", "B", "C", "D", "E", "F"]
-        return index < letters.count ? letters[index] : "\(index + 1)"
-    }
-    
-    private func optionColor(for index: Int) -> Color {
-        if selectedAnswer == index {
-            return isCorrect ? AppColors.success : AppColors.error
-        }
-        return AppColors.accentBlue.opacity(0.7)
-    }
-    
-    private func optionBackground(for index: Int) -> Color {
-        if selectedAnswer == index && showFeedback {
-            return isCorrect ? AppColors.success.opacity(0.1) : AppColors.error.opacity(0.1)
-        }
-        return Color(.systemBackground)
-    }
-    
-    /// 键盘输入视图
-    private var keyboardInputView: some View {
-        VStack(spacing: 16) {
-            // 当前输入显示
-            HStack {
-                Text(keyboardInput.isEmpty ? "请输入" : keyboardInput)
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundStyle(keyboardInput.isEmpty ? AppColors.tertiaryText : AppColors.primaryText)
-                
+
                 Spacer()
-                
-                if !keyboardInput.isEmpty {
-                    Button {
-                        keyboardInput = ""
-                    } label: {
-                        Image(systemName: "delete.left")
-                            .foregroundStyle(AppColors.error)
-                    }
-                }
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            
-            // 钢琴键盘
-            MusicKeyboardView(inputText: $keyboardInput)
-        }
-    }
-    
-    /// 视唱视图
-    private var sightSingingView: some View {
-        VStack(spacing: 20) {
-            // 音准指示器
-            PitchMeterView(
-                centsDeviation: pitchDeviation,
-                isActive: isRecording,
-                targetNote: "C"
-            )
-            .frame(height: 120)
-            
-            // 目标音显示
-            VStack(spacing: 4) {
-                Text("目标音")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text("C")
-                    .font(.title)
-                    .fontWeight(.bold)
-                    .foregroundStyle(AppColors.accentBlue)
-            }
-            
-            // 演唱按钮
-            Button {
-                toggleRecording()
-            } label: {
-                HStack {
-                    Image(systemName: isRecording ? "stop.circle.fill" : "mic.circle.fill")
-                    Text(isRecording ? "停止" : "按着演唱")
-                }
-                .font(.headline)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(isRecording ? AppColors.error : AppColors.accentBlue)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+
+            // 重听/示范 (右对齐)
+            Button(action: { playCurrentExerciseAudio() }) {
+                Text(exercise.mode == .sightSinging ? "示范" : "重听")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(AppTheme.accent)
             }
             .buttonStyle(.plain)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
     }
-    
-    // MARK: - Action Bar
-    
-    private var actionBar: some View {
-        HStack(spacing: 16) {
-            Button {
-                playQuestion()
-            } label: {
-                HStack {
-                    Image(systemName: "arrow.counterclockwise")
-                    Text("重听")
+
+    private func playCurrentExerciseAudio() {
+        guard currentQuestionData != nil else { return }
+        switch exercise.mode {
+        case .multipleChoice:
+            // 根据 moduleId 播对应的音程/和弦
+            if moduleId.contains("interval") || exercise.id.contains("interval") {
+                if let intervalQ = QuestionBank.intervalQuestions.randomElement(),
+                   let interval = MusicTheoryInterval.allCases.first(where: { $0.semitones == intervalQ.semitones }) {
+                    ExerciseSoundPlayer.playInterval(interval)
                 }
-                .font(.subheadline)
-                .foregroundStyle(AppColors.accentBlue)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(AppColors.accentBlue.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            } else {
+                ExerciseSoundPlayer.playTriadQuality(TriadQuality.allCases.randomElement()!)
             }
-            
-            Button {
-                nextQuestion()
-            } label: {
-                HStack {
-                    Text("下一题")
-                    Image(systemName: "arrow.right")
-                }
-                .font(.subheadline)
-                .fontWeight(.medium)
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 14)
-                .background(AppColors.accentBlue)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
-            }
+        case .keyboardInput:
+            ExerciseSoundPlayer.playStandardSequence(noteName: currentCorrectAnswer)
+        case .sightSinging:
+            ExerciseSoundPlayer.playNote(name: currentCorrectAnswer)
         }
-        .padding()
-        .background(Color(.systemBackground))
     }
-    
+
+    // MARK: - QuestionBank Integration
+
+    private func generateNewQuestion() {
+        switch exercise.mode {
+        case .multipleChoice:
+            generateMultipleChoiceQuestion()
+        case .keyboardInput:
+            generateKeyboardInputQuestion()
+        case .sightSinging:
+            generateSightSingingQuestion()
+        }
+    }
+
+    private func generateMultipleChoiceQuestion() {
+        // 根据 moduleId 挑选合适题库
+        let isIntervalModule = moduleId.contains("interval") || exercise.id.contains("interval")
+        let isChordModule = moduleId.contains("chord") || exercise.id.contains("chord") || exercise.id.contains("triad")
+
+        if isIntervalModule {
+            // 音程题：从题库选 4 个不同音程作为选项
+            let pool = QuestionBank.intervalQuestions.shuffled().prefix(4)
+            let options = pool.map { $0.name }
+            let correct = pool.first!
+            currentQuestionData = ExerciseQuestionData(
+                options: options,
+                correctAnswer: correct.name,
+                audioText: correct.shortName,
+                displayHint: "听辨音程"
+            )
+            currentCorrectAnswer = correct.name
+        } else if isChordModule {
+            // 和弦题：选常见和弦类型作为选项
+            let optionNames = ["大三和弦", "小三和弦", "增三和弦", "减三和弦"]
+            let correct = optionNames.randomElement()!
+            currentQuestionData = ExerciseQuestionData(
+                options: optionNames,
+                correctAnswer: correct,
+                audioText: correct,
+                displayHint: "听辨和弦"
+            )
+            currentCorrectAnswer = correct
+        } else {
+            // 默认：音程题
+            let pool = QuestionBank.intervalQuestions.shuffled().prefix(4)
+            let options = pool.map { $0.name }
+            let correct = pool.first!
+            currentQuestionData = ExerciseQuestionData(
+                options: options,
+                correctAnswer: correct.name,
+                audioText: correct.shortName,
+                displayHint: "听辨音程"
+            )
+            currentCorrectAnswer = correct.name
+        }
+    }
+
+    private func generateKeyboardInputQuestion() {
+        guard let q = QuestionBank.noteNameQuestions.randomElement() else { return }
+        currentCorrectAnswer = "\(q.noteName)\(q.octave)"
+    }
+
+    private func generateSightSingingQuestion() {
+        let notes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5"]
+        currentCorrectAnswer = notes.randomElement()!
+    }
+
     // MARK: - Actions
-    
-    private func determineExerciseMode() {
-        switch exercise.type {
-        case .theory, .earTraining:
-            exerciseMode = .multipleChoice
-        case .singing:
-            exerciseMode = .sightSinging
-        }
-    }
-    
-    private func playQuestion() {
-        isPlaying = true
-        // 播放音频
-        Task {
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
-            isPlaying = false
-        }
-    }
-    
-    private func selectAnswer(_ index: Int) {
-        selectedAnswer = index
-        // 假设第一个选项正确
-        isCorrect = index == 0
-        showFeedback = true
-        
-        if isCorrect {
-            correctCount += 1
-            score = Int(Double(correctCount) / Double(currentQuestion + 1) * 100)
-        }
-        
-        let generator = UIImpactFeedbackGenerator(style: isCorrect ? .medium : .heavy)
-        generator.impactOccurred()
-        
-        // 震动反馈
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 1_500_000_000)
-            nextQuestion()
-        }
-    }
-    
+
     private func nextQuestion() {
-        if currentQuestion >= totalQuestions - 1 {
-            showResult = true
-            dismiss()
+        if currentQuestion >= totalQuestions {
+            withAnimation {
+                isCompleted = true
+            }
         } else {
             currentQuestion += 1
-            selectedAnswer = nil
-            showFeedback = false
-            keyboardInput = ""
+            resetQuestionState()
         }
     }
-    
-    private func toggleRecording() {
-        isRecording.toggle()
-        if isRecording {
-            pitchDetector.startDetection()
-        } else {
-            pitchDetector.stopDetection()
+
+    private func resetQuestionState() {
+        selectedOption = nil
+        showResult = false
+        inputNotes = []
+        keyboardAccidental = "—"
+        sightSingingPhase = .idle
+        currentCents = 0
+        generateNewQuestion()
+    }
+
+    private func resetExercise() {
+        currentQuestion = 1
+        correctCount = 0
+        isCompleted = false
+        resetQuestionState()
+    }
+}
+
+// MARK: - 选择题内容 (匹配 v0 MultipleChoice)
+
+struct MultipleChoiceContent: View {
+    let options: [String]
+    @Binding var selectedOption: String?
+    @Binding var showResult: Bool
+    let correctAnswer: String
+    let onAnswer: (String) -> Void
+    let onPlay: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            // 音频卡片
+            AudioPromptCard(
+                label: "点击播放音频",
+                hint: "仔细聆听后选择正确答案",
+                onPlay: onPlay
+            )
+
+            // 选项列表 (匹配 v0 ChoiceList)
+            VStack(spacing: 0) {
+                HStack {
+                    Text("请选择")
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppTheme.secondaryText)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(AppTheme.secondaryBg.opacity(0.5))
+
+                VStack(spacing: 0) {
+                    ForEach(Array(options.enumerated()), id: \.offset) { index, option in
+                        let isSelected = selectedOption == option
+                        let isCorrect = showResult && option == correctAnswer
+                        let isWrong = showResult && isSelected && option != correctAnswer
+
+                        Button {
+                            if !showResult {
+                                onAnswer(option)
+                            }
+                        } label: {
+                            HStack {
+                                Text(option)
+                                    .font(.system(size: 16))
+                                    .foregroundStyle(
+                                        isCorrect ? AppTheme.success :
+                                        isWrong ? AppTheme.error :
+                                        AppTheme.primaryText
+                                    )
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(
+                                isCorrect ? AppTheme.success.opacity(0.1) :
+                                isWrong ? AppTheme.error.opacity(0.1) :
+                                isSelected ? AppTheme.accent.opacity(0.05) :
+                                Color.clear
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(showResult)
+
+                        if index < options.count - 1 {
+                            Rectangle()
+                                .fill(AppTheme.border)
+                                .frame(height: 1)
+                                .padding(.leading, 16)
+                        }
+                    }
+                }
+            }
+            .background(AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(AppTheme.border, lineWidth: 1)
+            )
+
+            // 下一题按钮
+            if showResult {
+                Button {
+                    // handled by parent
+                } label: {
+                    Text("下一题")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 18))
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 }
 
+// MARK: - 键盘输入内容 (匹配 v0 ExerciseContainer 简版 MusicKeyboard)
+
+struct KeyboardInputContent: View {
+    @Binding var inputNotes: [String]
+    @Binding var accidental: String
+    let notationType: String
+    let correctAnswer: String
+    let onSubmit: (Bool) -> Void
+    let onReplay: () -> Void
+
+    @State private var isSubmitted = false
+    @State private var isCorrect = false
+    @State private var selectedAccidental: String? = nil
+
+    private let notes = ["C", "D", "E", "F", "G", "A", "B"]
+
+    var body: some View {
+        VStack(spacing: 16) {
+            // 已输入音符显示 (匹配 v0: secondary bg rounded-xl + 蓝色标签)
+            HStack(spacing: 8) {
+                if inputNotes.isEmpty {
+                    Text("请输入音符...")
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.secondaryText)
+                } else {
+                    ForEach(Array(inputNotes.enumerated()), id: \.offset) { _, note in
+                        Text(note)
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(AppTheme.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                    }
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(AppTheme.secondaryBg)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+
+            // 升降号按钮 (匹配 v0: # / b 两个，48x48，圆角 12px)
+            HStack(spacing: 8) {
+                Button {
+                    selectedAccidental = selectedAccidental == "sharp" ? nil : "sharp"
+                } label: {
+                    Text("♯")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(selectedAccidental == "sharp" ? .white : AppTheme.primaryText)
+                        .frame(width: 48, height: 48)
+                        .background(selectedAccidental == "sharp" ? AppTheme.accent : AppTheme.secondaryBg)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .disabled(isSubmitted)
+
+                Button {
+                    selectedAccidental = selectedAccidental == "flat" ? nil : "flat"
+                } label: {
+                    Text("♭")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundStyle(selectedAccidental == "flat" ? .white : AppTheme.primaryText)
+                        .frame(width: 48, height: 48)
+                        .background(selectedAccidental == "flat" ? AppTheme.accent : AppTheme.secondaryBg)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .disabled(isSubmitted)
+
+                Spacer()
+            }
+
+            // 音符键盘 (匹配 v0: 7 列一行，h-14 bg-primary rounded-xl)
+            HStack(spacing: 6) {
+                ForEach(notes, id: \.self) { note in
+                    Button {
+                        if !isSubmitted {
+                            var fullNote = note
+                            if selectedAccidental == "sharp" { fullNote += "♯" }
+                            if selectedAccidental == "flat" { fullNote += "♭" }
+                            inputNotes.append(fullNote)
+                            selectedAccidental = nil
+                        }
+                    } label: {
+                        Text(note)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 52)
+                            .background(isSubmitted ? AppTheme.tertiaryText : AppTheme.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(IOSPressStyle())
+                    .disabled(isSubmitted)
+                }
+            }
+
+            // 功能按钮 (匹配 v0: grid-cols-3 gap-3)
+            HStack(spacing: 8) {
+                Button {
+                    if !isSubmitted {
+                        inputNotes.removeAll()
+                    }
+                } label: {
+                    Text("清空")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(AppTheme.primaryText)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(AppTheme.secondaryBg)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(IOSPressStyle())
+                .disabled(isSubmitted)
+
+                Button {
+                    if !inputNotes.isEmpty && !isSubmitted {
+                        isSubmitted = true
+                        isCorrect = inputNotes.joined() == correctAnswer
+                        onSubmit(isCorrect)
+                    }
+                } label: {
+                    Text("确认")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(AppTheme.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(IOSPressStyle())
+                .disabled(inputNotes.isEmpty || isSubmitted)
+
+                Button {
+                    onReplay()
+                } label: {
+                    Text("重听")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(AppTheme.primaryText)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(AppTheme.secondaryBg)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(IOSPressStyle())
+            }
+        }
+    }
+}
+
+// MARK: - 视唱内容 (匹配 v0 SightSingingView)
+
+struct SightSingingContent: View {
+    @Binding var phase: ExerciseContainerView.SightSingingPhase
+    @Binding var cents: Double
+    let targetNote: String
+    let onComplete: (Int, Int) -> Void
+    let onPlayDemo: () -> Void
+
+    @State private var timer: Timer?
+
+    private var cursorColor: Color {
+        let absCents = abs(cents)
+        if absCents <= 10 { return AppTheme.success }
+        if absCents <= 20 { return AppTheme.warning }
+        return AppTheme.error
+    }
+
+    private var feedbackText: String {
+        let absCents = abs(cents)
+        if phase == .idle { return "等待演唱..." }
+        if absCents <= 10 { return "音准良好!" }
+        return cents < 0 ? "偏低 \(Int(absCents)) 音分" : "偏高 \(Int(absCents)) 音分"
+    }
+
+    var body: some View {
+        VStack(spacing: 16) {
+            // 目标音符卡片 (匹配 v0: bg-card rounded-xl)
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("请演唱")
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppTheme.secondaryText)
+                    HStack(alignment: .bottom, spacing: 8) {
+                        Text(targetNote)
+                            .font(.system(size: 48, weight: .bold))
+                            .foregroundStyle(AppTheme.primaryText)
+                        Text("Mi · 3")
+                            .font(.system(size: 15))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .padding(.bottom, 8)
+                    }
+                }
+
+                Spacer()
+
+                Button {
+                    onPlayDemo()
+                } label: {
+                    Image(systemName: "play.circle.fill")
+                        .font(.system(size: 44))
+                        .foregroundStyle(AppTheme.accent.opacity(0.2))
+                }
+            }
+            .padding(16)
+            .background(AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+
+            // 音高指示器 (匹配 v0 PitchMeter)
+            VStack(spacing: 12) {
+                Text(phase == .idle ? "—" : targetNote)
+                    .font(.system(size: 26, weight: .bold))
+                    .foregroundStyle(AppTheme.primaryText)
+
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(AppTheme.border)
+                            .frame(height: 8)
+
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(AppTheme.success.opacity(0.3))
+                            .frame(width: geometry.size.width * 0.2, height: 8)
+                            .position(x: geometry.size.width / 2, y: 4)
+
+                        if phase == .singing {
+                            let position = (cents / 50 + 1) / 2
+                            Circle()
+                                .fill(cursorColor)
+                                .frame(width: 20, height: 20)
+                                .position(
+                                    x: min(max(position * geometry.size.width, 10), geometry.size.width - 10),
+                                    y: 4
+                                )
+                                .shadow(color: cursorColor.opacity(0.3), radius: 4)
+                        }
+                    }
+                }
+                .frame(height: 24)
+
+                HStack {
+                    Text("偏低")
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppTheme.error)
+                    Spacer()
+                    Text(feedbackText)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(cursorColor)
+                    Spacer()
+                    Text("偏高")
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppTheme.error)
+                }
+            }
+            .padding(16)
+            .background(AppTheme.secondaryBg)
+            .clipShape(RoundedRectangle(cornerRadius: 18))
+
+            // 演唱按钮 (匹配 v0 SingButton: 按住演唱/松开结束)
+            Button {
+                if phase == .idle {
+                    startSinging()
+                } else if phase == .singing {
+                    stopSinging()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: phase == .singing ? "stop.fill" : "mic.fill")
+                    Text(phase == .singing ? "松开结束" : "按住演唱")
+                }
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 16)
+                .background(phase == .singing ? AppTheme.error : AppTheme.accent)
+                .clipShape(RoundedRectangle(cornerRadius: 16))
+            }
+            .buttonStyle(IOSPressStyle())
+        }
+    }
+
+    private func startSinging() {
+        phase = .singing
+        timer = Timer.scheduledTimer(withTimeInterval: 0.08, repeats: true) { _ in
+            cents = Double.random(in: -44...44)
+        }
+    }
+
+    private func stopSinging() {
+        timer?.invalidate()
+        timer = nil
+        phase = .done
+        let absCents = abs(cents)
+        let pitch = max(0, 50 - Int(absCents))
+        let rhythm = Int.random(in: 35...50)
+        onComplete(pitch, rhythm)
+    }
+}
+
+// MARK: - 练习完成视图 (匹配 v0 ExerciseCompletionOverlay)
+
+struct ExerciseCompletionView: View {
+    let correctCount: Int
+    let totalQuestions: Int
+    let onRetry: () -> Void
+    let onBack: () -> Void
+
+    private var accuracy: Int {
+        Int((Double(correctCount) / Double(totalQuestions)) * 100)
+    }
+
+    private var gradeEmoji: String {
+        if accuracy >= 90 { return "🎉" }
+        if accuracy >= 70 { return "👏" }
+        if accuracy >= 50 { return "💪" }
+        return "📚"
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 24) {
+                Spacer().frame(height: 20)
+
+                Text(gradeEmoji)
+                    .font(.system(size: 48))
+
+                Text("练习完成!")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(AppTheme.primaryText)
+
+                // 结果卡片
+                HStack(spacing: 24) {
+                    VStack(spacing: 6) {
+                        Text("\(correctCount)/\(totalQuestions)")
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundStyle(AppTheme.success)
+                        Text("正确")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+
+                    Rectangle()
+                        .fill(AppTheme.border)
+                        .frame(width: 1, height: 56)
+
+                    VStack(spacing: 6) {
+                        Text("\(accuracy)%")
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundStyle(AppTheme.accent)
+                        Text("正确率")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                }
+                .padding(20)
+                .frame(maxWidth: .infinity)
+                .background(AppTheme.cardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 18))
+                .shadow(color: .black.opacity(0.06), radius: 8, x: 0, y: 2)
+
+                // 按钮
+                VStack(spacing: 12) {
+                    Button(action: onRetry) {
+                        Text("再来一轮")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .background(AppTheme.accent)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    .buttonStyle(IOSPressStyle())
+
+                    Button(action: onBack) {
+                        Text("返回")
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundStyle(AppTheme.primaryText)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .background(AppTheme.secondaryBg)
+                            .clipShape(RoundedRectangle(cornerRadius: 16))
+                    }
+                    .buttonStyle(IOSPressStyle())
+                }
+
+                Spacer()
+            }
+            .padding(16)
+        }
+    }
+}
+
+// MARK: - 预览
+
 #Preview {
-    ExerciseContainerView(exercise: CourseExercise(
-        id: "preview",
-        title: "音名识别",
-        type: .theory,
-        difficulty: 1,
-        description: "识别音名",
-        content: "请选择你听到的音名"
-    ))
+    ExerciseContainerView(
+        exercise: ExerciseItem(id: "chord-hear", title: "和弦辨认", mode: .multipleChoice, percentage: 30),
+        moduleId: "hearing"
+    )
 }

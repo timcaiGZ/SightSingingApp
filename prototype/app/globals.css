@@ -1,0 +1,250 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Solfeggio 风格 - 明亮蓝色主题 */
+  --background: oklch(0.97 0.002 250);
+  --foreground: oklch(0.15 0.02 250);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.02 250);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0.02 250);
+  
+  /* iOS蓝主色调 #007AFF */
+  --primary: oklch(0.55 0.24 255);
+  --primary-foreground: oklch(1 0 0);
+  
+  /* 亮蓝强调色 */
+  --accent: oklch(0.55 0.24 255);
+  --accent-foreground: oklch(1 0 0);
+  
+  --secondary: oklch(0.96 0.005 250);
+  --secondary-foreground: oklch(0.35 0.05 250);
+  --muted: oklch(0.95 0.005 250);
+  --muted-foreground: oklch(0.5 0.02 250);
+  
+  /* 功能色 */
+  --success: oklch(0.68 0.2 145);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.78 0.16 75);
+  --warning-foreground: oklch(0.2 0.05 75);
+  --destructive: oklch(0.58 0.22 25);
+  --destructive-foreground: oklch(1 0 0);
+  
+  --border: oklch(0.9 0.005 250);
+  --input: oklch(0.9 0.005 250);
+  --ring: oklch(0.55 0.24 255);
+  
+  /* 模块色彩标识 - Solfeggio风格 */
+  --module-pitch: oklch(0.55 0.24 255);
+  --module-interval: oklch(0.6 0.2 290);
+  --module-chord: oklch(0.65 0.2 0);
+  --module-scale: oklch(0.68 0.15 170);
+  --module-rhythm: oklch(0.78 0.16 75);
+  --module-melody: oklch(0.68 0.2 145);
+  
+  /* 图表色 */
+  --chart-1: oklch(0.55 0.24 255);
+  --chart-2: oklch(0.68 0.2 145);
+  --chart-3: oklch(0.78 0.16 75);
+  --chart-4: oklch(0.6 0.2 290);
+  --chart-5: oklch(0.65 0.2 0);
+  
+  --radius: 0.875rem;
+  
+  /* Tab Bar */
+  --tab-bar: oklch(0.99 0.002 250);
+  --tab-bar-border: oklch(0.9 0.005 250);
+  --tab-inactive: oklch(0.55 0.02 250);
+  --tab-active: oklch(0.55 0.24 255);
+}
+
+.dark {
+  --background: oklch(0.14 0.02 250);
+  --foreground: oklch(0.96 0.005 250);
+  --card: oklch(0.2 0.02 250);
+  --card-foreground: oklch(0.96 0.005 250);
+  --popover: oklch(0.2 0.02 250);
+  --popover-foreground: oklch(0.96 0.005 250);
+  
+  --primary: oklch(0.62 0.2 260);
+  --primary-foreground: oklch(0.14 0.02 250);
+  
+  --accent: oklch(0.55 0.18 260);
+  --accent-foreground: oklch(0.96 0.005 250);
+  
+  --secondary: oklch(0.25 0.02 250);
+  --secondary-foreground: oklch(0.96 0.005 250);
+  --muted: oklch(0.25 0.02 250);
+  --muted-foreground: oklch(0.65 0.02 250);
+  
+  --success: oklch(0.65 0.18 145);
+  --success-foreground: oklch(0.14 0.02 250);
+  --warning: oklch(0.7 0.16 75);
+  --warning-foreground: oklch(0.14 0.02 250);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(0.96 0.005 250);
+  
+  --border: oklch(0.3 0.02 250);
+  --input: oklch(0.3 0.02 250);
+  --ring: oklch(0.55 0.18 260);
+  
+  --module-pitch: oklch(0.55 0.18 260);
+  --module-interval: oklch(0.55 0.2 295);
+  --module-chord: oklch(0.65 0.2 350);
+  --module-scale: oklch(0.65 0.13 180);
+  --module-rhythm: oklch(0.7 0.16 75);
+  --module-melody: oklch(0.65 0.18 145);
+  
+  --chart-1: oklch(0.55 0.18 260);
+  --chart-2: oklch(0.65 0.18 145);
+  --chart-3: oklch(0.7 0.16 75);
+  --chart-4: oklch(0.55 0.2 295);
+  --chart-5: oklch(0.65 0.2 350);
+  
+  --tab-bar: oklch(0.16 0.02 250);
+  --tab-bar-border: oklch(0.25 0.02 250);
+  --tab-inactive: oklch(0.55 0.02 250);
+  --tab-active: oklch(0.62 0.2 260);
+}
+
+@theme inline {
+  --font-sans: 'SF Pro Display', 'SF Pro Text', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', 'Geist Mono', monospace;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-module-pitch: var(--module-pitch);
+  --color-module-interval: var(--module-interval);
+  --color-module-chord: var(--module-chord);
+  --color-module-scale: var(--module-scale);
+  --color-module-rhythm: var(--module-rhythm);
+  --color-module-melody: var(--module-melody);
+  --color-tab-bar: var(--tab-bar);
+  --color-tab-bar-border: var(--tab-bar-border);
+  --color-tab-inactive: var(--tab-inactive);
+  --color-tab-active: var(--tab-active);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* iOS Safe Area */
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* iOS 风格滚动 */
+.ios-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* iOS 风格模糊背景 */
+.ios-blur {
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* 进度圆点动画 */
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.dot-pulse {
+  animation: dot-pulse 0.3s ease-out;
+}
+
+/* 卡片悬浮效果 */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:active {
+  transform: scale(0.98);
+}
+
+/* iOS 风格按钮按压 */
+.ios-press {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.ios-press:active {
+  opacity: 0.7;
+  transform: scale(0.97);
+}
+
+/* 音准指示器动画 */
+@keyframes pitch-indicator {
+  0% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.05); }
+  100% { transform: translateX(-50%) scale(1); }
+}
+
+.pitch-animate {
+  animation: pitch-indicator 0.5s ease-out;
+}
+
+/* 谱表线条 */
+.staff-line {
+  height: 1px;
+  background: oklch(0.8 0.01 250);
+}
+
+.tab-string {
+  height: 1px;
+  background: oklch(0.7 0.02 250);
+}
+
+/* 隐藏滚动条但保持滚动功能 */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
