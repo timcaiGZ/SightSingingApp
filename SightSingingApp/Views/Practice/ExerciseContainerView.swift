@@ -236,32 +236,37 @@ struct ExerciseContainerView: View {
         // 根据 moduleId 挑选合适题库
         let isIntervalModule = moduleId.contains("interval") || exercise.id.contains("interval")
         let isChordModule = moduleId.contains("chord") || exercise.id.contains("chord") || exercise.id.contains("triad")
+        let isRhythmModule = moduleId.contains("rhythm") || exercise.id.contains("rhythm") || exercise.id.contains("quarter") || exercise.id.contains("sixteenth") || exercise.id.contains("syncopation") || exercise.id.contains("triplet") || exercise.id.contains("strumming")
 
         if isIntervalModule {
-            // 音程题：从题库选 4 个不同音程作为选项
-            let pool = QuestionBank.intervalQuestions.shuffled().prefix(4)
-            let options = pool.map { $0.name }
-            let correct = pool.first!
+            generateIntervalQuestion()
+        } else if isChordModule {
+            generateChordQuestion()
+        } else if isRhythmModule {
+            generateRhythmQuestion()
+        } else {
+            // 默认：音程题（带 levelItems 约束）
+            generateIntervalQuestion()
+        }
+    }
+
+    // MARK: - 音程题目生成（使用 levelItems 约束）
+    private func generateIntervalQuestion() {
+        let allowedItems = exercise.levelItems
+
+        if !allowedItems.isEmpty {
+            // 有 levelItems 约束 → 从约束项中生成选项
+            let options = buildMappedOptions(allowedItems, from: .interval)
+            let correct = options.randomElement() ?? options.first!
             currentQuestionData = ExerciseQuestionData(
                 options: options,
-                correctAnswer: correct.name,
-                audioText: correct.shortName,
-                displayHint: "听辨音程"
-            )
-            currentCorrectAnswer = correct.name
-        } else if isChordModule {
-            // 和弦题：选常见和弦类型作为选项
-            let optionNames = ["大三和弦", "小三和弦", "增三和弦", "减三和弦"]
-            let correct = optionNames.randomElement()!
-            currentQuestionData = ExerciseQuestionData(
-                options: optionNames,
                 correctAnswer: correct,
                 audioText: correct,
-                displayHint: "听辨和弦"
+                displayHint: "听辨音程"
             )
             currentCorrectAnswer = correct
         } else {
-            // 默认：音程题
+            // 无约束 → 从全局题库随机取
             let pool = QuestionBank.intervalQuestions.shuffled().prefix(4)
             let options = pool.map { $0.name }
             let correct = pool.first!
@@ -273,6 +278,141 @@ struct ExerciseContainerView: View {
             )
             currentCorrectAnswer = correct.name
         }
+    }
+
+    // MARK: - 和弦题目生成（使用 levelItems 约束）
+    private func generateChordQuestion() {
+        let allowedItems = exercise.levelItems
+
+        if !allowedItems.isEmpty {
+            let options = buildMappedOptions(allowedItems, from: .chord)
+            let correct = options.randomElement() ?? options.first!
+            currentQuestionData = ExerciseQuestionData(
+                options: options,
+                correctAnswer: correct,
+                audioText: correct,
+                displayHint: "听辨和弦"
+            )
+            currentCorrectAnswer = correct
+        } else {
+            let optionNames = ["大三和弦", "小三和弦", "增三和弦", "减三和弦"]
+            let correct = optionNames.randomElement()!
+            currentQuestionData = ExerciseQuestionData(
+                options: optionNames,
+                correctAnswer: correct,
+                audioText: correct,
+                displayHint: "听辨和弦"
+            )
+            currentCorrectAnswer = correct
+        }
+    }
+
+    // MARK: - 节奏题目生成（使用 levelItems 约束）
+    private func generateRhythmQuestion() {
+        let allowedItems = exercise.levelItems
+
+        if !allowedItems.isEmpty {
+            let options = buildMappedOptions(allowedItems, from: .rhythm)
+            let correct = options.randomElement() ?? options.first!
+            currentQuestionData = ExerciseQuestionData(
+                options: options,
+                correctAnswer: correct,
+                audioText: correct,
+                displayHint: "识别节奏型"
+            )
+            currentCorrectAnswer = correct
+        } else {
+            let patternNames = ["四分音符", "八分音符", "四分+八分", "附点节奏", "切分节奏"]
+            let correct = patternNames.randomElement()!
+            currentQuestionData = ExerciseQuestionData(
+                options: patternNames.shuffled(),
+                correctAnswer: correct,
+                audioText: correct,
+                displayHint: "识别节奏型"
+            )
+            currentCorrectAnswer = correct
+        }
+    }
+
+    // MARK: - LevelItem 名称映射为 QuestionBank 实际名称
+
+    private enum QuestionType { case interval, chord, rhythm }
+
+    /// 将 LevelDataProvider 的简写名称映射为 QuestionBank 的完整名称
+    private func buildMappedOptions(_ items: [String], from type: QuestionType) -> [String] {
+        var mapped: [String]
+
+        switch type {
+        case .interval:
+            let nameMap: [String: String] = [
+                "一度": "纯一度",
+                "小二度": "小二度",
+                "大二度": "大二度",
+                "小三度": "小三度",
+                "大三度": "大三度",
+                "纯四度": "纯四度",
+                "增四减五度": "增四度",
+                "纯五度": "纯五度",
+                "小六度": "小六度",
+                "大六度": "大六度",
+                "小七度": "小七度",
+                "大七度": "大七度",
+                "纯八度": "纯八度",
+            ]
+            mapped = items.compactMap { nameMap[$0] ?? $0 }
+
+        case .chord:
+            let nameMap: [String: String] = [
+                "大三": "大三和弦",
+                "小三": "小三和弦",
+                "减三": "减三和弦",
+                "增三": "增三和弦",
+                "大三原位": "大三和弦",
+                "大三一转": "大三和弦",
+                "大三大转": "大三和弦",
+                "小三原位": "小三和弦",
+                "小三一转": "小三和弦",
+                "小三六转": "小三和弦",
+                "大六": "大六和弦",
+                "小六": "小六和弦",
+            ]
+            mapped = items.compactMap { nameMap[$0] ?? $0 }
+
+        case .rhythm:
+            // 节奏 items 通常直接就是显示名称
+            let nameMap: [String: String] = [
+                "X": "四分音符",
+                "x": "八分音符",
+                "-": "休止符",
+                "0": "空拍",
+                ">": "重音",
+                "X x": "四分+八分组合",
+                "x X": "八分+四分组合",
+            ]
+            mapped = items.compactMap { nameMap[$0] ?? $0 }
+        }
+
+        // 去重
+        mapped = mapped.removingDuplicates()
+
+        // 如果不足4个选项，从对应题库中补充
+        while mapped.count < 4 {
+            let extra: String?
+            switch type {
+            case .interval:
+                extra = QuestionBank.intervalQuestions
+                    .filter { !mapped.contains($0.name) }.randomElement()?.name
+            case .chord:
+                extra = ["大三和弦","小三和弦","减三和弦","增三和弦","大六和弦","小六和弦"]
+                    .filter { !mapped.contains($0) }.randomElement()
+            case .rhythm:
+                extra = ["四分音符","八分音符","附点节奏","切分节奏","三连音","十六分音符"]
+                    .filter { !mapped.contains($0) }.randomElement()
+            }
+            if let e = extra { mapped.append(e) } else { break }
+        }
+
+        return mapped.shuffled()
     }
 
     private func generateKeyboardInputQuestion() {

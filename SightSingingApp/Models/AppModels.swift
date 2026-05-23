@@ -137,8 +137,17 @@ struct ExerciseItem: Identifiable, Hashable {
     let title: String
     let mode: ExerciseMode
     let percentage: Int
+    let levelItems: [String]          // 当前关卡的选项约束（从 LevelData.items 传入）
     
     var totalQuestions: Int { 10 }
+    
+    init(id: String, title: String, mode: ExerciseMode, percentage: Int, levelItems: [String] = []) {
+        self.id = id
+        self.title = title
+        self.mode = mode
+        self.percentage = percentage
+        self.levelItems = levelItems
+    }
 }
 
 enum ExerciseMode: String, Hashable {

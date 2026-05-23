@@ -76,7 +76,8 @@ struct ExerciseLevelsPage: View {
                     id: exercise.id,
                     title: "\(exercise.title) · \(level.name)",
                     mode: modeForExercise,
-                    percentage: level.progress
+                    percentage: level.progress,
+                    levelItems: level.items
                 ),
                 moduleId: categoryId
             )
