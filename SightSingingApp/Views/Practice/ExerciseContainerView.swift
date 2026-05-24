@@ -12,6 +12,9 @@ struct ExerciseContainerView: View {
     @State private var correctCount = 0
     @State private var isCompleted = false
 
+    // PracticeSession — 统一练习会话
+    @State private var session = PracticeSession(exerciseType: .theoryQuiz, totalQuestions: 0)
+
     // 多轮练习追踪
     @State private var roundNumber = 1                    // 当前轮次（从1开始）
     @State private var roundResults: [RoundResult] = []   // 每轮成绩记录
@@ -55,6 +58,15 @@ struct ExerciseContainerView: View {
     }
 
     private var totalQuestions: Int { exercise.totalQuestions }
+
+    /// 将当前 exercise mode 映射为 PracticeSession 类型
+    private var exerciseTypeForSession: PracticeSession.ExerciseType {
+        switch exercise.mode {
+        case .sightSinging: return .sightSinging
+        case .multipleChoice: return .theoryQuiz
+        case .keyboardInput: return .singleNoteListening
+        }
+    }
 
     /// 累计统计（所有轮次合计）
     private var totalCorrectOverall: Int { roundResults.reduce(0) { $0 + $1.correctCount } }
@@ -102,6 +114,11 @@ struct ExerciseContainerView: View {
                                     onAnswer: { answer in
                                         if answer == q.correctAnswer {
                                             correctCount += 1
+                                            session.submitAnswer(isCorrect: true)
+                                            ExperienceEngine.shared.onUserAction(.noteCorrect(deviation: 0))
+                                        } else {
+                                            session.submitAnswer(isCorrect: false)
+                                            ExperienceEngine.shared.onUserAction(.noteMissed)
                                         }
                                         selectedOption = answer
                                         showResult = true
@@ -120,6 +137,11 @@ struct ExerciseContainerView: View {
                                 onSubmit: { isCorrect in
                                     if isCorrect {
                                         correctCount += 1
+                                        session.submitAnswer(isCorrect: true)
+                                        ExperienceEngine.shared.onUserAction(.noteCorrect(deviation: 0))
+                                    } else {
+                                        session.submitAnswer(isCorrect: false)
+                                        ExperienceEngine.shared.onUserAction(.noteMissed)
                                     }
                                 },
                                 onReplay: { playCurrentExerciseAudio() }
@@ -134,6 +156,9 @@ struct ExerciseContainerView: View {
                                     pitchScore = p
                                     rhythmScore = r
                                     correctCount += 1
+                                    session.submitAnswer(isCorrect: true, timingAccuracy: r, pitchAccuracy: p)
+                                    let accuracy = Double(r) / 100.0
+                                    ExperienceEngine.shared.onUserAction(.rhythmOnBeat(accuracy: accuracy))
                                 },
                                 onPlayDemo: { playCurrentExerciseAudio() }
                             )
@@ -151,6 +176,11 @@ struct ExerciseContainerView: View {
         .background(AppTheme.background)
         .toolbar(.hidden, for: .navigationBar)
         .onAppear {
+            session = PracticeSession(
+                exerciseType: exerciseTypeForSession,
+                totalQuestions: totalQuestions
+            )
+            session.start()
             generateNewQuestion()
         }
     }
@@ -543,11 +573,16 @@ struct ExerciseContainerView: View {
                 correctCount: correctCount,
                 totalQuestions: totalQuestions
             ))
+            // 完成练习会话
+            session.finish()
+            let accuracy = Double(correctCount) / Double(totalQuestions)
+            ExperienceEngine.shared.onUserAction(.practiceCompleted(accuracy: accuracy))
             withAnimation {
                 isCompleted = true
             }
         } else {
             currentQuestion += 1
+            session.nextQuestion()
             resetQuestionState()
         }
     }
@@ -570,6 +605,8 @@ struct ExerciseContainerView: View {
         pitchScore = 0
         rhythmScore = 0
         isCompleted = false
+        session = PracticeSession(exerciseType: exerciseTypeForSession, totalQuestions: totalQuestions)
+        session.start()
         resetQuestionState()
     }
 
@@ -579,6 +616,8 @@ struct ExerciseContainerView: View {
         correctCount = 0
         isCompleted = false
         roundResults.removeAll()
+        session = PracticeSession(exerciseType: exerciseTypeForSession, totalQuestions: totalQuestions)
+        session.start()
         resetQuestionState()
     }
 }

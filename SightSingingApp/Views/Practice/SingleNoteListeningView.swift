@@ -18,6 +18,12 @@ struct SingleNoteListeningView: View {
     @State private var showComplete = false
     @State private var currentAnswer: NoteNameQuestion?
 
+    // PracticeSession — 统一练习会话
+    @State private var session = PracticeSession(
+        exerciseType: .singleNoteListening,
+        totalQuestions: 10
+    )
+
     // 多轮练习追踪
     @State private var roundNumber = 1
     @State private var roundResults: [SingleRoundResult] = []
@@ -116,6 +122,9 @@ struct SingleNoteListeningView: View {
                 correctCount: correctCount,
                 totalQuestions: totalQuestions
             ))
+            session.finish()
+            let accuracy = Double(correctCount) / Double(totalQuestions)
+            ExperienceEngine.shared.onUserAction(.practiceCompleted(accuracy: accuracy))
             withAnimation { showComplete = true }
             return
         }
@@ -124,6 +133,7 @@ struct SingleNoteListeningView: View {
         answerState = .idle
         showNext = false
         currentQuestion += 1
+        session.nextQuestion()
         generateNewQuestion()
         // 自动播放新题目
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -162,11 +172,15 @@ struct SingleNoteListeningView: View {
         if ok {
             correctCount += 1
             score += 10
+            session.submitAnswer(isCorrect: true)
+            ExperienceEngine.shared.onUserAction(.noteCorrect(deviation: 0))
             // 答对：短暂显示正确反馈后自动进入下一题
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 goNext()
             }
         } else {
+            session.submitAnswer(isCorrect: false)
+            ExperienceEngine.shared.onUserAction(.noteMissed)
             // 答错：显示"下一题"按钮，用户手动点击
             showNext = true
         }
@@ -189,6 +203,8 @@ struct SingleNoteListeningView: View {
         answerState = .idle
         showNext = false
         showComplete = false
+        session = PracticeSession(exerciseType: .singleNoteListening, totalQuestions: totalQuestions)
+        session.start()
         generateNewQuestion()
         // 自动播放新轮次第一题
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
@@ -207,6 +223,8 @@ struct SingleNoteListeningView: View {
         showNext = false
         showComplete = false
         roundResults.removeAll()
+        session = PracticeSession(exerciseType: .singleNoteListening, totalQuestions: totalQuestions)
+        session.start()
         generateNewQuestion()
         // 自动播放第一题
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {

@@ -98,22 +98,42 @@ final class SightSingingViewModel {
         }
     }
 
-    /// 播放示范旋律
+    /// 播放示范旋律（使用 PlaybackEngine 统一调度）
     func playDemoMelody() {
-        var delay: Double = 0
-        for (index, note) in melody.enumerated() {
-            Task { @MainActor in
-                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
-                self.currentNoteIndex = index
-                await AudioEngineManager.shared.playSolfege(note.solfege, octave: note.octave)
-            }
-            delay += note.duration
+        let events = melody.enumerated().map { index, note in
+            PlaybackEngine.TimedAudioEvent(
+                beat: Double(index),
+                midiNote: MusicTheory.midiNote(from: note.solfege, octave: note.octave) ?? 60,
+                duration: note.duration
+            )
         }
 
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: UInt64((delay + 0.5) * 1_000_000_000))
-            self.state = .waitingToSing
-            self.currentNoteIndex = 0
+        Task {
+            // 注册事件回调以更新 UI
+            await PlaybackEngine.shared.onEvent { [weak self] event in
+                Task { @MainActor [weak self] in
+                    guard let self = self else { return }
+                    // 找到对应的 melody 索引
+                    if let idx = self.melody.firstIndex(where: {
+                        MusicTheory.midiNote(from: $0.solfege, octave: $0.octave) == event.midiNote
+                    }) {
+                        self.currentNoteIndex = idx
+                    }
+                }
+            }
+
+            await PlaybackEngine.shared.prepare(timeline: events, bpm: 60)
+            await PlaybackEngine.shared.play()
+
+            // 等待播放完成后进入等待演唱状态
+            let totalBeats = events.map { $0.beat + $0.duration }.max() ?? 0
+            let waitSeconds = totalBeats / 60.0 * 60.0 / 60.0 + 0.5
+            try? await Task.sleep(nanoseconds: UInt64(waitSeconds * 1_000_000_000))
+
+            await MainActor.run {
+                self.state = .waitingToSing
+                self.currentNoteIndex = 0
+            }
         }
     }
 
@@ -127,6 +147,9 @@ final class SightSingingViewModel {
         currentNoteStartTime = Date()
         noteScores = []
         rhythmScores = []
+
+        // 通知体验引擎
+        ExperienceEngine.shared.onUserAction(.practiceStarted)
 
         singingTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] timer in
             guard let self = self, self.state == .singing else {
@@ -143,6 +166,13 @@ final class SightSingingViewModel {
                     expectedDuration: currentNote.duration
                 )
                 self.rhythmScores.append(rhythmNoteScore)
+
+                // 节奏反馈
+                if rhythmNoteScore >= 85 {
+                    ExperienceEngine.shared.onUserAction(.rhythmOnBeat(accuracy: Double(rhythmNoteScore) / 100.0))
+                } else {
+                    ExperienceEngine.shared.onUserAction(.rhythmOffBeat)
+                }
 
                 if self.currentNoteIndex < self.melody.count - 1 {
                     self.currentNoteIndex += 1
@@ -163,7 +193,17 @@ final class SightSingingViewModel {
                 self.detectedFrequency = self.pitchDetector.detectedFrequency
                 self.centsDeviation = self.pitchDetector.centsDeviation
                 self.currentAmplitude = self.pitchDetector.currentAmplitude
-                self.noteScores.append(self.pitchDetector.currentScore)
+                let score = self.pitchDetector.currentScore
+                self.noteScores.append(score)
+
+                // 音高反馈
+                if score >= 85 {
+                    ExperienceEngine.shared.onUserAction(.noteCorrect(deviation: abs(self.centsDeviation)))
+                } else if score >= 50 {
+                    ExperienceEngine.shared.onUserAction(.noteClose(deviation: abs(self.centsDeviation)))
+                } else if self.currentAmplitude > 0.1 {
+                    ExperienceEngine.shared.onUserAction(.noteMissed)
+                }
             }
         }
     }
@@ -189,6 +229,10 @@ final class SightSingingViewModel {
 
         rhythmScore = rhythmScores.isEmpty ? 100 : rhythmScores.reduce(0, +) / rhythmScores.count
         totalScore = Int(Double(pitchScore) * 0.7 + Double(rhythmScore) * 0.3)
+
+        // 通知体验引擎练习完成
+        let accuracy = Double(totalScore) / 100.0
+        ExperienceEngine.shared.onUserAction(.practiceCompleted(accuracy: accuracy))
 
         state = .result
         onPracticeComplete?(pitchScore, rhythmScore, totalScore)
@@ -237,14 +281,12 @@ final class SightSingingViewModel {
         }
     }
 
+    /// 节奏评分（委托给 RhythmEngine）
     private func calculateRhythmScore(actualDuration: Double, expectedDuration: Double) -> Int {
         guard expectedDuration > 0 else { return 100 }
-        let deviation = abs(actualDuration - expectedDuration) / expectedDuration
-        if deviation <= 0.1 { return 100 }
-        else if deviation <= 0.2 { return 85 }
-        else if deviation <= 0.3 { return 70 }
-        else if deviation <= 0.5 { return 50 }
-        else { return 30 }
+        // 将时长偏差转换为"拍"偏差（以 60 BPM = 1 拍/秒 为基准）
+        let beatDeviation = abs(actualDuration - expectedDuration) / expectedDuration
+        return RhythmEngine.evaluateTiming(actual: beatDeviation, expected: 0, tolerance: 0.1)
     }
 
     private func midiToSolfege(_ midi: Int) -> (String, Int) {
