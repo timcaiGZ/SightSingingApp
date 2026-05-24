@@ -17,6 +17,8 @@ enum GraphicType: String {
     case solfegeNotes        // 简谱音符展示
     case intervalList        // 音程列表
     case chordDiagram        // 和弦指法图
+    case cagedShapes         // CAGED五大形状展示
+    case cagedScaleChords    // CAGED调性和弦级数展示
     case fretboardHalfNotes  // 吉他指板半音图
     case scaleStructure      // 音阶结构图
     case noteDuration        // 音符时值关系
@@ -33,6 +35,8 @@ struct GraphicData {
     var labels: [String] = []          // 标签
     var intervals: [IntervalItem] = [] // 音程列表
     var chords: [ChordGraphicItem] = []// 和弦图
+    var cagedChordName: String = ""    // CAGED形状目标和弦名
+    var cagedScaleName: String = ""    // CAGED调性名称
     var flowItems: [String] = []       // 流向图标签
     var highlightIndices: Set<Int> = []// 高亮索引
 }
@@ -95,7 +99,7 @@ enum TheoryDetailDatabase {
         // ========== 基础乐理 ==========
         TheoryDetailData(topicId: "notes", title: "认识音符", sections: [
             TheorySection(title: "音符的构成", content: "音符由三个部分组成：符头、符干和符尾。符头决定音高位置，符干和符尾决定音符时值。", graphicType: .noteDuration),
-            TheorySection(title: "时值关系", content: "每种音符的时值是前一种的一半。在吉他中最常用四分音符和八分音符。", graphicType: .solfegeNotes, graphicData: GraphicData(notes: ["𝅝", "𝅗𝅥", "♩", "♪"], labels: ["全音符", "二分", "四分", "八分"])),
+            TheorySection(title: "时值关系", content: "每种音符的时值是前一种的一半。在吉他中最常用四分音符和八分音符。", graphicType: .noteDuration),
         ]),
         
         TheoryDetailData(topicId: "pitch-names", title: "音名与唱名", sections: [
@@ -196,6 +200,7 @@ enum TheoryDetailDatabase {
                 ChordGraphicItem(name: "Dm", frets: [nil, nil, 0, 2, 3, 1], fingers: [nil, nil, nil, 2, 3, 1])
             ])),
             TheorySection(title: "增三和弦与减三和弦", content: "增三和弦由大三度+大三度构成（如Caug: C-E-G#），声音紧张、膨胀。减三和弦由小三度+小三度构成（如Bdim: B-D-F），声音暗沉、不稳定。"),
+            TheorySection(title: "C大调各级和弦 · CAGED按法", content: "CAGED系统将五度基本形状移动到不同把位，演奏各级和弦。点击展开查看各级和弦的CAGED五大按法：", graphicType: .cagedScaleChords, graphicData: GraphicData(cagedScaleName: "C")),
         ]),
         
         TheoryDetailData(topicId: "inversions", title: "和弦转位", sections: [
@@ -205,6 +210,7 @@ enum TheoryDetailDatabase {
         ]),
         
         TheoryDetailData(topicId: "guitar-chords", title: "吉他和弦指法", sections: [
+            TheorySection(title: "C 大三和弦 · CAGED 五大按法", content: "CAGED系统用5种基本形状覆盖整个指板。以C和弦为例，C型在开放把位，A型在第3品，G型在第5品，E型在第8品，D型在第10品。掌握这5种按法等于在指板上随处可弹C和弦。", graphicType: .cagedShapes, graphicData: GraphicData(cagedChordName: "C")),
             TheorySection(title: "常用开放和弦", content: "开放和弦利用空弦音，音色丰富、饱满，是民谣吉他最常用的和弦形式。C、G、Am、Em是初学者最先掌握的四个和弦。", graphicType: .chordDiagram, graphicData: GraphicData(chords: [
                 ChordGraphicItem(name: "C", frets: [nil, 3, 2, 0, 1, 0], fingers: [nil, 3, 2, nil, 1, nil]),
                 ChordGraphicItem(name: "G", frets: [3, 2, 0, 0, 0, 3], fingers: [2, 1, nil, nil, nil, 3]),
@@ -212,8 +218,21 @@ enum TheoryDetailDatabase {
                 ChordGraphicItem(name: "Em", frets: [0, 2, 2, 0, 0, 0], fingers: [nil, 2, 3, nil, nil, nil])
             ])),
             TheorySection(title: "F和弦（横按和弦）", content: "F和弦需要食指横按第1品全部6根弦，中指按3弦2品，无名指和小指分别按4弦和5弦的第3品。掌握F和弦后可以移把位演奏各种和弦。"),
+            TheorySection(title: "F 大三和弦 · CAGED 五大按法", content: "F和弦的CAGED五大形状：E型在第1品（常用横按），D型在第3品，C型在第5品，A型在第8品，G型在第10品。", graphicType: .cagedShapes, graphicData: GraphicData(cagedChordName: "F")),
         ]),
         
+        // CAGED系统专题
+        TheoryDetailData(topicId: "caged-chords", title: "CAGED和弦按法", sections: [
+            TheorySection(title: "什么是 CAGED 系统", content: "CAGED 系统用 5 种开放和弦形状覆盖整个吉他指板：C型、A型、G型、E型、D型。每种形状都可以移动到不同品位，从而在指板任意位置演奏同一个和弦。"),
+            TheorySection(title: "C 大三和弦五大按法", content: "以C大和弦为例，只需移动5种基本形状：C型在开放把位（最常用），A型在第3品横按，G型在第5品，E型在第8品横按，D型在第10品。根音用R标记。", graphicType: .cagedShapes, graphicData: GraphicData(cagedChordName: "C")),
+            TheorySection(title: "Am 小三和弦五大按法", content: "同样原理适用于小三和弦。以Am为例：A型在开放把位，G型在第2品，E型在第5品横按，D型在第7品，C型在第9品。", graphicType: .cagedShapes, graphicData: GraphicData(cagedChordName: "Am")),
+            TheorySection(title: "F 大三和弦五大按法", content: "F和弦本身就是E型在第1品的横按。五大形状为：E型第1品，D型第3品，C型第5品，A型第8品，G型第10品。", graphicType: .cagedShapes, graphicData: GraphicData(cagedChordName: "F")),
+            TheorySection(title: "G 大三和弦五大按法", content: "G和弦G型在开放把位，E型在第3品横按，D型在第5品，C型在第7品，A型在第10品。掌握了CAGED就掌握了G和弦全指板。", graphicType: .cagedShapes, graphicData: GraphicData(cagedChordName: "G")),
+            TheorySection(title: "Dm 小三和弦五大按法", content: "Dm小三和弦：D型在开放把位，C型在第5品，A型在第5品横按，G型在第7品，E型在第10品横按。", graphicType: .cagedShapes, graphicData: GraphicData(cagedChordName: "Dm")),
+            TheorySection(title: "Em 小三和弦五大按法", content: "Em小三和弦：E型在开放把位，D型在第2品，C型在第4品，A型在第7品横按，G型在第9品。Em的E型开放把位是入门必会。", graphicType: .cagedShapes, graphicData: GraphicData(cagedChordName: "Em")),
+            TheorySection(title: "C大调各级和弦CAGED按法", content: "点击展开查看C大调各级和弦（Ⅰ-ⅶ°）在CAGED系统下的五种按法。掌握这些就等于掌握了C大调所有和弦的全指板位置。", graphicType: .cagedScaleChords, graphicData: GraphicData(cagedScaleName: "C")),
+        ]),
+
         TheoryDetailData(topicId: "chord-hearing", title: "和弦听辨", sections: [
             TheorySection(title: "听辨方法", content: "先听低音（根音位置）→ 听色彩（大/小/属七）→ 听功能（主/下属/属）。训练时从大三和弦和小三和弦的二选一开始。"),
             TheorySection(title: "和弦色彩速记", content: "大三和弦→明亮快乐；小三和弦→柔和忧伤；属七和弦→有张力想解决到主；减三和弦→紧张不稳定；增三和弦→梦幻漂浮。"),

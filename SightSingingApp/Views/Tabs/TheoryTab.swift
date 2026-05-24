@@ -6,6 +6,7 @@ struct TheoryTab: View {
     @State private var selectedTopic: TheoryTopicData?
     @State private var navigateToSpecial: String?
     @State private var searchQuery = ""
+    @State private var progressService = TheoryProgressService()
     
     // 搜索过滤
     var filteredCategories: [TheoryCategoryData] {
@@ -65,6 +66,7 @@ struct TheoryTab: View {
                         TheoryCategoryAccordionView(
                             category: category,
                             isExpanded: expandedCategories.contains(category.id) || !searchQuery.isEmpty,
+                            progressService: progressService,
                             onToggle: {
                                 withAnimation(.easeInOut(duration: 0.2)) {
                                     if expandedCategories.contains(category.id) {
@@ -114,7 +116,7 @@ struct TheoryTab: View {
         }
         .background(AppTheme.background)
         .navigationDestination(item: $selectedTopic) { topic in
-            TheoryDetailView(topic: topic)
+            TheoryDetailView(topic: topic, progressService: progressService)
         }
         .navigationDestination(item: $navigateToSpecial) { specialId in
             switch specialId {
@@ -134,9 +136,16 @@ struct TheoryTab: View {
 struct TheoryCategoryAccordionView: View {
     let category: TheoryCategoryData
     let isExpanded: Bool
+    var progressService: TheoryProgressService? = nil
     let onToggle: () -> Void
     let onTopicSelect: (TheoryTopicData) -> Void
-    
+
+    private var catProgress: TheoryProgressService.CategoryProgress {
+        let ids = category.topics.map(\.id)
+        return progressService?.categoryProgress(topicIds: ids)
+            ?? TheoryProgressService.CategoryProgress(completed: 0, total: ids.count)
+    }
+
     var body: some View {
         VStack(spacing: 0) {
             // === 分类标题行 (v0: gap-4 + description) ===
@@ -151,7 +160,7 @@ struct TheoryCategoryAccordionView: View {
                             .font(.system(size: 28))
                             .foregroundStyle(.white)
                     }
-                    
+
                     // 标题+描述 flex-1
                     VStack(alignment: .leading, spacing: 2) {
                         Text(category.title)
@@ -162,16 +171,16 @@ struct TheoryCategoryAccordionView: View {
                             .foregroundStyle(AppTheme.secondaryText)
                             .lineLimit(1)
                     }
-                    
+
                     Spacer()
-                    
+
                     // 数量 text-[13px] + padding
                     Text("\(category.topics.count)")
                         .font(.system(size: 13))
                         .foregroundStyle(AppTheme.secondaryText)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                    
+
                     // 展开箭头 rotate-180
                     Image(systemName: "chevron.down")
                         .font(.system(size: 15, weight: .semibold))
@@ -183,16 +192,45 @@ struct TheoryCategoryAccordionView: View {
                 .padding(.vertical, 8)
             }
             .buttonStyle(.plain)
-            
+
             // === 知识点卡片列表 mt-2 bg-card rounded-xl shadow-sm ===
             if isExpanded {
                 VStack(spacing: 0) {
                     ForEach(Array(category.topics.enumerated()), id: \.element.id) { index, topic in
-                        TopicCardRow(topic: topic, onTap: { onTopicSelect(topic) })
-                        
+                        TopicCardRow(
+                            topic: topic,
+                            isRead: progressService?.isRead(topic.id) ?? false,
+                            onTap: { onTopicSelect(topic) }
+                        )
+
                         if index < category.topics.count - 1 {
                             Divider().padding(.leading, 16)
                         }
+                    }
+
+                    // 分类进度条
+                    if catProgress.total > 0 {
+                        HStack(spacing: 8) {
+                            // 进度条
+                            GeometryReader { geo in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 3)
+                                        .fill(AppTheme.border)
+                                        .frame(height: 6)
+                                    RoundedRectangle(cornerRadius: 3)
+                                        .fill(catProgress.isComplete ? AppTheme.success : category.color)
+                                        .frame(width: geo.size.width * CGFloat(catProgress.completed) / CGFloat(catProgress.total), height: 6)
+                                }
+                            }
+                            .frame(height: 6)
+
+                            Text("\(catProgress.completed)/\(catProgress.total)")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(catProgress.isComplete ? AppTheme.success : AppTheme.secondaryText)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(AppTheme.mutedBackground.opacity(0.5))
                     }
                 }
                 .background(Color.white)
@@ -208,25 +246,34 @@ struct TheoryCategoryAccordionView: View {
 // MARK: - 知识点卡片行 (匹配 v0 TopicCard: title+desc + chevron-right)
 struct TopicCardRow: View {
     let topic: TheoryTopicData
+    var isRead: Bool = false
     let onTap: () -> Void
-    
+
     var body: some View {
         Button(action: onTap) {
             HStack(spacing: 0) {
+                // ✓ 已读标记
+                if isRead {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(AppTheme.success)
+                        .padding(.trailing, 10)
+                }
+
                 // 左侧内容 flex-1
                 VStack(alignment: .leading, spacing: 4) {
                     Text(topic.title)
                         .font(.system(size: 17, weight: .semibold))   // text-[17px] font-semibold
                         .foregroundStyle(AppTheme.primaryText)
-                    
+
                     Text(topic.description)
                         .font(.system(size: 13))                   // text-[13px]
                         .foregroundStyle(AppTheme.secondaryText)
                         .lineLimit(1)
                 }
-                
+
                 Spacer()
-                
+
                 // 右箭头 text-muted-foreground/40 flex-shrink-0 ml-3
                 Image(systemName: "chevron.right")
                     .font(.system(size: 16, weight: .medium))

@@ -212,6 +212,7 @@ struct TheoryCategoryData: Identifiable, Hashable {
             TheoryTopicData(id: "seventh-chords", title: "七和弦", description: "属七、大七、小七和弦", isSpecial: true),
             TheoryTopicData(id: "inversions", title: "和弦转位", description: "第一、第二转位"),
             TheoryTopicData(id: "guitar-chords", title: "吉他和弦指法", description: "开放和弦与横按和弦"),
+            TheoryTopicData(id: "caged-chords", title: "CAGED和弦按法", description: "五大基本形状覆盖全指板"),
             TheoryTopicData(id: "chord-hearing", title: "和弦听辨", description: "和弦色彩与进行")
         ]),
         TheoryCategoryData(id: "mode", title: "调式", description: "音阶的组织方式，决定音乐的情绪色彩", icon: "tuningfork", color: AppTheme.Theory.mode, topics: [
