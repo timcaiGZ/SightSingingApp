@@ -82,37 +82,74 @@ struct ExerciseContainerView: View {
 
     // MARK: - Body (匹配 v0 ExerciseContainer 结构)
 
-    var body: some View {
-        VStack(spacing: 0) {
-            // 导航栏 (匹配 v0 NavBar)
-            navBar
+    /// 是否节奏练习
+    private var isRhythmExercise: Bool {
+        moduleId.contains("rhythm") || exercise.id.contains("rhythm") ||
+        exercise.id.contains("quarter") || exercise.id.contains("sixteenth") ||
+        exercise.id.contains("syncopation") || exercise.id.contains("triplet") ||
+        exercise.id.contains("strumming")
+    }
 
-            // 内容区域 (匹配 v0: flex-1 px-4 overflow-auto)
-            if isCompleted {
-                ExerciseCompletionView(
-                    roundNumber: roundNumber,
-                    correctCount: correctCount,
-                    totalQuestions: totalQuestions,
-                    roundResults: roundResults,
-                    averageAccuracy: averageAccuracy,
-                    bestRoundAccuracy: bestRoundAccuracy,
-                    onContinue: continueToNextRound,
-                    onBack: { dismiss() }
-                )
-            } else {
-                ScrollView {
-                    VStack(spacing: 16) {
-                        // 根据模式渲染不同内容
-                        switch exercise.mode {
-                        case .multipleChoice:
-                            if let q = currentQuestionData {
-                                MultipleChoiceContent(
-                                    options: q.options,
-                                    selectedOption: $selectedOption,
-                                    showResult: $showResult,
-                                    correctAnswer: q.correctAnswer,
-                                    onAnswer: { answer in
-                                        if answer == q.correctAnswer {
+    var body: some View {
+        if isRhythmExercise {
+            // 节奏练习使用专用全屏视图
+            RhythmPracticeView(exercise: exercise, moduleId: moduleId)
+                .background(AppTheme.background)
+                .toolbar(.hidden, for: .navigationBar)
+        } else {
+            VStack(spacing: 0) {
+                // 导航栏 (匹配 v0 NavBar)
+                navBar
+
+                // 内容区域 (匹配 v0: flex-1 px-4 overflow-auto)
+                if isCompleted {
+                    ExerciseCompletionView(
+                        roundNumber: roundNumber,
+                        correctCount: correctCount,
+                        totalQuestions: totalQuestions,
+                        roundResults: roundResults,
+                        averageAccuracy: averageAccuracy,
+                        bestRoundAccuracy: bestRoundAccuracy,
+                        onContinue: continueToNextRound,
+                        onBack: { dismiss() }
+                    )
+                } else {
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            // 根据模式渲染不同内容
+                            switch exercise.mode {
+                            case .multipleChoice:
+                                if let q = currentQuestionData {
+                                    MultipleChoiceContent(
+                                        options: q.options,
+                                        selectedOption: $selectedOption,
+                                        showResult: $showResult,
+                                        correctAnswer: q.correctAnswer,
+                                        onAnswer: { answer in
+                                            if answer == q.correctAnswer {
+                                                correctCount += 1
+                                                session.submitAnswer(isCorrect: true)
+                                                ExperienceEngine.shared.onUserAction(.noteCorrect(deviation: 0))
+                                            } else {
+                                                session.submitAnswer(isCorrect: false)
+                                                ExperienceEngine.shared.onUserAction(.noteMissed)
+                                            }
+                                            selectedOption = answer
+                                            showResult = true
+                                        },
+                                        onPlay: { playCurrentExerciseAudio() },
+                                        onNext: { nextQuestion() }
+                                    )
+                                }
+
+                            case .keyboardInput:
+                                KeyboardInputContent(
+                                    inputNotes: $inputNotes,
+                                    accidental: $keyboardAccidental,
+                                    notationType: NotationPreferences.shared.preferredNotation.rawValue,
+                                    correctAnswer: currentCorrectAnswer,
+                                    onSubmit: { isCorrect in
+                                        if isCorrect {
                                             correctCount += 1
                                             session.submitAnswer(isCorrect: true)
                                             ExperienceEngine.shared.onUserAction(.noteCorrect(deviation: 0))
@@ -120,68 +157,46 @@ struct ExerciseContainerView: View {
                                             session.submitAnswer(isCorrect: false)
                                             ExperienceEngine.shared.onUserAction(.noteMissed)
                                         }
-                                        selectedOption = answer
-                                        showResult = true
                                     },
-                                    onPlay: { playCurrentExerciseAudio() },
-                                    onNext: { nextQuestion() }
+                                    onReplay: { playCurrentExerciseAudio() }
+                                )
+
+                            case .sightSinging:
+                                SightSingingContent(
+                                    phase: $sightSingingPhase,
+                                    cents: $currentCents,
+                                    targetNote: currentCorrectAnswer,
+                                    onComplete: { p, r in
+                                        pitchScore = p
+                                        rhythmScore = r
+                                        correctCount += 1
+                                        session.submitAnswer(isCorrect: true, timingAccuracy: r, pitchAccuracy: p)
+                                        let accuracy = Double(r) / 100.0
+                                        ExperienceEngine.shared.onUserAction(.rhythmOnBeat(accuracy: accuracy))
+                                    },
+                                    onPlayDemo: { playCurrentExerciseAudio() }
                                 )
                             }
-
-                        case .keyboardInput:
-                            KeyboardInputContent(
-                                inputNotes: $inputNotes,
-                                accidental: $keyboardAccidental,
-                                notationType: NotationPreferences.shared.preferredNotation.rawValue,
-                                correctAnswer: currentCorrectAnswer,
-                                onSubmit: { isCorrect in
-                                    if isCorrect {
-                                        correctCount += 1
-                                        session.submitAnswer(isCorrect: true)
-                                        ExperienceEngine.shared.onUserAction(.noteCorrect(deviation: 0))
-                                    } else {
-                                        session.submitAnswer(isCorrect: false)
-                                        ExperienceEngine.shared.onUserAction(.noteMissed)
-                                    }
-                                },
-                                onReplay: { playCurrentExerciseAudio() }
-                            )
-
-                        case .sightSinging:
-                            SightSingingContent(
-                                phase: $sightSingingPhase,
-                                cents: $currentCents,
-                                targetNote: currentCorrectAnswer,
-                                onComplete: { p, r in
-                                    pitchScore = p
-                                    rhythmScore = r
-                                    correctCount += 1
-                                    session.submitAnswer(isCorrect: true, timingAccuracy: r, pitchAccuracy: p)
-                                    let accuracy = Double(r) / 100.0
-                                    ExperienceEngine.shared.onUserAction(.rhythmOnBeat(accuracy: accuracy))
-                                },
-                                onPlayDemo: { playCurrentExerciseAudio() }
-                            )
                         }
+                        .padding(16)
                     }
-                    .padding(16)
+                }
+
+                // 底部操作栏 (匹配 v0: border-t border-border bg-card + mb spacing)
+                if !isCompleted {
+                    bottomActionBar
                 }
             }
-
-            // 底部操作栏 (匹配 v0: border-t border-border bg-card + mb spacing)
-            if !isCompleted {
-                bottomActionBar
+            .background(AppTheme.background)
+            .toolbar(.hidden, for: .navigationBar)
+            .onAppear {
+                session = PracticeSession(
+                    exerciseType: exerciseTypeForSession,
+                    totalQuestions: totalQuestions
+                )
+                session.start()
+                generateNewQuestion()
             }
-        }
-        .background(AppTheme.background)
-        .toolbar(.hidden, for: .navigationBar)
-        .onAppear {
-            session = PracticeSession(
-                exerciseType: exerciseTypeForSession,
-                totalQuestions: totalQuestions
-            )
-            session.start()
-            generateNewQuestion()
         }
     }
 

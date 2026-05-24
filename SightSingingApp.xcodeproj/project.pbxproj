@@ -21,6 +21,7 @@
 		243E31F0274BB67A9AA84340 /* MusicTheoryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3DE4A370F6300914E4059D5 /* MusicTheoryTests.swift */; };
 		2732479C34DDB36A6AA282D9 /* TestQuestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2E5D95C4942C09A8D311BCB /* TestQuestion.swift */; };
 		27F0AA711598F245F76EC1B5 /* ExerciseContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 181AC47735BD08C333391D0A /* ExerciseContainerView.swift */; };
+		ED04FD22D673414FBBC5EF36 /* RhythmPracticeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26328DB802F441F7BA360B28 /* RhythmPracticeView.swift */; };
 		302BDA53CB83CB64EC661184 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5B86F3AE1CE6A63F1625AA5 /* ContentView.swift */; };
 		324F096B55626D6E9438521A /* PianoKeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 594EEDCA1634DDC6D0FAEF2F /* PianoKeyboardView.swift */; };
 		373596F4C7EFA2A548ED089E /* TestViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA9065E983AF8D09BF8BDE5F /* TestViewModel.swift */; };
@@ -89,6 +90,7 @@
 				CFDBEF644DD54AF49DED53F2 /* HapticEngine.swift */,
 				F17375B0287C4B09B503ABB4 /* RhythmEngine.swift */,
 				9102C416F7914C0BA51FDE3D /* RhythmPattern.swift */,
+				0C0690914CBF468390A4E3DF /* RhythmRuntime.swift */,
 				5D7815A5A73C4E44A4F87953 /* MotionModifiers.swift */,
 				CC818E145CDF499689DC279F /* MotionTokens.swift */,
 				486D52842A974C64AA845606 /* MasterMusicClock.swift */,
@@ -108,6 +110,7 @@
 		1AEFE410937546AC80EB4440 /* HapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFDBEF644DD54AF49DED53F2 /* HapticEngine.swift */; };
 		30D9D78F16CF418A9BC1148D /* RhythmEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = F17375B0287C4B09B503ABB4 /* RhythmEngine.swift */; };
 		52F25E705B5B4EBAB3A7A51A /* RhythmPattern.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9102C416F7914C0BA51FDE3D /* RhythmPattern.swift */; };
+		7759C9133A36499FBB7CFFF4 /* RhythmRuntime.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C0690914CBF468390A4E3DF /* RhythmRuntime.swift */; };
 		664AFE58856447BC8DF9D0AA /* MotionModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7815A5A73C4E44A4F87953 /* MotionModifiers.swift */; };
 		CF9C0BC9E09149BA86F62EB8 /* MotionTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC818E145CDF499689DC279F /* MotionTokens.swift */; };
 		EF35629CE2204ACAA831F6DC /* MasterMusicClock.swift in Sources */ = {isa = PBXBuildFile; fileRef = 486D52842A974C64AA845606 /* MasterMusicClock.swift */; };
@@ -140,6 +143,7 @@
 		0B93E2FD9903FEE1810B4F2E /* MusicTheory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicTheory.swift; sourceTree = "<group>"; };
 		0BA723F9D87160EE3751AC98 /* SingleNoteListeningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleNoteListeningView.swift; sourceTree = "<group>"; };
 		181AC47735BD08C333391D0A /* ExerciseContainerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExerciseContainerView.swift; sourceTree = "<group>"; };
+		26328DB802F441F7BA360B28 /* RhythmPracticeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RhythmPracticeView.swift; sourceTree = "<group>"; };
 		259AE7447E570D2EDAA052CE /* RootNoteListeningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootNoteListeningView.swift; sourceTree = "<group>"; };
 		261DC55094851555851B7D28 /* PitchDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchDetector.swift; sourceTree = "<group>"; };
 		27C1CCAE6A2F831E379A970C /* AudioEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCore/AudioEngine.swift; sourceTree = "<group>"; };
@@ -209,6 +213,7 @@
 		CFDBEF644DD54AF49DED53F2 /* HapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HapticCore/HapticEngine.swift"; sourceTree = "<group>"; };
 		F17375B0287C4B09B503ABB4 /* RhythmEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RhythmCore/RhythmEngine.swift"; sourceTree = "<group>"; };
 		9102C416F7914C0BA51FDE3D /* RhythmPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RhythmCore/RhythmPattern.swift"; sourceTree = "<group>"; };
+		0C0690914CBF468390A4E3DF /* RhythmRuntime.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RhythmCore/RhythmRuntime.swift"; sourceTree = "<group>"; };
 		5D7815A5A73C4E44A4F87953 /* MotionModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MotionCore/MotionModifiers.swift"; sourceTree = "<group>"; };
 		CC818E145CDF499689DC279F /* MotionTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MotionCore/MotionTokens.swift"; sourceTree = "<group>"; };
 		486D52842A974C64AA845606 /* MasterMusicClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PlaybackCore/MasterMusicClock.swift"; sourceTree = "<group>"; };
@@ -232,6 +237,7 @@
 				A1B2C3D40001000100010004 /* ExerciseLevelsPage.swift */,
 				C6D60385B8C13C214AB44503 /* Components */,
 				181AC47735BD08C333391D0A /* ExerciseContainerView.swift */,
+				26328DB802F441F7BA360B28 /* RhythmPracticeView.swift */,
 			);
 			path = Practice;
 			sourceTree = "<group>";
@@ -620,6 +626,7 @@
 				436B5E1B10B156D5D2AD1E2F /* TestTab.swift in Sources */,
 				10B6F321BB1AE1836B4E8C33 /* ProfileTab.swift in Sources */,
 				27F0AA711598F245F76EC1B5 /* ExerciseContainerView.swift in Sources */,
+				ED04FD22D673414FBBC5EF36 /* RhythmPracticeView.swift in Sources */,
 				75EE51F27925A8CFE36204F4 /* SpecialTheoryViews.swift in Sources */,
 				A1B2C3D40001000100010001 /* PracticeCategoryPage.swift in Sources */,
 				A1B2C3D40001000100010003 /* ExerciseLevelsPage.swift in Sources */,
@@ -636,6 +643,7 @@
 				1AEFE410937546AC80EB4440 /* HapticEngine.swift in Sources */,
 				30D9D78F16CF418A9BC1148D /* RhythmEngine.swift in Sources */,
 				52F25E705B5B4EBAB3A7A51A /* RhythmPattern.swift in Sources */,
+				7759C9133A36499FBB7CFFF4 /* RhythmRuntime.swift in Sources */,
 				664AFE58856447BC8DF9D0AA /* MotionModifiers.swift in Sources */,
 				CF9C0BC9E09149BA86F62EB8 /* MotionTokens.swift in Sources */,
 				EF35629CE2204ACAA831F6DC /* MasterMusicClock.swift in Sources */,

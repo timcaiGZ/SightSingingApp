@@ -85,6 +85,17 @@ struct PracticeCategoryPage: View {
             if exercise.id == "single-note" {
                 // 单音辨认使用专用页面（匹配 v0 SingleNoteExercise）
                 SingleNoteListeningView()
+            } else if exercise.id == "quarter-eighth" {
+                // 四分音符节奏直接跳转到 15 组练习页面
+                RhythmPracticeView(
+                    exercise: ExerciseItem(
+                        id: exercise.id,
+                        title: exercise.title,
+                        mode: .keyboardInput,
+                        percentage: exercise.progress
+                    ),
+                    moduleId: category.id
+                )
             } else if exercise.hasLevels {
                 ExerciseLevelsPage(exercise: exercise, categoryId: category.id, color: category.color)
             } else {

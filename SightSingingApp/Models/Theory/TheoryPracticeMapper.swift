@@ -36,13 +36,13 @@ struct TheoryPracticeMapper {
         "note-duration": PracticeLink(
             categoryId: "rhythm",
             exerciseId: "quarter-eighth",
-            exerciseTitle: "四分八分节奏",
+            exerciseTitle: "四分音符节奏",
             reason: "掌握音符时值，训练稳定节拍"
         ),
         "beat-signature": PracticeLink(
             categoryId: "rhythm",
             exerciseId: "quarter-eighth",
-            exerciseTitle: "四分八分节奏",
+            exerciseTitle: "四分音符节奏",
             reason: "理解拍号后，练习基础节奏型"
         ),
         "rhythm-basics": PracticeLink(
@@ -166,7 +166,7 @@ struct TheoryPracticeMapper {
         "time-signatures": PracticeLink(
             categoryId: "rhythm",
             exerciseId: "quarter-eighth",
-            exerciseTitle: "四分八分节奏",
+            exerciseTitle: "四分音符节奏",
             reason: "在稳定拍感中体验不同拍号"
         ),
         "rhythm-patterns": PracticeLink(

@@ -147,29 +147,33 @@ struct RhythmEngine {
 
     /// 生成均匀四分音符节奏
     static func quarterNotes(beats: Int) -> RhythmPattern {
-        RhythmPattern(
+        var slots: [RhythmSlot] = []
+        for beat in 0..<beats {
+            slots.append(RhythmSlot(strum: .down, vocal: true, foot: beat == 0))
+            slots.append(RhythmSlot(strum: .rest, vocal: false, foot: false))
+            slots.append(RhythmSlot(strum: .rest, vocal: false, foot: false))
+            slots.append(RhythmSlot(strum: .rest, vocal: false, foot: false))
+        }
+        return RhythmPattern(
             name: "四分音符",
-            events: (0..<beats).map {
-                RhythmEvent(beat: Double($0), accent: 1.0, articulation: .normal)
-            },
-            beatsPerMeasure: beats,
-            bpm: 120
+            recommendedBPM: 120,
+            slots: slots
         )
     }
 
     /// 生成八分音符节奏
     static func eighthNotes(beats: Int) -> RhythmPattern {
-        RhythmPattern(
+        var slots: [RhythmSlot] = []
+        for beat in 0..<beats {
+            slots.append(RhythmSlot(strum: .down, vocal: true, foot: beat == 0))
+            slots.append(RhythmSlot(strum: .rest, vocal: false, foot: false))
+            slots.append(RhythmSlot(strum: .up, vocal: true, foot: false))
+            slots.append(RhythmSlot(strum: .rest, vocal: false, foot: false))
+        }
+        return RhythmPattern(
             name: "八分音符",
-            events: (0..<(beats * 2)).map {
-                RhythmEvent(
-                    beat: Double($0) * 0.5,
-                    accent: ($0 % 2 == 0) ? 1.0 : 0.7,
-                    articulation: .normal
-                )
-            },
-            beatsPerMeasure: beats,
-            bpm: 120
+            recommendedBPM: 120,
+            slots: slots
         )
     }
 }

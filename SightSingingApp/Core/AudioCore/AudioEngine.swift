@@ -89,16 +89,20 @@ actor AudioEngineManager {
     }
 
     /// 播放指定频率的音符（吉他音色合成）
-    func playNote(frequency: Double, duration: TimeInterval = 0.8) async {
+    func playNote(frequency: Double, duration: TimeInterval = 0.8, stopPrevious: Bool = true) async {
         await setup()
 
         guard let player = playerNode else { return }
-        player.stop()
+        if stopPrevious {
+            player.stop()
+        }
 
         let samples = generateGuitarTone(frequency: frequency, duration: duration)
         let buffer = createBuffer(from: samples)
         player.scheduleBuffer(buffer, at: nil, options: [], completionHandler: nil)
-        player.play()
+        if !player.isPlaying {
+            player.play()
+        }
     }
 
     /// 播放和弦（多个音符同时发声）
@@ -120,9 +124,9 @@ actor AudioEngineManager {
     }
 
     /// 播放指定 MIDI note
-    func playMIDI(_ midiNote: Int, duration: TimeInterval = 0.8) async {
+    func playMIDI(_ midiNote: Int, duration: TimeInterval = 0.8, stopPrevious: Bool = true) async {
         let frequency = MusicTheory.frequencyFromMIDI(midiNote)
-        await playNote(frequency: frequency, duration: duration)
+        await playNote(frequency: frequency, duration: duration, stopPrevious: stopPrevious)
     }
 
     /// 停止播放

@@ -35,6 +35,21 @@ enum MotionToken: Sendable {
     /// 错误抖动
     case mistakeShake
 
+    // MARK: - Groove (节奏类)
+
+    /// Groove 呼吸（BPM 同步）
+    case grooveBreathing(bpm: Double)
+    /// Playhead 流动
+    case playheadFlow
+    /// 背景环境漂移
+    case ambientDrift
+    /// 细分发光
+    case subdivisionGlow(bpm: Double)
+    /// Count-in 脉冲
+    case countInPulse(bpm: Double)
+    /// 节拍击打（轻）
+    case beatSnap
+
     // MARK: - Properties
 
     var animation: Animation {
@@ -57,6 +72,21 @@ enum MotionToken: Sendable {
             return .spring(response: 0.3, dampingFraction: 0.5)
         case .mistakeShake:
             return .default.speed(3)
+        case .grooveBreathing(let bpm):
+            let interval = 60.0 / bpm
+            return .easeInOut(duration: interval).repeatForever(autoreverses: true)
+        case .playheadFlow:
+            return .easeInOut(duration: 0.08)
+        case .ambientDrift:
+            return .easeInOut(duration: 4.0).repeatForever(autoreverses: true)
+        case .subdivisionGlow(let bpm):
+            let interval = 60.0 / bpm / 2  // 半拍周期
+            return .easeInOut(duration: interval).repeatForever(autoreverses: true)
+        case .countInPulse(let bpm):
+            let interval = 60.0 / bpm
+            return .spring(response: interval * 0.4, dampingFraction: 0.5)
+        case .beatSnap:
+            return .interpolatingSpring(stiffness: 400, damping: 10)
         }
     }
 
@@ -71,6 +101,12 @@ enum MotionToken: Sendable {
         case .rhythmSnap: return 0.2
         case .successGlow: return 0.3
         case .mistakeShake: return 0.15
+        case .grooveBreathing(let bpm): return 60.0 / bpm
+        case .playheadFlow: return 0.08
+        case .ambientDrift: return 4.0
+        case .subdivisionGlow(let bpm): return 60.0 / bpm / 2
+        case .countInPulse(let bpm): return 60.0 / bpm * 0.4
+        case .beatSnap: return 0.15
         }
     }
 }

@@ -57,10 +57,11 @@ struct PracticeCategoryData: Identifiable, Hashable {
             description: "节奏三部曲：脚打拍、嘴唱、手执行",
             systemImage: "music.note",
             color: AppTheme.Category.rhythm,
-            exerciseCount: 7,
+            exerciseCount: 8,
             progress: 42,
             exercises: [
-                PracticeExerciseData(id: "quarter-eighth", title: "四分八分节奏", description: "一拍一下和一拍两下的稳定感", hasLevels: true, levelCount: 6, progress: 68),
+                PracticeExerciseData(id: "quarter-eighth", title: "四分音符节奏", description: "每拍一下的稳定节拍感", hasLevels: true, levelCount: 15, progress: 68),
+                PracticeExerciseData(id: "eighth", title: "八分音符节奏", description: "一拍两下的均匀感", hasLevels: true, levelCount: 6, progress: 0),
                 PracticeExerciseData(id: "sixteenth", title: "十六分音符节奏", description: "一拍四下的细分能力", hasLevels: true, levelCount: 6, progress: 42),
                 PracticeExerciseData(id: "syncopation", title: "切分节奏", description: "重音不在强拍上的节奏感", hasLevels: true, levelCount: 6, progress: 35),
                 PracticeExerciseData(id: "triplet", title: "三连音", description: "一拍平均分成三份的感觉", hasLevels: true, levelCount: 6, progress: 15),
