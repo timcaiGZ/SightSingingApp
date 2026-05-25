@@ -34,3 +34,6 @@ Podfile.lock
 # Environment files
 *.env
 .env.*
+
+# CodeBuddy sync marker
+# Last synced: 2026-05-25 11:30
