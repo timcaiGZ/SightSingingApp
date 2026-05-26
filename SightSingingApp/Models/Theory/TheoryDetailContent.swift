@@ -27,6 +27,14 @@ enum GraphicType: String {
     case chordType           // 和弦类型展示
     case beatSignature       // 拍号展示
     case rhythmPattern       // 节奏型展示
+    // 新增：王大园+小艾课程图形
+    case chordConstruction   // 和弦构成公式+指板对照
+    case chordProgression    // 和弦进行流程图（含TSD色彩）
+    case tsdFunctionalGroup  // TSD功能组色彩图
+    case bassLine            // Leading Bass低音线图
+    case chordComparison     // 对比图（并排+差异高亮）
+    case modulationPath      // 转调路径图
+    case colorChordTable     // 色彩和弦对照表
 }
 
 /// 图形数据
@@ -39,6 +47,27 @@ struct GraphicData {
     var cagedScaleName: String = ""    // CAGED调性名称
     var flowItems: [String] = []       // 流向图标签
     var highlightIndices: Set<Int> = []// 高亮索引
+    // 新增字段
+    var progressionChords: [String] = []  // 和弦进行如 ["C","Am","F","G"]
+    var progressionDegrees: [String] = [] // 级数如 ["I","vi","IV","V"]
+    var progressionLabels: [String] = []  // TSD标签如 ["T","T","S","D"]
+    var bassNotes: [String] = []       // 低音线如 ["C","B","A","G","F","G"]
+    var bassChords: [String] = []      // 对应和弦如 ["C","C/B","Am","Am/G","F","G"]
+    var comparisonLeft: [String] = []  // 左边内容
+    var comparisonRight: [String] = [] // 右边内容
+    var comparisonDiff: String = ""    // 差异说明
+    var modulationFrom: String = ""    // 起始调
+    var modulationTo: String = ""      // 目标调
+    var modulationDiffNotes: [String] = [] // 变化音如 ["♭E","♭A","♭B"]
+    var modulationUnchangedNotes: [String] = [] // 不变音
+    var colorChordBase: String = ""    // 基础和弦
+    var colorChordVariants: [String] = [] // 色彩变体和弦名
+    var colorChordFeelings: [String] = [] // 色彩感受描述
+    var tsdGroups: [(group: String, color: String, chords: [String], desc: String)] = [] // TSD组
+    var chordFormula: String = ""      // 和弦公式如 "1-3-5"
+    var chordNotes: [String] = []      // 和弦构成音如 ["C","E","G"]
+    var chordIntervals: [String] = []  // 和弦音程如 ["大三度","小三度"]
+    var chordNoteRoles: [String] = []  // 音的角色如 ["根音","三音","五音"]
 }
 
 /// 音程条目

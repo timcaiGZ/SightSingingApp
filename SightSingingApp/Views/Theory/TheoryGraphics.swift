@@ -32,6 +32,53 @@ enum TheoryGraphics {
                 cagedShapesGraphic(chordName: data.cagedChordName, audio: audio)
             case .cagedScaleChords:
                 cagedScaleGraphic(scaleName: data.cagedScaleName, audio: audio)
+            case .chordConstruction:
+                chordConstructionGraphic(
+                    formula: data.chordFormula,
+                    notes: data.chordNotes,
+                    intervals: data.chordIntervals,
+                    roles: data.chordNoteRoles,
+                    audio: audio
+                )
+            case .chordProgression:
+                chordProgressionGraphic(
+                    chords: data.progressionChords,
+                    degrees: data.progressionDegrees,
+                    tsdLabels: data.tsdLabels,
+                    audio: audio
+                )
+            case .tsdFunctionalGroup:
+                tsdFunctionalGroupGraphic(audio: audio)
+            case .bassLine:
+                bassLineGraphic(
+                    bassNotes: data.bassNotes,
+                    bassChords: data.bassChords,
+                    audio: audio
+                )
+            case .chordComparison:
+                chordComparisonGraphic(
+                    leftTitle: data.comparisonLeft.first ?? "",
+                    leftItems: data.comparisonLeft,
+                    rightTitle: data.comparisonRight.first ?? "",
+                    rightItems: data.comparisonRight,
+                    diff: data.comparisonDiff,
+                    audio: audio
+                )
+            case .modulationPath:
+                modulationPathGraphic(
+                    from: data.modulationFrom,
+                    to: data.modulationTo,
+                    diffNotes: data.modulationDiffNotes,
+                    unchangedNotes: data.modulationUnchangedNotes,
+                    audio: audio
+                )
+            case .colorChordTable:
+                colorChordTableGraphic(
+                    baseChord: data.colorChordBase,
+                    variants: data.colorChordVariants,
+                    feelings: data.colorChordFeelings,
+                    audio: audio
+                )
             default:
                 EmptyView()
             }
@@ -452,5 +499,487 @@ enum TheoryGraphics {
         case "C": return CAGEDDatabase.cMajorScaleChords()
         default:  return CAGEDDatabase.cMajorScaleChords()
         }
+    }
+
+    // MARK: - 和弦构成公式 + 指板对照
+
+    @ViewBuilder
+    static func chordConstructionGraphic(
+        formula: String, notes: [String], intervals: [String], roles: [String], audio: TheoryTapAudio?
+    ) -> some View {
+        HStack(spacing: 20) {
+            // 左侧：构成公式
+            VStack(spacing: 6) {
+                Text(formula)
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppTheme.accent)
+                    .padding(.bottom, 2)
+
+                ForEach(Array(notes.enumerated()), id: \.offset) { i, note in
+                    HStack(spacing: 8) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(AppTheme.accent.opacity(0.12))
+                                .frame(width: 36, height: 28)
+                            Text(note)
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundStyle(AppTheme.accent)
+                                .onTapGesture { audio?.playNoteByName(note) }
+                        }
+
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(i < roles.count ? roles[i] : "")
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundStyle(AppTheme.primaryText)
+                            Text(i < intervals.count ? intervals[i] : "")
+                                .font(.system(size: 10))
+                                .foregroundStyle(AppTheme.secondaryText)
+                        }
+                    }
+                }
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppTheme.border, lineWidth: 0.5))
+
+            // 右侧：指板位置示意
+            VStack(spacing: 4) {
+                Text("指板位置")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(AppTheme.secondaryText)
+
+                fretboardWithHighlights(notes: notes, audio: audio)
+            }
+            .padding(12)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppTheme.border, lineWidth: 0.5))
+        }
+        .padding(8)
+        .background(AppTheme.secondaryBg)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    private static func fretboardWithHighlights(notes: [String], audio: TheoryTapAudio?) -> some View {
+        let openStrings = ["E", "A", "D", "G", "B", "E"]
+        return VStack(spacing: 2) {
+            // 简化的指板示意（只展示0-4品）
+            ForEach(0..<5, id: \.self) { fret in
+                HStack(spacing: 0) {
+                    ForEach(0..<6, id: \.self) { stringIdx in
+                        let noteName = getNoteAtFret(stringIdx: stringIdx, fret: fret)
+                        let isHighlight = notes.contains(noteName)
+                        ZStack {
+                            if isHighlight {
+                                Circle()
+                                    .fill(AppTheme.accent)
+                                    .frame(width: 18, height: 18)
+                                Text(noteName)
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .onTapGesture { audio?.playNoteByName(noteName) }
+                            } else {
+                                Circle()
+                                    .stroke(AppTheme.border, lineWidth: 0.5)
+                                    .frame(width: 14, height: 14)
+                                Text(noteName)
+                                    .font(.system(size: 7))
+                                    .foregroundStyle(AppTheme.secondaryText)
+                            }
+                        }
+                        .frame(width: 24, height: 22)
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
+
+            HStack(spacing: 0) {
+                ForEach(0..<5, id: \.self) { fret in
+                    Text("\(fret)")
+                        .font(.system(size: 8))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .frame(width: 24)
+                }
+            }
+        }
+    }
+
+    private static func getNoteAtFret(stringIdx: Int, fret: Int) -> String {
+        let openStrings = ["E", "F", "F♯", "G", "G♯", "A", "A♯", "B", "C", "C♯", "D", "D♯"]
+        let stringOffsets = [4, 9, 2, 7, 11, 4] // E,A,D,G,B,E → index in openStrings
+        let idx = (stringOffsets[stringIdx] + fret) % 12
+        return openStrings[idx]
+    }
+
+    // MARK: - 和弦进行流程图
+
+    @ViewBuilder
+    static func chordProgressionGraphic(
+        chords: [String], degrees: [String], tsdLabels: [String], audio: TheoryTapAudio?
+    ) -> some View {
+        let tsdColor: (String) -> Color = { label in
+            switch label.uppercased() {
+            case "T": return Color(hex: "3B82F6") // 蓝
+            case "S": return Color(hex: "10B981") // 绿
+            case "D": return Color(hex: "EF4444") // 红
+            default: return AppTheme.accent
+            }
+        }
+
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 0) {
+                ForEach(Array(chords.enumerated()), id: \.offset) { i, chord in
+                    if i > 0 {
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppTheme.secondaryText)
+                            .padding(.horizontal, 6)
+                    }
+
+                    VStack(spacing: 4) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill((i < tsdLabels.count ? tsdColor(tsdLabels[i]) : AppTheme.accent).opacity(0.12))
+                                .frame(width: 52, height: 36)
+                            Text(chord)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(i < tsdLabels.count ? tsdColor(tsdLabels[i]) : AppTheme.accent)
+                        }
+                        .onTapGesture { audio?.playChord(named: chord) }
+
+                        if i < degrees.count {
+                            Text(degrees[i])
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundStyle(AppTheme.secondaryText)
+                        }
+                        if i < tsdLabels.count {
+                            Text(tsdLabels[i])
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundStyle(i < tsdLabels.count ? tsdColor(tsdLabels[i]) : AppTheme.accent)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background((i < tsdLabels.count ? tsdColor(tsdLabels[i]) : AppTheme.accent).opacity(0.15))
+                                .clipShape(RoundedRectangle(cornerRadius: 3))
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+        }
+        .padding(8)
+        .background(AppTheme.secondaryBg)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - TSD 功能组色彩图
+
+    @ViewBuilder
+    static func tsdFunctionalGroupGraphic(audio: TheoryTapAudio?) -> some View {
+        let groups: [(name: String, color: Color, desc: String, chords: [String])] = [
+            ("T 主功能", Color(hex: "3B82F6"), "家 · 稳定", ["C", "Em", "Am"]),
+            ("S 下属", Color(hex: "10B981"), "出发 · 展开", ["Dm", "F"]),
+            ("D 属功能", Color(hex: "EF4444"), "紧张 · 想回家", ["G", "Bdim"]),
+        ]
+
+        HStack(spacing: 10) {
+            ForEach(groups, id: \.name) { group in
+                VStack(spacing: 6) {
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(group.color)
+                            .frame(width: 8, height: 8)
+                        Text(group.name)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(group.color)
+                    }
+
+                    Text(group.desc)
+                        .font(.system(size: 10))
+                        .foregroundStyle(AppTheme.secondaryText)
+
+                    VStack(spacing: 4) {
+                        ForEach(group.chords, id: \.self) { chord in
+                            Text(chord)
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(group.color)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 4)
+                                .background(group.color.opacity(0.08))
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .onTapGesture { audio?.playChord(named: chord) }
+                        }
+                    }
+                }
+                .padding(10)
+                .frame(maxWidth: .infinity)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(group.color.opacity(0.2), lineWidth: 1))
+            }
+        }
+        .padding(8)
+        .background(AppTheme.secondaryBg)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    // MARK: - Bass 低音线图
+
+    @ViewBuilder
+    static func bassLineGraphic(bassNotes: [String], bassChords: [String], audio: TheoryTapAudio?) -> some View {
+        VStack(spacing: 8) {
+            // 和弦名行
+            if !bassChords.isEmpty {
+                HStack(spacing: 0) {
+                    ForEach(Array(bassChords.enumerated()), id: \.offset) { i, chord in
+                        if i > 0 {
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 10))
+                                .foregroundStyle(AppTheme.secondaryText)
+                                .padding(.horizontal, 4)
+                        }
+                        Text(chord)
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(AppTheme.accent)
+                            .onTapGesture { audio?.playChord(named: chord) }
+                    }
+                }
+            }
+
+            // 低音线
+            HStack(spacing: 0) {
+                ForEach(Array(bassNotes.enumerated()), id: \.offset) { i, note in
+                    if i > 0 {
+                        Rectangle()
+                            .fill(AppTheme.border)
+                            .frame(width: 12, height: 1)
+                    }
+                    ZStack {
+                        Circle()
+                            .fill(AppTheme.accent.opacity(0.15))
+                            .frame(width: 28, height: 28)
+                        Text(note)
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(AppTheme.accent)
+                            .onTapGesture { audio?.playNoteByName(note) }
+                    }
+                }
+            }
+
+            Text("低音" + (bassNotes.count > 2 && bassNotes[0] > bassNotes[1] ? "逐步下行" : "走向"))
+                .font(.system(size: 11))
+                .foregroundStyle(AppTheme.secondaryText)
+        }
+        .padding(12)
+        .background(AppTheme.secondaryBg)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - 和弦对比图
+
+    @ViewBuilder
+    static func chordComparisonGraphic(
+        leftTitle: String, leftItems: [String],
+        rightTitle: String, rightItems: [String],
+        diff: String, audio: TheoryTapAudio?
+    ) -> some View {
+        HStack(spacing: 16) {
+            // 左边
+            VStack(spacing: 6) {
+                Text(leftTitle)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color(hex: "3B82F6"))
+
+                ForEach(leftItems, id: \.self) { item in
+                    Text(item)
+                        .font(.system(size: 12))
+                        .foregroundStyle(AppTheme.primaryText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 4)
+                        .background(Color(hex: "3B82F6").opacity(0.06))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                }
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "3B82F6").opacity(0.2), lineWidth: 1))
+
+            // 中间差异
+            VStack(spacing: 4) {
+                Image(systemName: "arrow.left.and.right")
+                    .font(.system(size: 16))
+                    .foregroundStyle(AppTheme.accent)
+                if !diff.isEmpty {
+                    Text(diff)
+                        .font(.system(size: 10))
+                        .foregroundStyle(AppTheme.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .frame(width: 60)
+                }
+            }
+
+            // 右边
+            VStack(spacing: 6) {
+                Text(rightTitle)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color(hex: "EF4444"))
+
+                ForEach(rightItems, id: \.self) { item in
+                    Text(item)
+                        .font(.system(size: 12))
+                        .foregroundStyle(AppTheme.primaryText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 4)
+                        .background(Color(hex: "EF4444").opacity(0.06))
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                }
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "EF4444").opacity(0.2), lineWidth: 1))
+        }
+        .padding(8)
+        .background(AppTheme.secondaryBg)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    // MARK: - 转调路径图
+
+    @ViewBuilder
+    static func modulationPathGraphic(
+        from: String, to: String, diffNotes: [String], unchangedNotes: [String], audio: TheoryTapAudio?
+    ) -> some View {
+        VStack(spacing: 10) {
+            // 调名
+            HStack(spacing: 16) {
+                VStack(spacing: 4) {
+                    Text(from)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(Color(hex: "3B82F6"))
+                    Text("原调")
+                        .font(.system(size: 10))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundStyle(AppTheme.accent)
+
+                VStack(spacing: 4) {
+                    Text(to)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(Color(hex: "EF4444"))
+                    Text("目标调")
+                        .font(.system(size: 10))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+            }
+
+            // 变化音 vs 不变音
+            HStack(spacing: 12) {
+                if !diffNotes.isEmpty {
+                    VStack(spacing: 4) {
+                        Text("变")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(Color(hex: "EF4444"))
+                        HStack(spacing: 4) {
+                            ForEach(diffNotes, id: \.self) { note in
+                                Text(note)
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(Color(hex: "EF4444"))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(Color(hex: "EF4444").opacity(0.1))
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                            }
+                        }
+                    }
+                    .padding(8)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+
+                if !unchangedNotes.isEmpty {
+                    VStack(spacing: 4) {
+                        Text("不变")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        HStack(spacing: 4) {
+                            ForEach(unchangedNotes, id: \.self) { note in
+                                Text(note)
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(AppTheme.primaryText)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(AppTheme.secondaryBg)
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                            }
+                        }
+                    }
+                    .padding(8)
+                    .background(Color.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+            }
+        }
+        .padding(12)
+        .background(AppTheme.secondaryBg)
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    // MARK: - 色彩和弦对照表
+
+    @ViewBuilder
+    static func colorChordTableGraphic(
+        baseChord: String, variants: [String], feelings: [String], audio: TheoryTapAudio?
+    ) -> some View {
+        HStack(spacing: 0) {
+            // 基础和弦
+            VStack(spacing: 4) {
+                Text(baseChord)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(AppTheme.accent)
+                Text("基础")
+                    .font(.system(size: 9))
+                    .foregroundStyle(AppTheme.secondaryText)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .onTapGesture { audio?.playChord(named: baseChord) }
+
+            // 箭头
+            ForEach(Array(variants.enumerated()), id: \.offset) { i, variant in
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 10))
+                    .foregroundStyle(AppTheme.secondaryText)
+                    .padding(.horizontal, 4)
+
+                VStack(spacing: 4) {
+                    Text(variant)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(AppTheme.primaryText)
+                        .onTapGesture { audio?.playChord(named: variant) }
+                    if i < feelings.count {
+                        Text(feelings[i])
+                            .font(.system(size: 9))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(AppTheme.secondaryBg)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            }
+        }
+        .padding(12)
+        .background(AppTheme.secondaryBg)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

@@ -147,16 +147,24 @@ extension TheoryDetailDatabase {
                 一度/四度/五度/八度→用「纯」
                 二度/三度/六度/七度→用「大」或「小」
                 """),
-                sec("5个核心音程速记",
+                secG("5个核心音程速记",
                 """
                 纯一度(0半音)：完全相同
-                大二度(2半音)：紧张、想走 ←生日歌开头
-                小三度(3半音)：暗淡、忧伤 ←Greensleeves
-                大三度(4半音)：明亮、开心 ←「当」(do-mi)
-                纯四度(5半音)：开阔、庄严 ←婚礼进行曲
-                纯五度(7半音)：空、稳定 ←星战主题曲
+                大二度(2半音)：紧张、想走
+                小三度(3半音)：暗淡、忧伤
+                大三度(4半音)：明亮、开心
+                纯四度(5半音)：开阔、庄严
+                纯五度(7半音)：空、稳定
                 纯八度(12半音)：同一音高低
-                """),
+                """, .intervalList, GraphicData(intervals: [
+                    IntervalItem(name: "纯一度", notes: "C → C", semitones: 0),
+                    IntervalItem(name: "大二度", notes: "C → D", semitones: 2),
+                    IntervalItem(name: "小三度", notes: "A → C", semitones: 3),
+                    IntervalItem(name: "大三度", notes: "C → E", semitones: 4),
+                    IntervalItem(name: "纯四度", notes: "C → F", semitones: 5),
+                    IntervalItem(name: "纯五度", notes: "C → G", semitones: 7),
+                    IntervalItem(name: "纯八度", notes: "C → C", semitones: 12),
+                ])),
                 sec("大/小三度的区别（最重要）",
                 """
                 大三度(4半音)：开心、明亮、外向 → 大和弦的「灵魂」
@@ -480,22 +488,19 @@ extension TheoryDetailDatabase {
         let m4: [TheoryDetailData] = [
             TheoryDetailData(topicId: "triad-construction", title: "三和弦构成", sections: [
                 sec("一句话解释", "三和弦=三个音叠加，是所有和弦的基础。"),
-                sec("四种三和弦",
-                """
-                大三和弦(1-3-5)：C=C-E-G，明亮、开心、稳定
-                小三和弦(1-♭3-5)：Cm=C-E♭-G，忧伤、暗淡、温柔
-                减三和弦(1-♭3-♭5)：Cdim=C-E♭-G♭，紧张、不安、想解决
-                增三和弦(1-3-♯5)：Caug=C-E-G♯，扩张、不确定
-                """),
-                sec("C大三和弦的正确按法",
-                """
-                E(1弦)─0─  空弦
-                B(2弦)─1─  食指
-                G(3弦)─0─  空弦
-                D(4弦)─2─  中指
-                A(5弦)─3─  无名指
-                E(6弦)─X─  不弹
-                """),
+                secG("大三和弦", "由根音+大三度+纯五度构成。以C为例：C→E(大三度,4半音)→G(纯五度,7半音)。声音明亮、稳定、有力量感。", .chordConstruction, GraphicData(
+                    chordFormula: "1-3-5",
+                    chordNotes: ["C", "E", "G"],
+                    chordIntervals: ["大三度", "小三度"],
+                    chordNoteRoles: ["根音", "三音", "五音"]
+                )),
+                secG("小三和弦", "由根音+小三度+纯五度构成。以Am为例：A→C(小三度,3半音)→E(纯五度)。声音柔和、略带忧伤。", .chordConstruction, GraphicData(
+                    chordFormula: "1-♭3-5",
+                    chordNotes: ["A", "C", "E"],
+                    chordIntervals: ["小三度", "大三度"],
+                    chordNoteRoles: ["根音", "三音", "五音"]
+                )),
+                sec("减三和弦与增三和弦", "减三和弦(1-♭3-♭5)：紧张、不稳定。增三和弦(1-3-♯5)：扩张、不确定。这两种和弦通常用作过渡。"),
             ]),
             TheoryDetailData(topicId: "caged-system", title: "CAGED系统 ⭐", sections: [
                 sec("一句话解释", "CAGED=5种基本和弦指型，让你在整个指板上找到任何和弦。"),
@@ -505,32 +510,30 @@ extension TheoryDetailDatabase {
             ]),
             TheoryDetailData(topicId: "suspended-chords", title: "挂留和弦", sections: [
                 sec("一句话解释", "挂留和弦=去掉三度音，换成二度或四度，制造悬而未决的感觉。"),
-                sec("sus2（挂二）",
+                secG("sus2 vs sus4 对比",
                 """
-                公式：1-2-5  Csus2=C-D-G
-                去掉了决定大小调的三度音(E)，换成二度(D)
-                听感：空灵、开放、不确定
-                吉他：X30010（Csus2）
-                """),
-                sec("sus4（挂四）",
-                """
-                公式：1-4-5  Csus4=C-F-G
-                去掉了三度音，换成四度
-                听感：紧张、需要解决到三度
-                吉他：X33011（Csus4）
-                """),
+                sus2(1-2-5)：空灵、开放、不确定。吉他：X30010（Csus2）
+                sus4(1-4-5)：紧张、需要解决到三度。吉他：X33011（Csus4）
+                """, .chordComparison, GraphicData(
+                    comparisonLeft: ["sus2", "1-2-5", "空灵、开放", "Csus2=C-D-G"],
+                    comparisonRight: ["sus4", "1-4-5", "紧张、需解决", "Csus4=C-F-G"],
+                    comparisonDiff: "2度 vs 4度"
+                )),
                 sec("实战应用", "《平凡之路》前奏：Asus2→Asus4→A→Asus2→A\nD→Dsus4→D：在两个D和弦之间插入Dsus4，增加流动感。"),
             ]),
             TheoryDetailData(topicId: "slash-chords", title: "转位与斜杠和弦", sections: [
                 sec("一句话解释", "斜杠和弦=和弦+非根音做Bass，让低音线更流畅。"),
                 sec("什么是转位？", "原位：根音在最下面(C=C-E-G)\n第一转位：三音在最下面(C/E=E-G-C)\n第二转位：五音在最下面(C/G=G-C-E)"),
-                sec("经典低音下行⭐⭐⭐",
+                secG("经典低音下行⭐⭐⭐",
                 """
                 C→C/B→Am→Am/G→F→G
                 低音线：C→B→A→G→F→G（逐步下行）
                 为什么好听：低音线流畅像一条旋律，和弦过渡更自然。
                 《关于郑州的记忆》大量使用这种手法。
-                """),
+                """, .bassLine, GraphicData(
+                    bassChords: ["C", "C/B", "Am", "Am/G", "F", "G"],
+                    bassNotes: ["C", "B", "A", "G", "F", "G"]
+                )),
                 sec("吉他上怎么弹斜杠和弦？",
                 """
                 C/B：X22010（5弦3品→2品，C→B）
@@ -546,13 +549,17 @@ extension TheoryDetailDatabase {
                 C调：1=C 2=Dm 3=Em 4=F 5=G 6=Am 7=Bdim
                 G调：1=G 2=Am 3=Bm 4=C 5=D 6=Em 7=F♯dim
                 """),
-                sec("为什么级数思维是万能钥匙？",
+                secG("为什么级数思维是万能钥匙？",
                 """
                 1-6-4-5在C调=C-Am-F-G
                 1-6-4-5在G调=G-Em-C-D
                 1-6-4-5在D调=D-Bm-G-A
                 走向不变，只是换了调！
-                """),
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["C", "Am", "F", "G"],
+                    progressionDegrees: ["I", "vi", "IV", "V"],
+                    tsdLabels: ["T", "T", "S", "D"]
+                )),
                 sec("实战：《平凡之路》移调",
                 """
                 原调用级数：vi-IV-I-V (在G调中)
@@ -562,69 +569,85 @@ extension TheoryDetailDatabase {
             ]),
             TheoryDetailData(topicId: "tsd-function", title: "和弦功能组TSD ⭐", sections: [
                 sec("一句话解释", "所有和弦分为三个功能组：家(T)、出发(S)、回家(D)，理解它们就知道一首歌的情绪走向。"),
-                sec("三个功能组",
+                secG("三个功能组",
                 """
-                T(主功能)=家：1级(C)、3级(Em)、6级(Am) → 稳定、安全、到家了
+                T(主功能)=家：1级(C)、3级(Em)、6级(Am) → 稳定、安全
                 S(下属功能)=出发：2级(Dm)、4级(F) → 离开家、展开故事
-                D(属功能)=想回家：5级(G)、7级(Bdim) → 紧张、不安、必须回到T
-                """),
+                D(属功能)=想回家：5级(G)、7级(Bdim) → 紧张、必须回到T
+                """, .tsdFunctionalGroup),
                 sec("TSD的情绪弧线", "T(家)→S(出发)→D(紧张)→T(回家)\n这就是为什么F→G→C(4-5-1)这么好听：完整的情绪弧线。"),
                 sec("实战分析",
                 """
-                《达尔文》C调：
-                主歌：F→G→Am→G (S→D→T→D)
-                副歌：F→G→C→G (S→D→T→D)
-                结尾：F→G→C (S→D→T)
-                
+                《达尔文》C调：主歌F→G→Am→G (S→D→T→D)
                 《平凡之路》：Em→C→G→D (T→S→D→S)
                 注意：不以T结束，停在D→S的悬念上=一直在「路上」的感觉。
                 """),
             ]),
             TheoryDetailData(topicId: "major-progressions", title: "大调常用和弦走向 ⭐⭐⭐", sections: [
                 sec("一句话解释", "流行歌的和弦走向是有套路的，掌握这几个万能走向=能弹几千首歌。"),
-                sec("走向一：1-6-4-5（一路上是我）",
+                secG("走向一：1-6-4-5（一路上是我）",
                 """
                 C调：C→Am→F→G
                 代表：《童年》《Let It Be》《月亮代表我的心》
                 情绪弧线：T(1)→T(6)→S(4)→D(5)→T(1)
-                """),
-                sec("走向二：1-5-6-4（四个万能和弦）",
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["C", "Am", "F", "G"],
+                    progressionDegrees: ["I", "vi", "IV", "V"],
+                    tsdLabels: ["T", "T", "S", "D"]
+                )),
+                secG("走向二：1-5-6-4（四个万能和弦）",
                 """
                 C调：C→G→Am→F
                 代表：《Let It Go》《Someone Like You》
                 最后一个4级不解决→想循环
-                """),
-                sec("走向三：4-5-3-6-2-5-1（华语万能走向）⭐⭐⭐",
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["C", "G", "Am", "F"],
+                    progressionDegrees: ["I", "V", "vi", "IV"],
+                    tsdLabels: ["T", "D", "T", "S"]
+                )),
+                secG("走向三：4-5-3-6-2-5-1（华语万能走向）⭐⭐⭐",
                 """
                 C调：F→G→Em→Am→Dm→G→C
                 代表：周杰伦很多歌、KTV点歌神器
                 层层推进、情绪饱满
-                """),
-                sec("走向四：卡农走向",
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["F", "G", "Em", "Am", "Dm", "G", "C"],
+                    progressionDegrees: ["IV", "V", "iii", "vi", "ii", "V", "I"],
+                    tsdLabels: ["S", "D", "T", "T", "S", "D", "T"]
+                )),
+                secG("走向四：卡农走向",
                 """
                 C调：C→G→Am→Em→F→C→F→G
                 代表：《卡农》《拥抱》《知足》
                 Bass线：C→B→A→G→F→E→F→G（逐步下行像河流）
-                """),
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["C", "G", "Am", "Em", "F", "C", "F", "G"],
+                    progressionDegrees: ["I", "V", "vi", "iii", "IV", "I", "IV", "V"],
+                    tsdLabels: ["T", "D", "T", "T", "S", "T", "S", "D"]
+                )),
             ]),
             TheoryDetailData(topicId: "minor-progressions", title: "小调常用和弦走向", sections: [
                 sec("一句话解释", "小调歌有自己独特的和弦走向，和大调的情绪完全不同。"),
-                sec("小调走向一：i-VI-III-VII",
+                secG("小调走向一：i-VI-III-VII",
                 """
                 Am调：Am→F→C→G
                 听感：忧伤但有力量
                 代表：李志大部分歌、《斑马斑马》
-                """),
-                sec("小调走向二：i-VI-III-E7",
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["Am", "F", "C", "G"],
+                    progressionDegrees: ["i", "VI", "III", "VII"],
+                    tsdLabels: ["T", "S", "T", "D"]
+                )),
+                secG("小调走向二：i-VI-III-E7",
                 """
                 Am→F→C→E7
                 最后的E7（属七）→强烈回到Am
-                """),
-                sec("小调vs大调的情绪对比",
-                """
-                1-6-4-5：大调版C-Am-F-G（明亮）vs 小调版Am-F-C-G（暗淡）
-                卡农：大调版优美 vs 小调版忧伤
-                """),
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["Am", "F", "C", "E7"],
+                    progressionDegrees: ["i", "VI", "III", "V7"],
+                    tsdLabels: ["T", "S", "T", "D"]
+                )),
+                sec("小调vs大调的情绪对比", "1-6-4-5：大调版C-Am-F-G（明亮）vs 小调版Am-F-C-G（暗淡）\n卡农：大调版优美 vs 小调版忧伤"),
             ]),
             TheoryDetailData(topicId: "chord-substitution", title: "和弦替换与色彩", sections: [
                 sec("一句话解释", "同一个和弦走向，替换不同的和弦变体=完全不同的色彩。"),
@@ -652,12 +675,16 @@ extension TheoryDetailDatabase {
         let m5: [TheoryDetailData] = [
             TheoryDetailData(topicId: "relative-keys", title: "关系大小调", sections: [
                 sec("一句话解释", "关系大小调=共享同一组音的大调和小调，只是起点不同。"),
-                sec("定义",
+                secG("夫妻比喻",
                 """
                 C大调=C D E F G A B C
                 A小调=A B C D E F G A
                 用的音完全一样！
-                """),
+                """, .chordComparison, GraphicData(
+                    comparisonLeft: ["C大调", "C D E F G A B", "明亮、开心"],
+                    comparisonRight: ["A小调", "A B C D E F G", "忧伤、暗淡"],
+                    comparisonDiff: "同一组音，不同起点"
+                )),
                 sec("所有关系大小调对照",
                 """
                 C→Am(无升降)  G→Em(1♯)  D→Bm(2♯)
@@ -668,12 +695,17 @@ extension TheoryDetailDatabase {
             ]),
             TheoryDetailData(topicId: "parallel-keys", title: "同主音大小调", sections: [
                 sec("一句话解释", "同主音大小调=主音相同但音阶不同，情绪变化巨大。"),
-                sec("定义",
+                secG("两家互转",
                 """
                 C大调：C D E F G A B C
                 C小调：C D E♭ F G A♭ B♭ C
                 主音都是C，但中间的音不同
-                """),
+                """, .modulationPath, GraphicData(
+                    modulationFrom: "C大调",
+                    modulationTo: "C小调",
+                    modulationDiffNotes: ["E→E♭", "A→A♭", "B→B♭"],
+                    modulationUnchangedNotes: ["C", "D", "F", "G"]
+                )),
                 sec("情绪变化", "大调→小调：明亮→暗淡（阳光变阴天）\n小调→大调：暗淡→明亮（阴天变晴天）"),
                 sec("实际应用：《白色风车》", "主歌F调→副歌D调。纽带：D这个音（F调六级=Dm，Dm和D是同主音大小调）。"),
             ]),
@@ -999,29 +1031,45 @@ extension TheoryDetailDatabase {
             ]),
             TheoryDetailData(topicId: "two-five-one-2", title: "2-5-1进行构建（二级法）", sections: [
                 sec("一句话解释", "爵士乐最核心的和弦进行：ii→V→I=S→D→T=最完整的情绪弧线。"),
-                sec("各大调的2-5-1",
+                secG("各大调的2-5-1",
                 """
                 C调：Dm7→G7→Cmaj7→Am7（接2-5-1-6）
                 G调：Am7→D7→Gmaj7→Em7
                 D调：Em7→A7→Dmaj7→Bm7
                 A调：Bm7→E7→Amaj7→F♯m7
                 E调：F♯m7→B7→Emaj7→C♯m7
-                """),
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["Dm7", "G7", "Cmaj7", "Am7"],
+                    progressionDegrees: ["ii7", "V7", "Imaj7", "vi7"],
+                    tsdLabels: ["S", "D", "T", "T"]
+                )),
                 sec("为什么好听？", "2级(S出发)→5级(D紧张)→1级(T回家)。每个和弦都自然「导向」下一个。"),
             ]),
             TheoryDetailData(topicId: "two-five-one-3", title: "2-5-1进行构建（三级法）", sections: [
                 sec("一句话解释", "三级作为「临时一级」，构建新的2-5-1，用于转调和色彩变化。"),
-                sec("各大调的三级构建",
+                secG("各大调的三级构建",
                 """
                 C调：Em7→B7→F♯m7♭5→...
                 G调：Bm7→F♯7→C♯m7♭5→...
                 D调：F♯m7→C♯7→G♯m7♭5→...
-                """),
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["Em7", "B7", "F♯m7♭5"],
+                    progressionDegrees: ["iii7", "VII7", "♯viø7"],
+                    tsdLabels: ["T", "D", "S"]
+                )),
                 sec("三级构建的用途", "转调到3级调（C→E）。增加和声色彩变化。桥段常用手法。"),
             ]),
             TheoryDetailData(topicId: "1645-substitutions", title: "1-6-4-5万能替代", sections: [
                 sec("一句话解释", "从基础三和弦到七和弦到色彩替代，同一走向的三种层次。"),
-                sec("基础1-6-4-5", "C→Am→F→G"),
+                secG("基础1-6-4-5",
+                """
+                C→Am→F→G
+                情绪弧线：T(1)→T(6)→S(4)→D(5)→T(1)
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["C", "Am", "F", "G"],
+                    progressionDegrees: ["I", "vi", "IV", "V"],
+                    tsdLabels: ["T", "T", "S", "D"]
+                )),
                 sec("顺阶七和弦替代", "1级Cmaj7、6级Am7、4级Fmaj7或Dm7/Dm9/Dm11、5级G7或Bm7♭5或E7"),
                 sec("色彩替代（借用和弦）",
                 """
@@ -1060,39 +1108,47 @@ extension TheoryDetailDatabase {
             ]),
             TheoryDetailData(topicId: "leading-bass", title: "Leading Bass套路", sections: [
                 sec("一句话解释", "用斜杠和弦制造低音线条，低音像一条旋律独立于和弦走向。"),
-                sec("经典Leading Bass走向",
+                secG("经典Leading Bass走向",
                 """
                 下行低音：C→C/B→Am→Am/G→F→G
-                低音线：C→B→A→G→F→G
-                
-                上行低音：C→Dm/C→Em→F→G
-                低音线：C→C→E→F→G
-                """),
+                低音线：C→B→A→G→F→G（逐步下行）
+                """, .bassLine, GraphicData(
+                    bassChords: ["C", "C/B", "Am", "Am/G", "F", "G"],
+                    bassNotes: ["C", "B", "A", "G", "F", "G"]
+                )),
+                secG("上行低音",
+                """
+                C→Dm/C→Em→F→G
+                低音线：C→C→E→F→G（逐步上行）
+                """, .bassLine, GraphicData(
+                    bassChords: ["C", "Dm/C", "Em", "F", "G"],
+                    bassNotes: ["C", "C", "E", "F", "G"]
+                )),
                 sec("斜杠和弦指法速查",
                 """
                 C/E=03201X  C/G=332010  G/B=X20003
                 Am/G=302210  F/A=X03211  D/F♯=2X0232
                 """),
-                sec("实战案例",
-                """
-                《不遗憾》《大笨钟》：
-                C→G/B→Am→Am/G→F→Em→Dm→G7
-                低音：C→B→A→G→F→E→D→G
-                
-                《最好的都给你》《流沙》：
-                G→D/F♯→Em→Em/D→G/B→D7sus4→G
-                低音：G→F♯→E→D→B→D→G
-                """),
             ]),
             TheoryDetailData(topicId: "chromatic-bass", title: "半音低音进行", sections: [
                 sec("一句话解释", "低音线中包含半音移动，制造更细腻的和声色彩变化。"),
-                sec("半音进行一：1→♭7→6→5",
+                secG("半音进行一：1→♭7→6→5",
                 """
                 C→C/B♭→F/A→G
                 低音：C→B♭→A→G
                 代表：《最长的电影》《花海》
-                """),
-                sec("半音进行二：4→♭4→3→♭3→2→♭2→1", "完整半音下行线。代表：《最寂寞的时候》。"),
+                """, .bassLine, GraphicData(
+                    bassChords: ["C", "C/B♭", "F/A", "G"],
+                    bassNotes: ["C", "B♭", "A", "G"]
+                )),
+                secG("半音进行二：4→♭4→3→♭3→2→♭2→1",
+                """
+                F→Fm→Fdim→Fm6→♯Fm7♭5→Em→...→C
+                完整半音下行线。代表：《最寂寞的时候》。
+                """, .bassLine, GraphicData(
+                    bassChords: ["F", "Fm", "Fdim", "Fm6", "♯Fm7♭5", "Em", "C"],
+                    bassNotes: ["F", "E", "E♭", "D", "D♭", "C", "C"]
+                )),
                 sec("半音进行的吉他实现", "关键：保持上方和弦不变，只移动Bass音。用斜杠和弦实现。练习：C→C/B→C/B♭→C/A→F。"),
             ]),
         ]
@@ -1101,44 +1157,69 @@ extension TheoryDetailDatabase {
         let m9: [TheoryDetailData] = [
             TheoryDetailData(topicId: "major-to-parallel-minor", title: "同主音大调转小调", sections: [
                 sec("一句话解释", "X大调→X小调，主音不变音阶变，情绪明亮→暗淡。"),
-                sec("C大调→C小调",
+                secG("C大调→C小调",
                 """
                 C大调：C D E F G A B
                 C小调：C D ♭E F G ♭A ♭B
                 简单理解：C大调上方小三度=♭E大调
-                """),
-                sec("G大调→G小调",
+                """, .modulationPath, GraphicData(
+                    modulationFrom: "C大调",
+                    modulationTo: "C小调",
+                    modulationDiffNotes: ["E→E♭", "A→A♭", "B→B♭"],
+                    modulationUnchangedNotes: ["C", "D", "F", "G"]
+                )),
+                secG("G大调→G小调",
                 """
                 G大调：G A B C D E F♯
                 G小调：G A ♭B C D ♭E F
                 简单理解：G大调→♭B大调
-                """),
+                """, .modulationPath, GraphicData(
+                    modulationFrom: "G大调",
+                    modulationTo: "G小调",
+                    modulationDiffNotes: ["B→B♭", "E→E♭", "F♯→F"],
+                    modulationUnchangedNotes: ["G", "A", "C", "D"]
+                )),
             ]),
             TheoryDetailData(topicId: "minor-to-parallel-major", title: "同主音小调转大调", sections: [
                 sec("一句话解释", "X小调→X大调，情绪暗淡→明亮。"),
-                sec("A小调→A大调",
+                secG("A小调→A大调",
                 """
                 A小调：A B C D E F G
                 A大调：A B C♯ D E F♯ G♯
                 简单理解：把小调转化为平行大调理解
                 A小调的平行大调=C大调，所以A小→A大=C大→A大
-                """),
-                sec("E小调→E大调",
+                """, .modulationPath, GraphicData(
+                    modulationFrom: "A小调",
+                    modulationTo: "A大调",
+                    modulationDiffNotes: ["C→C♯", "F→F♯", "G→G♯"],
+                    modulationUnchangedNotes: ["A", "B", "D", "E"]
+                )),
+                secG("E小调→E大调",
                 """
                 E小调：E F♯ G A B C D
                 E大调：E F♯ G♯ A B C♯ D♯
                 简单理解：G大调→E大调
-                """),
+                """, .modulationPath, GraphicData(
+                    modulationFrom: "E小调",
+                    modulationTo: "E大调",
+                    modulationDiffNotes: ["G→G♯", "C→C♯", "D→D♯"],
+                    modulationUnchangedNotes: ["E", "F♯", "A", "B"]
+                )),
             ]),
             TheoryDetailData(topicId: "flat-6-modulation", title: "降六级转调法", sections: [
                 sec("一句话解释", "利用本调的♭6级和弦作为「桥」，转到♭6级的调。"),
-                sec("《阴天》转调分析",
+                secG("《阴天》转调分析",
                 """
                 原调：G(1=G)
                 转调和弦：♭E（G调的♭6级）
                 新调：♭B(1=♭B)
                 路径：G→...→♭E(桥)→♭B调的和弦
-                """),
+                """, .modulationPath, GraphicData(
+                    modulationFrom: "G调",
+                    modulationTo: "♭B调",
+                    modulationDiffNotes: ["B→B♭", "E→E♭"],
+                    modulationUnchangedNotes: ["G", "A", "C", "D", "F"]
+                )),
             ]),
             TheoryDetailData(topicId: "relative-key-modulation", title: "关系大小调转调", sections: [
                 sec("一句话解释", "大调→关系小调（共享同一组音），最自然的转调。"),
@@ -1200,25 +1281,29 @@ extension TheoryDetailDatabase {
         ]),
             TheoryDetailData(topicId: "drummer-thinking", title: "鼓手思维", sections: [
                 sec("一句话解释", "吉他手要有鼓手的意识——2拍和4拍是节奏的骨架。"),
-                sec("鼓手的节奏框架",
+                secG("鼓手的节奏框架",
                 """
                 4/4拍鼓点：
                 拍子：1    2    3    4
                 底鼓：●    ·    ●    ·
                 军鼓：·    ●    ·    ●
                      强    弱    次强   弱
-                """),
+                """, .rhythmPattern),
                 sec("重音练习（5分钟）", "BPM60，只练2、4拍强调：\n↓ ↑↓ ↓ ↑↓ （轻-重-轻-重）"),
                 sec("跟鼓loop练习（5分钟）", "找一个鼓loop，跟着鼓扫弦。感受2、4拍的「骨架」。"),
             ]),
             TheoryDetailData(topicId: "strum-storytelling", title: "用扫弦讲故事", sections: [
                 sec("一句话解释", "一首歌全程一个节奏=一锅从头煮到尾的白粥。"),
-                sec("一歌三扫练习（10分钟）",
+                secG("一歌三扫练习（10分钟）",
                 """
                 主歌：轻扫/分解和弦 20-40% 像说话收敛
                 副歌：全八分扫弦 60-80% 放开设上去
                 高潮：拍弦+切音 80-100% 释放爆发
-                """),
+                """, .chordProgression, GraphicData(
+                    progressionChords: ["C(分解)", "C(轻扫)", "C(全扫)", "C(拍弦)"],
+                    progressionDegrees: ["前奏", "主歌", "副歌", "高潮"],
+                    tsdLabels: ["", "轻", "重", "爆"]
+                )),
                 sec("跟原曲扫（5分钟）", "重点感受鼓的变化。主歌鼓轻→副歌鼓重→高潮鼓密。吉他跟着鼓的层次走。"),
             ]),
             TheoryDetailData(topicId: "dynamics-training", title: "力度层次训练", sections: [
@@ -1236,12 +1321,12 @@ extension TheoryDetailDatabase {
             TheoryDetailData(topicId: "palm-muting", title: "切音技巧", sections: [
                 sec("一句话解释", "用停顿制造律动，切音=音乐的「标点符号」。"),
                 sec("切音是什么", "扫弦后立刻用手掌轻触琴弦→声音停止。制造percussive的「嚓」声。有节奏但没有音高。"),
-                sec("切音入门（5分钟）",
+                secG("切音入门（5分钟）",
                 """
                 Am和弦扫→切→扫→切：
                 ↓(扫)→切→↓(扫)→切
                 1   &   2   &
-                """),
+                """, .rhythmPattern),
                 sec("高级切音", "切+拍弦=打击乐效果。切+空扫=节奏留白。切音的位置=你的节奏签名。"),
             ]),
             TheoryDetailData(topicId: "accompaniment-layers", title: "伴奏层次实战", sections: [
