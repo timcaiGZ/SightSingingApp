@@ -672,7 +672,7 @@ struct TheoryDetailView: View {
             }
         }
         .onAppear {
-            detailData = TheoryDetailDatabase.getDetail(for: topic.id)
+            detailData = TheoryDetailDatabase.getCurriculumDetail(for: topic.id)
             progressService?.markRead(topic.id)
         }
     }

@@ -122,7 +122,7 @@ struct TheoryTab: View {
             switch specialId {
             case "seventh-chords":
                 SeventhChordsView()
-            case "mode-relation":
+            case "mode-relation", "circle-of-fifths-intro":
                 CircleOfFifthsView()
             default:
                 Text("未知页面")

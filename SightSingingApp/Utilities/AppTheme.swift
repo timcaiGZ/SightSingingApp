@@ -40,14 +40,19 @@ enum AppTheme {
         static let transcription = Color(hex: "8B5CF6") // 扒谱 - 紫
     }
     
-    // === 乐理分类颜色 (匹配 v0) ===
+    // === 乐理分类颜色 (匹配小爪完整课程体系) ===
     enum Theory {
-        static let basic = AppTheme.accent              // 基础乐理
-        static let notation = AppTheme.success          // 识谱知识
-        static let interval = Color(hex: "5856D6")      // 音程 - 紫蓝
-        static let chord = Color(hex: "EC4899")         // 和弦 - 粉红
-        static let mode = Color(hex: "30D158")          // 调式 - 绿
-        static let rhythm = Color(hex: "FF9F0A")        // 节奏 - 橙
+        static let brainScience = Color(hex: "06B6D4")  // 大脑科学 - 青
+        static let basic = AppTheme.accent               // 基础乐理 - 蓝
+        static let notation = AppTheme.success           // 识谱知识 - 绿
+        static let interval = Color(hex: "5856D6")       // 音程 - 紫蓝
+        static let chord = Color(hex: "EC4899")          // 和弦 - 粉红
+        static let mode = Color(hex: "30D158")           // 调式 - 绿
+        static let rhythmTheory = Color(hex: "FF9F0A")   // 节奏 - 橙
+        static let fretboard = Color(hex: "A855F7")      // 和弦指板 - 紫
+        static let progressions = Color(hex: "F43F5E")   // 和弦进行 - 玫红
+        static let transposition = Color(hex: "14B8A6")  // 转调实战 - 青绿
+        static let accompaniment = Color(hex: "F97316")  // 伴奏思维 - 橙红
     }
 }
 

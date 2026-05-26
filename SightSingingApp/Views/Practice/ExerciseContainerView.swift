@@ -90,8 +90,17 @@ struct ExerciseContainerView: View {
         exercise.id.contains("strumming")
     }
 
+    /// 是否十六分音符练习
+    private var isSixteenthRhythmExercise: Bool {
+        exercise.id.contains("sixteenth")
+    }
+
     var body: some View {
-        if isRhythmExercise {
+        if isSixteenthRhythmExercise {
+            SixteenthRhythmPracticeView(exercise: exercise, moduleId: moduleId)
+                .background(AppTheme.background)
+                .toolbar(.hidden, for: .navigationBar)
+        } else if isRhythmExercise {
             // 节奏练习使用专用全屏视图
             RhythmPracticeView(exercise: exercise, moduleId: moduleId)
                 .background(AppTheme.background)

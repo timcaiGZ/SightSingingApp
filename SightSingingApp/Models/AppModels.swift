@@ -188,46 +188,120 @@ struct TheoryCategoryData: Identifiable, Hashable {
     let topics: [TheoryTopicData]
     
     static let allCategories: [TheoryCategoryData] = [
-        TheoryCategoryData(id: "basic", title: "基础乐理", description: "音符、节拍、拍号，搭建音乐的底层认知", icon: "book.fill", color: AppTheme.Theory.basic, topics: [
-            TheoryTopicData(id: "notes", title: "认识音符", description: "音符的构成、时值关系"),
-            TheoryTopicData(id: "pitch-names", title: "音名与唱名", description: "C-D-E-F-G-A-B 系统"),
-            TheoryTopicData(id: "whole-half", title: "全音与半音", description: "吉他指板上的全半音关系"),
-            TheoryTopicData(id: "note-duration", title: "音符时值", description: "全音符到十六分音符"),
-            TheoryTopicData(id: "beat-signature", title: "节拍与拍号", description: "4/4, 3/4, 6/8 等常见拍号"),
-            TheoryTopicData(id: "rhythm-basics", title: "节奏基础", description: "基本节奏型和休止符")
+        // MARK: 模块零：吉他与大脑科学
+        TheoryCategoryData(id: "brain-science", title: "吉他与大脑科学",
+            description: "先理解「为什么这么练」，再开始练。认知决定效率。", icon: "brain.head.profile", color: AppTheme.Theory.brainScience, topics: [
+            TheoryTopicData(id: "brain-left-right", title: "左右手分工：课题分离", description: "左手是技术，右手是艺术"),
+            TheoryTopicData(id: "brain-relaxation", title: "左放松：最小按压力", description: "找到「刚好能响」的力度"),
+            TheoryTopicData(id: "brain-right-hand", title: "右手稳定：小脑+基底节训练", description: "节奏不好不是天赋问题"),
+            TheoryTopicData(id: "brain-neural", title: "神经连接需要时间", description: "从大脑控制到身体自动化"),
         ]),
-        TheoryCategoryData(id: "notation", title: "识谱知识", description: "五线谱、简谱、六线谱，轻松读懂各类记谱", icon: "music.note.list", color: AppTheme.Theory.notation, topics: [
-            TheoryTopicData(id: "staff-intro", title: "五线谱入门", description: "五线谱构成与谱号"),
-            TheoryTopicData(id: "solfege-intro", title: "简谱入门", description: "数字记谱法"),
-            TheoryTopicData(id: "tab-reading", title: "六线谱识谱", description: "吉他专用谱表"),
-            TheoryTopicData(id: "clef-key", title: "谱号与调号", description: "调号的识别与应用")
+        // MARK: 模块一：基础乐理
+        TheoryCategoryData(id: "basic", title: "基础乐理", description: "音符、节拍、音阶、五度圈，搭建音乐的底层认知", icon: "book.fill", color: AppTheme.Theory.basic, topics: [
+            TheoryTopicData(id: "pitch-sound", title: "音与音高", description: "十二平均律与吉他指板"),
+            TheoryTopicData(id: "interval-core", title: "音程（核心中的核心）⭐", description: "所有和弦、音阶的建造材料"),
+            TheoryTopicData(id: "scale-modes-basic", title: "音阶与调式", description: "大调、小调、五声音阶"),
+            TheoryTopicData(id: "beat-time-sig", title: "节拍与拍号", description: "4/4、3/4、6/8拍"),
+            TheoryTopicData(id: "note-values", title: "音符时值", description: "全音符到三十二分音符"),
+            TheoryTopicData(id: "measures", title: "小节与节拍线", description: "强弱规律与跨小节"),
+            TheoryTopicData(id: "bpm-speed", title: "速度（BPM）", description: "从极慢板到极速"),
+            TheoryTopicData(id: "circle-of-fifths-intro", title: "五度圈（必学）⭐", description: "调性地图与和弦推导", isSpecial: true),
         ]),
-        TheoryCategoryData(id: "interval", title: "音程", description: "两音之间的距离，听辨的核心基础", icon: "square.stack.3d.up", color: AppTheme.Theory.interval, topics: [
-            TheoryTopicData(id: "interval-concept", title: "音程的概念", description: "度数与音数"),
-            TheoryTopicData(id: "guitar-intervals", title: "吉他常用音程", description: "纯一度到纯八度"),
-            TheoryTopicData(id: "interval-quality", title: "音程的性质", description: "大、小、纯、增、减"),
-            TheoryTopicData(id: "interval-hearing", title: "音程的听辨技巧", description: "协和与不协和音程")
+        // MARK: 模块二：识谱
+        TheoryCategoryData(id: "notation", title: "识谱", description: "六线谱、五线谱、和弦图，轻松读懂各类记谱", icon: "music.note.list", color: AppTheme.Theory.notation, topics: [
+            TheoryTopicData(id: "tab-basics", title: "六线谱（TAB）", description: "吉他专用地图"),
+            TheoryTopicData(id: "staff-basics", title: "五线谱基础", description: "通用音乐语言"),
+            TheoryTopicData(id: "rhythm-notation", title: "节奏符号", description: "决定每个音「弹多久」"),
+            TheoryTopicData(id: "chord-diagrams", title: "和弦图", description: "和弦的「照片」"),
+            TheoryTopicData(id: "guitar-symbols", title: "吉他专用符号", description: "击勾滑推揉技巧标记"),
+            TheoryTopicData(id: "reading-practice", title: "看谱实战", description: "《平凡之路》主歌全拆解"),
         ]),
-        TheoryCategoryData(id: "chord", title: "和弦", description: "多音叠置的色彩，弹唱的骨架所在", icon: "pianokeys", color: AppTheme.Theory.chord, topics: [
-            TheoryTopicData(id: "triads", title: "三和弦", description: "大三、小三、增三、减三"),
+        // MARK: 模块三：音程
+        TheoryCategoryData(id: "interval", title: "音程", description: "12个音程全部掌握，扒歌和即兴的基石", icon: "square.stack.3d.up", color: AppTheme.Theory.interval, topics: [
+            TheoryTopicData(id: "interval-review", title: "音程回顾与深化", description: "完整音程表+转位规律"),
+            TheoryTopicData(id: "interval-ear-training", title: "音程听辨训练 ⭐", description: "5级难度递进听辨"),
+            TheoryTopicData(id: "interval-fretboard", title: "音程在指板上的位置", description: "同弦与跨弦音程指型"),
+            TheoryTopicData(id: "interval-chords", title: "音程与和弦的关系", description: "和弦=音程的叠加"),
+            TheoryTopicData(id: "bass-perception", title: "Bass音感知训练", description: "听歌先听Bass，最快扒歌法"),
+        ]),
+        // MARK: 模块四：和弦
+        TheoryCategoryData(id: "chord", title: "和弦", description: "三和弦、七和弦、CAGED系统，弹唱的骨架所在", icon: "pianokeys", color: AppTheme.Theory.chord, topics: [
+            TheoryTopicData(id: "triad-construction", title: "三和弦构成", description: "大、小、减、增四种三和弦"),
+            TheoryTopicData(id: "caged-system", title: "CAGED系统 ⭐", description: "5种指型覆盖全指板"),
             TheoryTopicData(id: "seventh-chords", title: "七和弦", description: "属七、大七、小七和弦", isSpecial: true),
-            TheoryTopicData(id: "inversions", title: "和弦转位", description: "第一、第二转位"),
-            TheoryTopicData(id: "guitar-chords", title: "吉他和弦指法", description: "开放和弦与横按和弦"),
-            TheoryTopicData(id: "caged-chords", title: "CAGED和弦按法", description: "五大基本形状覆盖全指板"),
-            TheoryTopicData(id: "chord-hearing", title: "和弦听辨", description: "和弦色彩与进行")
+            TheoryTopicData(id: "suspended-chords", title: "挂留和弦", description: "sus2/sus4，悬而未决的美"),
+            TheoryTopicData(id: "slash-chords", title: "转位与斜杠和弦", description: "制造流畅低音线"),
+            TheoryTopicData(id: "scale-degrees", title: "级数思维 ⭐⭐", description: "一套走向=任何调都能弹"),
+            TheoryTopicData(id: "tsd-function", title: "和弦功能组TSD ⭐", description: "家→出发→回家 的情绪弧线"),
+            TheoryTopicData(id: "major-progressions", title: "大调常用和弦走向 ⭐⭐⭐", description: "1645、1564、卡农走向"),
+            TheoryTopicData(id: "minor-progressions", title: "小调常用和弦走向", description: "小调独特的情绪色彩"),
+            TheoryTopicData(id: "chord-substitution", title: "和弦替换与色彩", description: "同一个走向，不同的色彩"),
         ]),
-        TheoryCategoryData(id: "mode", title: "调式", description: "音阶的组织方式，决定音乐的情绪色彩", icon: "tuningfork", color: AppTheme.Theory.mode, topics: [
-            TheoryTopicData(id: "major-scale", title: "大调音阶", description: "自然大调结构"),
-            TheoryTopicData(id: "minor-scale", title: "小调音阶", description: "自然、和声、旋律小调"),
-            TheoryTopicData(id: "mode-relation", title: "调式关系", description: "关系大小调", isSpecial: true),
-            TheoryTopicData(id: "church-modes", title: "中古调式", description: "多利亚、弗里几亚等")
+        // MARK: 模块五：调式与转调
+        TheoryCategoryData(id: "mode", title: "调式与转调", description: "关系大小调、Capo、中古调式，听懂调性的秘密", icon: "tuningfork", color: AppTheme.Theory.mode, topics: [
+            TheoryTopicData(id: "relative-keys", title: "关系大小调", description: "共享同一组音的大小调"),
+            TheoryTopicData(id: "parallel-keys", title: "同主音大小调", description: "主音相同，情绪巨变"),
+            TheoryTopicData(id: "twelve-keys", title: "十二个调的推导", description: "用五度圈推导所有调"),
+            TheoryTopicData(id: "capo-usage", title: "变调夹（Capo）使用", description: "移动的琴枕，简单指法弹高调"),
+            TheoryTopicData(id: "modulation-methods", title: "转调的几种方式", description: "直接转、共同和弦转、半音转"),
+            TheoryTopicData(id: "church-modes-advanced", title: "调式音阶（进阶）", description: "Dorian、Mixolydian等"),
+            TheoryTopicData(id: "mode-identification", title: "调式辨识训练", description: "听歌判断大小调和主音"),
+            TheoryTopicData(id: "key-finding", title: "定调实战", description: "三步确定一首歌的调"),
         ]),
-        TheoryCategoryData(id: "rhythm-theory", title: "节奏", description: "音乐的律动脉搏，让弹唱更有感觉", icon: "metronome", color: AppTheme.Theory.rhythm, topics: [
-            TheoryTopicData(id: "time-signatures", title: "节拍与拍号", description: "单拍子、复拍子"),
-            TheoryTopicData(id: "rhythm-patterns", title: "常用节奏型", description: "切分、附点节奏"),
-            TheoryTopicData(id: "tuplets", title: "三连音与多连音", description: "连音的演奏"),
-            TheoryTopicData(id: "compound-rhythm", title: "复合节奏", description: "复节奏训练")
-        ])
+        // MARK: 模块六：节奏
+        TheoryCategoryData(id: "rhythm-theory", title: "节奏", description: "节拍感三部曲、扫弦节奏型、右手独立性训练", icon: "metronome", color: AppTheme.Theory.rhythmTheory, topics: [
+            TheoryTopicData(id: "beat-feeling", title: "节拍感建立", description: "脚打拍子+嘴唱，训练小脑"),
+            TheoryTopicData(id: "basic-rhythm-patterns", title: "基本节奏型", description: "四分、八分、十六分、附点"),
+            TheoryTopicData(id: "strum-patterns", title: "常用扫弦节奏型 ⭐", description: "万能民谣扫弦、分解和弦"),
+            TheoryTopicData(id: "syncopation", title: "切分音", description: "弱拍变重，创造律动"),
+            TheoryTopicData(id: "rest-usage", title: "休止符的运用", description: "敢停=节奏感好的标志"),
+            TheoryTopicData(id: "right-hand-independence", title: "右手独立性训练 ⭐⭐", description: "右手永不断，像钟摆一样"),
+            TheoryTopicData(id: "rhythm-layers", title: "节奏层次", description: "主歌轻→副歌重 的情绪设计"),
+            TheoryTopicData(id: "rubato", title: "Rubato（自由速度）", description: "先练稳，再学自由"),
+        ]),
+        // MARK: 模块七：和弦指板数据库
+        TheoryCategoryData(id: "fretboard", title: "和弦指板数据库", description: "四/五/六弦根音三和弦+七和弦+转位全指板位置", icon: "square.grid.3x3", color: AppTheme.Theory.fretboard, topics: [
+            TheoryTopicData(id: "4string-root-triads", title: "四弦根音·三和弦指型", description: "以D弦为根音的大/小/减/增"),
+            TheoryTopicData(id: "5string-root-triads", title: "五弦根音·三和弦指型", description: "以A弦为根音的三和弦"),
+            TheoryTopicData(id: "6string-root-triads", title: "六弦根音·三和弦指型", description: "以E弦为根音，横按指型基础"),
+            TheoryTopicData(id: "triad-inversions", title: "三和弦转位", description: "原位、一转、二转全指板位置"),
+            TheoryTopicData(id: "4string-root-sevenths", title: "四弦根音·七和弦指型", description: "maj7/m7/7/m7♭5/dim7"),
+            TheoryTopicData(id: "5string-root-sevenths", title: "五弦根音·七和弦指型", description: "微调一品就能换和弦性质"),
+            TheoryTopicData(id: "6string-root-sevenths", title: "六弦根音·七和弦指型", description: "C调2-5-1-6全把位串联"),
+            TheoryTopicData(id: "color-chords", title: "常见色彩和弦大全", description: "sus2/sus4/add9/69/maj9/m11等"),
+        ]),
+        // MARK: 模块八：和弦进行与替代
+        TheoryCategoryData(id: "progressions", title: "和弦进行与替代",
+            description: "顺阶和弦、2-5-1、四度圈替代、Leading Bass", icon: "arrow.triangle.branch", color: AppTheme.Theory.progressions, topics: [
+            TheoryTopicData(id: "diatonic-chords", title: "顺阶和弦系统", description: "自然音阶构建的七级和弦"),
+            TheoryTopicData(id: "two-five-one-2", title: "2-5-1进行构建（二级法）", description: "爵士最核心的和弦进行"),
+            TheoryTopicData(id: "two-five-one-3", title: "2-5-1进行构建（三级法）", description: "三级作为临时一级"),
+            TheoryTopicData(id: "1645-substitutions", title: "1-6-4-5万能替代", description: "从三和弦到七和弦到色彩替代"),
+            TheoryTopicData(id: "1564-substitutions", title: "1-5-6-4万能替代", description: "爵士版、丰富版、实战案例"),
+            TheoryTopicData(id: "4536251-substitutions", title: "4-5-3-6-2-5-1替代", description: "华语万能走向的终极丰富版"),
+            TheoryTopicData(id: "leading-bass", title: "Leading Bass套路", description: "低音像一条旋律独立行走"),
+            TheoryTopicData(id: "chromatic-bass", title: "半音低音进行", description: "细腻的半音下行和声色彩"),
+        ]),
+        // MARK: 模块九：转调实战
+        TheoryCategoryData(id: "transposition", title: "转调实战",
+            description: "同主音转调、降六级转调、五度圈转调", icon: "arrow.left.arrow.right", color: AppTheme.Theory.transposition, topics: [
+            TheoryTopicData(id: "major-to-parallel-minor", title: "同主音大调转小调", description: "C大→C小，明亮→暗淡"),
+            TheoryTopicData(id: "minor-to-parallel-major", title: "同主音小调转大调", description: "暗淡→明亮，情绪反转"),
+            TheoryTopicData(id: "flat-6-modulation", title: "降六级转调法", description: "♭6级和弦作桥过渡"),
+            TheoryTopicData(id: "relative-key-modulation", title: "关系大小调转调", description: "最自然的转调方式"),
+            TheoryTopicData(id: "circle-modulation", title: "五度圈转调法", description: "相邻调与隔调转调"),
+            TheoryTopicData(id: "modulation-practice", title: "转调实战综合", description: "转调决策树与吉他实现"),
+        ]),
+        // MARK: 模块十：伴奏思维与实战
+        TheoryCategoryData(id: "accompaniment", title: "伴奏思维与实战",
+            description: "服务思维、扫弦讲故事、力度层次、切音编配", icon: "music.mic", color: AppTheme.Theory.accompaniment, topics: [
+            TheoryTopicData(id: "accompaniment-essence", title: "伴奏的本质：服务", description: "不抢戏、节奏稳、听歌手"),
+            TheoryTopicData(id: "drummer-thinking", title: "鼓手思维", description: "2拍和4拍是节奏的骨架"),
+            TheoryTopicData(id: "strum-storytelling", title: "用扫弦讲故事", description: "主歌轻→副歌重→高潮爆发"),
+            TheoryTopicData(id: "dynamics-training", title: "力度层次训练", description: "四级力度梯度 20%→80%"),
+            TheoryTopicData(id: "palm-muting", title: "切音技巧", description: "用停顿制造律动"),
+            TheoryTopicData(id: "accompaniment-layers", title: "伴奏层次实战", description: "分解→扫弦→拍弦的层次设计"),
+        ]),
     ]
 }
 

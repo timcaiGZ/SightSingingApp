@@ -289,4 +289,76 @@ actor AudioEngineManager {
 
         return mixedSamples
     }
+
+    // MARK: - Metronome Click Synthesis
+
+    /// 节拍器重音级别
+    enum MetronomeAccent {
+        case strong   // 第一拍重音
+        case medium   // 其他拍首
+        case weak     // 非拍首位置
+    }
+
+    /// 播放机械节拍器点击声
+    func playMetronomeClick(accent: MetronomeAccent) async {
+        await setup()
+        guard let player = playerNode else { return }
+
+        let samples = generateMetronomeClick(accent: accent)
+        let buffer = createBuffer(from: samples)
+        player.scheduleBuffer(buffer, at: nil, options: [], completionHandler: nil)
+        if !player.isPlaying {
+            player.play()
+        }
+    }
+
+    /// 生成机械节拍器"滴答"波形：短促指数衰减 + 金属泛音，模拟真实机械节拍器
+    private func generateMetronomeClick(accent: MetronomeAccent) -> [Double] {
+        let sampleRate = 44100.0
+
+        let (duration, mainFreq, overtoneFreq, amplitude): (TimeInterval, Double, Double, Double)
+        switch accent {
+        case .strong:
+            // 第一拍重音：低频、大声、长衰减（类似 "tock"）
+            duration = 0.12
+            mainFreq = 800
+            overtoneFreq = 2400
+            amplitude = 1.0
+        case .medium:
+            // 其他拍首：中频、中等音量（类似 "tick"）
+            duration = 0.08
+            mainFreq = 1200
+            overtoneFreq = 3600
+            amplitude = 0.65
+        case .weak:
+            // 非拍首：高频、小声、短促
+            duration = 0.045
+            mainFreq = 1600
+            overtoneFreq = 4800
+            amplitude = 0.35
+        }
+
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Double](repeating: 0, count: totalSamples)
+
+        for i in 0..<totalSamples {
+            let time = Double(i) / sampleRate
+            // 快速指数衰减，模拟机械敲击的瞬态
+            let envelope = exp(-time * 40.0)
+            // 主频 + 高频泛音叠加，产生金属/木质质感
+            let click = sin(2.0 * .pi * mainFreq * time) * 0.65 +
+                        sin(2.0 * .pi * overtoneFreq * time) * 0.25 +
+                        // 加入轻微白噪声增强瞬态冲击感
+                        (Double.random(in: -0.1...0.1) * exp(-time * 80.0))
+            samples[i] = click * envelope * amplitude
+        }
+
+        // 归一化
+        let maxAmp = samples.map { abs($0) }.max() ?? 1.0
+        if maxAmp > 0 {
+            samples = samples.map { $0 / maxAmp * 0.9 }
+        }
+
+        return samples
+    }
 }

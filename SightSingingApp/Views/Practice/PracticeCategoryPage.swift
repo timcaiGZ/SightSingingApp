@@ -96,6 +96,17 @@ struct PracticeCategoryPage: View {
                     ),
                     moduleId: category.id
                 )
+            } else if exercise.id == "sixteenth-rhythm" {
+                // 十六分音符节奏跳转到 5 组练习页面
+                SixteenthRhythmPracticeView(
+                    exercise: ExerciseItem(
+                        id: exercise.id,
+                        title: exercise.title,
+                        mode: .keyboardInput,
+                        percentage: exercise.progress
+                    ),
+                    moduleId: category.id
+                )
             } else if exercise.hasLevels {
                 ExerciseLevelsPage(exercise: exercise, categoryId: category.id, color: category.color)
             } else {

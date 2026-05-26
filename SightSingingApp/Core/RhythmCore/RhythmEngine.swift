@@ -157,6 +157,7 @@ struct RhythmEngine {
         return RhythmPattern(
             name: "四分音符",
             recommendedBPM: 120,
+            voicePositions: [1],
             slots: slots
         )
     }
@@ -173,6 +174,7 @@ struct RhythmEngine {
         return RhythmPattern(
             name: "八分音符",
             recommendedBPM: 120,
+            voicePositions: [1, 3],
             slots: slots
         )
     }

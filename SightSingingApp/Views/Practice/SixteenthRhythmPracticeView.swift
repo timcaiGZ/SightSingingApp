@@ -1,44 +1,31 @@
 import SwiftUI
 
-// MARK: - 四分音符手脚口协调节奏训练视图
+// MARK: - 十六分音符手脚口协调节奏训练主列表
 //
-// 完全按照 HTML 参考页面样式：
-//   每个四分音符有 4 个均匀 subdivision 位置（1/2/3/4）
-//   脚始终踩在位置1，手始终扫在位置1，唱出现在指定位置
-//   15 组训练分 4 个大组展示
+// 5 组训练，每组展示时间线网格（16 个位置）
 
-struct RhythmPracticeView: View {
+struct SixteenthRhythmPracticeView: View {
     let exercise: ExerciseItem
     let moduleId: String
 
     @Environment(\.dismiss) private var dismiss
-    @State private var selectedPattern: RhythmPattern?
+    @State private var selectedPattern: SixteenthRhythmPattern?
 
-    private let patterns: [RhythmPattern] = RhythmPattern.allQuarters
-    private let grouped: [[RhythmPattern]] = RhythmPattern.groupedPatterns
+    private let patterns: [SixteenthRhythmPattern] = SixteenthRhythmPattern.allPatterns
 
-    // MARK: - 分组颜色（统一为 AppTheme 色系）
-
-    private let sectionColors: [Color] = [
-        AppTheme.accent,
-        AppTheme.error,
-        AppTheme.success,
-        AppTheme.Category.transcription,
-    ]
+    private let sectionColor = AppTheme.accent
 
     // MARK: - Body
 
     var body: some View {
         VStack(spacing: 0) {
-            // 导航栏
             navBar
-            // 滚动内容
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     headerSection
                     legendSection
-                    ForEach(Array(grouped.enumerated()), id: \.offset) { sectionIdx, patternsInGroup in
-                        sectionView(sectionIdx: sectionIdx, patterns: patternsInGroup)
+                    ForEach(Array(patterns.enumerated()), id: \.element.id) { idx, pattern in
+                        patternCardView(idx: idx, pattern: pattern)
                     }
                     tipsSection
                     footerSection
@@ -49,7 +36,7 @@ struct RhythmPracticeView: View {
         .background(AppTheme.background)
         .toolbar(.hidden, for: .navigationBar)
         .navigationDestination(item: $selectedPattern) { pattern in
-            RhythmPatternPracticeView(pattern: pattern)
+            SixteenthRhythmPatternPracticeView(pattern: pattern)
         }
     }
 
@@ -67,11 +54,10 @@ struct RhythmPracticeView: View {
                 .foregroundStyle(AppTheme.accent)
             }
             Spacer()
-            Text("四分音符节奏训练")
+            Text("十六分音符节奏训练")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(AppTheme.primaryText)
             Spacer()
-            // 占位保持居中
             HStack(spacing: 2) {
                 Image(systemName: "chevron.left").font(.system(size: 18)).opacity(0)
                 Text("返回").font(.system(size: 15)).opacity(0)
@@ -84,27 +70,17 @@ struct RhythmPracticeView: View {
 
     // MARK: - 头部
 
-    @ViewBuilder
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("四分音符手脚口协调节奏训练")
+            Text("十六分音符手脚口协调节奏训练")
                 .font(.system(size: 28, weight: .bold))
                 .foregroundStyle(AppTheme.primaryText)
                 .padding(.horizontal, 16)
 
-            HStack(spacing: 6) {
-                Text("每个四分音符有 4 个均匀的位置：")
-                    .font(.system(size: 14))
-                    .foregroundStyle(AppTheme.secondaryText)
-                HStack(spacing: 8) {
-                    ForEach(0..<4, id: \.self) { i in
-                        Text("\(i + 1)")
-                            .font(.system(size: 18, weight: .medium))
-                            .foregroundStyle(AppTheme.tertiaryText)
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
+            Text("4/4 拍 | 每拍 4 个位置 | 共 16 位置")
+                .font(.system(size: 14))
+                .foregroundStyle(AppTheme.secondaryText)
+                .padding(.horizontal, 16)
         }
         .padding(.top, 16)
         .padding(.bottom, 12)
@@ -112,16 +88,15 @@ struct RhythmPracticeView: View {
 
     // MARK: - 图例
 
-    @ViewBuilder
     private var legendSection: some View {
         LazyVGrid(columns: [
             GridItem(.flexible()),
             GridItem(.flexible()),
         ], spacing: 10) {
-            legendCard(icon: "🦶", title: "脚", desc: "始终踩在第 1 个位置")
-            legendCard(icon: "🎸", title: "吉他", desc: "始终扫在第 1 个位置")
-            legendCard(icon: "👄", title: "唱", desc: "「哒」在 1/2/3/4 任意位置")
-            legendCard(icon: "🎵", title: "BPM", desc: "建议从 60 开始慢练")
+            legendCard(icon: "🦶", title: "脚", desc: "踩在 1、5、9、13（每拍第 1 位）")
+            legendCard(icon: "🎸", title: "吉他", desc: "固定扫弦 ↓ ↓↑↓ ↓↑↓ ↓↑↓")
+            legendCard(icon: "👄", title: "唱", desc: "「哒」按每组指定位置")
+            legendCard(icon: "🎵", title: "BPM", desc: "20 ~ 180，建议从 40 开始慢练")
         }
         .padding(.horizontal, 14)
         .padding(.bottom, 14)
@@ -138,7 +113,7 @@ struct RhythmPracticeView: View {
                 Text(desc)
                     .font(.system(size: 11))
                     .foregroundStyle(AppTheme.secondaryText)
-                    .lineLimit(2)
+                    .lineLimit(3)
             }
             Spacer(minLength: 0)
         }
@@ -151,45 +126,57 @@ struct RhythmPracticeView: View {
         )
     }
 
-    // MARK: - 分组区域
+    // MARK: - 训练卡片
 
-    @ViewBuilder
-    private func sectionView(sectionIdx: Int, patterns: [RhythmPattern]) -> some View {
-        let color = sectionColors[sectionIdx]
-        let (title, desc) = groupTitleAndDesc(sectionIdx: sectionIdx)
-
+    private func patternCardView(idx: Int, pattern: SixteenthRhythmPattern) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            // 分组头部
-            HStack(spacing: 14) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(color)
-                        .frame(width: 44, height: 44)
-                    Text("\(sectionIdx + 1)")
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(.white)
+            // 卡片头部：序号 + 标题
+            if idx == 0 {
+                HStack(spacing: 14) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(sectionColor)
+                            .frame(width: 44, height: 44)
+                        Text("1")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(.white)
+                    }
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("5 种唱「哒」训练")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(AppTheme.primaryText)
+                        Text("脚不动 + 手正确节奏")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
                 }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
+                .padding(.top, 12)
+                .padding(.horizontal, 14)
+            }
+
+            // 训练卡片
+            Button(action: { selectedPattern = pattern }) {
+                VStack(spacing: 0) {
+                    Text(pattern.name)
                         .font(.system(size: 17, weight: .semibold))
                         .foregroundStyle(AppTheme.primaryText)
-                    Text(desc)
-                        .font(.system(size: 14))
-                        .foregroundStyle(AppTheme.secondaryText)
-                }
-            }
+                        .padding(.bottom, 12)
 
-            // 卡片
-            VStack(spacing: 8) {
-                ForEach(patterns, id: \.id) { pattern in
-                    Button(action: { selectedPattern = pattern }) {
-                        patternCard(pattern)
-                    }
-                    .buttonStyle(.plain)
+                    timelineGrid(pattern: pattern)
                 }
+                .padding(14)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(AppTheme.border, lineWidth: 1)
+                )
             }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 14)
         }
-        .padding(16)
+        .padding(.bottom, 10)
+        .padding(.top, idx == 0 ? 0 : 10)
         .background(Color.white)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
@@ -201,69 +188,53 @@ struct RhythmPracticeView: View {
         .padding(.bottom, 12)
     }
 
-    private func groupTitleAndDesc(sectionIdx: Int) -> (String, String) {
-        switch sectionIdx {
-        case 0: return ("唱一下哒", "四个位置任选一个位置唱")
-        case 1: return ("唱两下哒", "四个位置中任选两个位置")
-        case 2: return ("唱三下哒", "四个位置中任选三个位置")
-        case 3: return ("唱四下哒", "四个位置全部都唱")
-        default: return ("", "")
-        }
-    }
+    // MARK: - 时间线网格（16 位置）
 
-    // MARK: - 单个训练卡片
-
-    @ViewBuilder
-    private func patternCard(_ pattern: RhythmPattern) -> some View {
+    private func timelineGrid(pattern: SixteenthRhythmPattern) -> some View {
         VStack(spacing: 0) {
-            // 卡片标题
-            Text(pattern.name)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundStyle(AppTheme.primaryText)
-                .padding(.bottom, 10)
-
-            // 时间线网格
-            timelineGrid(pattern: pattern)
-        }
-        .padding(14)
-        .background(Color.white)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(AppTheme.border, lineWidth: 0.5)
-        )
-    }
-
-    // MARK: - 时间线网格
-
-    @ViewBuilder
-    private func timelineGrid(pattern: RhythmPattern) -> some View {
-        VStack(spacing: 0) {
-            // 顶行：位置编号 1 2 3 4
-            timelineRow(label: "") { pos in
-                Text("\(pos)")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(AppTheme.tertiaryText)
+            // 顶部：位置编号 + 拍号标记
+            HStack(spacing: 0) {
+                Rectangle().fill(.clear).frame(width: 38, height: 28)
+                    .padding(.trailing, 6)
+                ForEach(1...16, id: \.self) { pos in
+                    VStack(spacing: 0) {
+                        if [1, 5, 9, 13].contains(pos) {
+                            Text("拍\((pos + 3) / 4)")
+                                .font(.system(size: 8, weight: .medium))
+                                .foregroundStyle(AppTheme.tertiaryText)
+                        } else {
+                            Color.clear.frame(height: 10)
+                        }
+                        let posNum = (pos - 1) % 4 + 1
+                        Text("\(posNum)")
+                            .font(.system(size: posNum == 1 ? 12 : 10, weight: .medium))
+                            .foregroundStyle(AppTheme.tertiaryText)
+                            .opacity(posNum == 1 ? 1.0 : 0.55)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 24)
+                }
             }
 
             Divider().frame(height: 1).opacity(0.15)
 
             // 脚行
-            timelineRow(label: "🦶 脚") { pos in
-                if pos == 1 {
+            timelineRow(label: "🦶 脚", height: 28) { pos in
+                if [1, 5, 9, 13].contains(pos) {
                     Circle()
                         .fill(AppTheme.tertiaryText)
-                        .frame(width: 8, height: 8)
+                        .frame(width: 7, height: 7)
                 }
             }
 
             Divider().frame(height: 1).opacity(0.15)
 
             // 手行
-            timelineRow(label: "🎸 手") { pos in
-                if pos == 1 {
-                    Text("↑")
-                        .font(.system(size: 16, weight: .medium))
+            timelineRow(label: "🎸 手", height: 28) { pos in
+                let dir = SixteenthHandStrum.direction(at: pos)
+                if dir != .rest {
+                    Text(dir.rawValue)
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(AppTheme.secondaryText)
                 }
             }
@@ -271,10 +242,10 @@ struct RhythmPracticeView: View {
             Divider().frame(height: 1).opacity(0.15)
 
             // 唱行
-            timelineRow(label: "👄 唱") { pos in
+            timelineRow(label: "👄 唱", height: 28) { pos in
                 if pattern.voicePositions.contains(pos) {
                     Text("哒")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(AppTheme.primaryText)
                 }
             }
@@ -283,23 +254,21 @@ struct RhythmPracticeView: View {
 
     private func timelineRow(
         label: String,
+        height: CGFloat,
         @ViewBuilder cellContent: @escaping (Int) -> some View
     ) -> some View {
         HStack(spacing: 0) {
-            // 标签列
             Text(label)
-                .font(.system(size: 12))
+                .font(.system(size: 11))
                 .foregroundStyle(AppTheme.tertiaryText)
-                .frame(width: 44, alignment: .trailing)
-                .padding(.trailing, 8)
+                .frame(width: 38, alignment: .trailing)
+                .padding(.trailing, 6)
 
-            // 4 个 cell
-            ForEach(1...4, id: \.self) { pos in
-                ZStack {
+            ForEach(1...16, id: \.self) { pos in
+                ZStack(alignment: .center) {
                     cellContent(pos)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: 32)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .overlay(alignment: .leading) {
                     if pos > 1 {
                         Rectangle()
@@ -309,11 +278,11 @@ struct RhythmPracticeView: View {
                 }
             }
         }
+        .frame(height: height)
     }
 
     // MARK: - 训练要点
 
-    @ViewBuilder
     private var tipsSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("训练要点")
@@ -346,18 +315,17 @@ struct RhythmPracticeView: View {
     }
 
     private let tips: [String] = [
-        "脚始终稳定踩在每个四分音符的第 1 个位置，不要漂移。",
-        "吉他右手保持连续自然摆动，即使空扫也不要停。",
-        "「哒」的位置必须严格对齐 subdivision 网格。",
-        "先慢速，再逐渐提高 BPM，不要一开始追求速度。",
-        "最终目标是：脚、手、嘴共享同一个内部拍点。",
+        "脚：稳定踩在 1、5、9、13（每拍第 1 位），不要漂移。",
+        "手：保持 ↓ ↓↑↓ ↓↑↓ ↓↑↓ 节奏，均匀连续摆动。",
+        "嘴：唱「哒」的位置严格对齐十六分音符网格。",
+        "先慢速（BPM 40~60），逐步对齐后再提速。",
+        "最终目标：脚、手、嘴共享同一个内部拍点。",
     ]
 
     // MARK: - 页脚
 
-    @ViewBuilder
     private var footerSection: some View {
-        Text("所有练习均以四分音符为单位，每个四分音符包含 4 个均匀 subdivision 位置（1 / 2 / 3 / 4）。建议搭配节拍器练习，先建立稳定拍点，再逐渐提高速度与协调能力。")
+        Text("4/4 拍十六分音符手脚口协调训练，每组包含 16 个位置（每拍 4 个十六分音符 × 4 拍）。建议搭配节拍器练习，先建立稳定拍点，再逐步提高速度与协调能力。")
             .font(.system(size: 13))
             .foregroundStyle(AppTheme.secondaryText)
             .lineSpacing(4)
@@ -374,12 +342,12 @@ struct RhythmPracticeView: View {
 
 #Preview {
     NavigationStack {
-        RhythmPracticeView(
+        SixteenthRhythmPracticeView(
             exercise: ExerciseItem(
-                id: "quarter-eighth",
-                title: "四分音符节奏",
+                id: "sixteenth",
+                title: "十六分音符节奏",
                 mode: .keyboardInput,
-                percentage: 68
+                percentage: 60
             ),
             moduleId: "rhythm"
         )
