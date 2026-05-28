@@ -35,6 +35,15 @@ enum GraphicType: String {
     case chordComparison     // 对比图（并排+差异高亮）
     case modulationPath      // 转调路径图
     case colorChordTable     // 色彩和弦对照表
+    // 基于 HarmonyCore 的新图形
+    case harmonyFretboard       // 交互式指板（动态生成，取代 fretboardHalfNotes）
+    case harmonyChordDiagram    // 动态指法图（ChordFingeringSolver 自动求解）
+    case harmonyScaleFretboard  // 指板音阶可视化（ScaleEngine）
+    case harmonyChordProgression // 和弦进行播放器（ChordProgressionEngine）
+    case harmonyAllKeys          // 十二调速查（allKeys 将和弦进行转12个调展示）
+    case harmonyDiatonicChords   // 顺阶和弦表（diatonicTriads/SeventhChords）
+    case harmonyChordTypeBrowser // 和弦类型浏览器（ChordIdentity.allTypes）
+    case harmonyChordCards       // 和弦信息卡片组（和弦图+级数+名称+构成音，由ChordFingeringSolver+ChordIdentity驱动）
 }
 
 /// 图形数据
@@ -68,6 +77,22 @@ struct GraphicData {
     var chordNotes: [String] = []      // 和弦构成音如 ["C","E","G"]
     var chordIntervals: [String] = []  // 和弦音程如 ["大三度","小三度"]
     var chordNoteRoles: [String] = []  // 音的角色如 ["根音","三音","五音"]
+    // HarmonyCore 新图形字段
+    var harmonyChordName: String = ""       // 动态指法图用：和弦名如 "Cm7"
+    var harmonyScaleRoot: String = ""       // 指板音阶用：主音如 "C"
+    var harmonyScaleMode: String = ""       // 指板音阶用：调式名如 "major"
+    var harmonyProgressionName: String = "" // 和弦进行播放器用：进行名称
+    var harmonyProgressionKey: String = ""  // 和弦进行播放器用：调
+    // 十二调速查用
+    var harmonyAllKeysProgressionName: String = "" // 要展示的进行名称
+    // 顺阶和弦表用
+    var harmonyDiatonicRoot: String = ""   // 主音如 "C"
+    var harmonyDiatonicMode: String = ""   // 调式如 "major"
+    var harmonyDiatonicType: String = ""   // "triad" 或 "seventh"
+    // 和弦信息卡片组
+    var harmonyChordCardsTitle: String = ""       // 卡片组标题
+    var harmonyChordCardsColumns: Int = 2         // 列数（默认2列）
+    var harmonyChordCards: [ChordCardItem] = []  // 卡片列表
 }
 
 /// 音程条目
@@ -84,6 +109,16 @@ struct ChordGraphicItem: Identifiable {
     let name: String
     let frets: [Int?]
     let fingers: [Int?]
+}
+
+/// 和弦信息卡片条目（HarmonyCore 驱动：自动求解指法+和弦身份+构成音）
+struct ChordCardItem: Identifiable {
+    let id = UUID()
+    var chordName: String      // 和弦名，如 "Cmaj7" "Am" "Dm7"
+    var degree: String          // 级数，如 "Ⅰ" "Ⅳ" "vi"
+    var tsdFunction: String     // TSD功能，如 "T" "S" "D"（空字符串=无）
+    var label: String = ""     // 可选说明文字
+    var rootNote: String = ""  // 根音名（空=从chordName解析）
 }
 
 /// 知识点详情
@@ -199,7 +234,7 @@ enum TheoryDetailDatabase {
         ]),
         
         TheoryDetailData(topicId: "guitar-intervals", title: "吉他常用音程", sections: [
-            TheorySection(title: "从吉他视角理解音程", content: "在吉他指板上，每一品是一个半音。例如从第5弦第3品（C）到同弦第5品（D）是两个半音，即大二度。", graphicType: .fretboardHalfNotes),
+            TheorySection(title: "从吉他视角理解音程", content: "在吉他指板上，每一品是一个半音。例如从第5弦第3品（C）到同弦第5品（D）是两个半音，即大二度。", graphicType: .harmonyFretboard),
             TheorySection(title: "弦间音程关系", content: "标准调音下，相邻弦（除3-2弦外）相差纯四度（5个半音）。3弦到2弦相差大三度（4个半音）。理解这个关系是快速推算指板音名的基础。"),
             TheorySection(title: "常用音程的音色特点", content: "纯五度：稳定、强力（强力和弦）；大三度：明亮、快乐；小三度：柔和、忧伤；纯四度：空旷；小二度：紧张、不协和。"),
         ]),
@@ -230,11 +265,19 @@ enum TheoryDetailDatabase {
             ])),
             TheorySection(title: "增三和弦与减三和弦", content: "增三和弦由大三度+大三度构成（如Caug: C-E-G#），声音紧张、膨胀。减三和弦由小三度+小三度构成（如Bdim: B-D-F），声音暗沉、不稳定。"),
             TheorySection(title: "C大调各级和弦 · CAGED按法", content: "CAGED系统将五度基本形状移动到不同把位，演奏各级和弦。点击展开查看各级和弦的CAGED五大按法：", graphicType: .cagedScaleChords, graphicData: GraphicData(cagedScaleName: "C")),
+            TheorySection(title: "🔍 和弦类型大全", content: "浏览全部24种和弦类型的音程构成。由ChordIdentity.allTypes驱动，点击任意类型查看C为根的构成音。", graphicType: .harmonyChordTypeBrowser),
         ]),
         
         TheoryDetailData(topicId: "inversions", title: "和弦转位", sections: [
             TheorySection(title: "什么是转位", content: "和弦转位是指和弦中最低的音不再是根音。原位：根音在最下方；第一转位：三音在最下方；第二转位：五音在最下方。"),
-            TheorySection(title: "C大三和弦的转位", content: "原位：C-E-G（根音C在最低）；第一转位：E-G-C（三音E在最低，标记C/E）；第二转位：G-C-E（五音G在最低，标记C/G）。"),
+            TheorySection(title: "C大三和弦的转位", content: "原位：C-E-G（根音C在最低）；第一转位：E-G-C（三音E在最低，标记C/E）；第二转位：G-C-E（五音G在最低，标记C/G）。", graphicType: .harmonyChordCards, graphicData: GraphicData(
+                harmonyChordCardsTitle: "C大三和弦·三转位",
+                harmonyChordCards: [
+                    ChordCardItem(chordName: "C", degree: "原位", tsdFunction: "T", label: "C-E-G · 根音最低"),
+                    ChordCardItem(chordName: "C", degree: "一转", tsdFunction: "T", label: "E-G-C · 三音C/E"),
+                    ChordCardItem(chordName: "C", degree: "二转", tsdFunction: "T", label: "G-C-E · 五音C/G"),
+                ]
+            )),
             TheorySection(title: "吉他上的应用", content: "转位和弦可以让和声连接更流畅。例如G/B（G和弦第一转位）常用作C到Am之间的过渡和弦，低音线形成C→B→A的流畅下行。"),
         ]),
         
@@ -272,13 +315,15 @@ enum TheoryDetailDatabase {
         TheoryDetailData(topicId: "major-scale", title: "大调音阶", sections: [
             TheorySection(title: "自然大调结构", content: "大调音阶由'全全半全全全半'的音程结构组成。以C大调为例：C -全- D -全- E -半- F -全- G -全- A -全- B -半- C。", graphicType: .scaleStructure),
             TheorySection(title: "常用大调", content: "C大调无升降号最易学习；G大调（1个升号#F）和D大调（2个升号#F,#C）是吉他最常用的调。E大调和A大调也是吉他常用调。"),
-            TheorySection(title: "吉他上的大调音阶", content: "从C音（5弦3品）开始弹奏C大调音阶：C→D→E→F→G→A→B→C，感受'全全半全全全半'的音响结构。"),
+            TheorySection(title: "吉他上的大调音阶", content: "从C音（5弦3品）开始弹奏C大调音阶：C→D→E→F→G→A→B→C，感受'全全半全全全半'的音响结构。", graphicType: .harmonyScaleFretboard, graphicData: GraphicData(harmonyScaleRoot: "C", harmonyScaleMode: "major")),
+            TheorySection(title: "📊 C大调顺阶七和弦", content: "C大调各级自然音上构建的七和弦，由ScaleEngine.diatonicSeventhChords()动态生成。", graphicType: .harmonyDiatonicChords, graphicData: GraphicData(harmonyDiatonicRoot: "C", harmonyDiatonicMode: "major", harmonyDiatonicType: "seventh")),
         ], showCircleOfFifths: true),
         
         TheoryDetailData(topicId: "minor-scale", title: "小调音阶", sections: [
             TheorySection(title: "自然小调", content: "自然小调的结构为'全半全全半全全'。以A自然小调为例：A -全- B -半- C -全- D -全- E -半- F -全- G -全- A。与C大调使用完全相同的音集，只是主音不同。"),
             TheorySection(title: "和声小调", content: "将自然小调的第七级音升高半音，得到和声小调。A和声小调为A-B-C-D-E-F-G#-A。特色是从第6级到第7级的增二度跳进。"),
             TheorySection(title: "旋律小调", content: "旋律小调上行时升高第6、7级，下行时还原（同自然小调）。上行：A-B-C-D-E-F#-G#-A。"),
+            TheorySection(title: "🎸 A小调在指板上的位置", content: "点击查看A自然小调(A Aeolian)在吉他指板上的全把位分布。与C大调完全相同的音集，但主音不同。", graphicType: .harmonyScaleFretboard, graphicData: GraphicData(harmonyScaleRoot: "A", harmonyScaleMode: "minor")),
         ]),
         
         TheoryDetailData(topicId: "church-modes", title: "中古调式", sections: [

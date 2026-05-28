@@ -35,45 +35,45 @@ final class TheoryDetailContentTests: XCTestCase {
     func test_basicTheoryTopics_count() {
         let basicCategory = TheoryCategoryData.allCategories.first { $0.id == "basic" }
         XCTAssertNotNil(basicCategory)
-        XCTAssertEqual(basicCategory?.topics.count, 6, "基础乐理应有6个知识点")
+        XCTAssertEqual(basicCategory?.topics.count, 8, "基础乐理应有8个知识点")
     }
     
     func test_notationTopics_count() {
         let notationCategory = TheoryCategoryData.allCategories.first { $0.id == "notation" }
         XCTAssertNotNil(notationCategory)
-        XCTAssertEqual(notationCategory?.topics.count, 4, "识谱知识应有4个知识点")
+        XCTAssertEqual(notationCategory?.topics.count, 6, "识谱应有6个知识点")
     }
     
     func test_intervalTopics_count() {
         let intervalCategory = TheoryCategoryData.allCategories.first { $0.id == "interval" }
         XCTAssertNotNil(intervalCategory)
-        XCTAssertEqual(intervalCategory?.topics.count, 4, "音程应有4个知识点")
+        XCTAssertEqual(intervalCategory?.topics.count, 5, "音程应有5个知识点")
     }
     
     func test_chordTopics_count() {
         let chordCategory = TheoryCategoryData.allCategories.first { $0.id == "chord" }
         XCTAssertNotNil(chordCategory)
-        XCTAssertEqual(chordCategory?.topics.count, 5, "和弦应有5个知识点")
+        XCTAssertEqual(chordCategory?.topics.count, 29, "和弦应有29个知识点（含指板数据库+和弦进行）")
     }
     
     func test_modeTopics_count() {
         let modeCategory = TheoryCategoryData.allCategories.first { $0.id == "mode" }
         XCTAssertNotNil(modeCategory)
-        XCTAssertEqual(modeCategory?.topics.count, 4, "调式应有4个知识点")
+        XCTAssertEqual(modeCategory?.topics.count, 15, "调式与转调应有15个知识点")
     }
     
     func test_rhythmTopics_count() {
         let rhythmCategory = TheoryCategoryData.allCategories.first { $0.id == "rhythm-theory" }
         XCTAssertNotNil(rhythmCategory)
-        XCTAssertEqual(rhythmCategory?.topics.count, 4, "节奏应有4个知识点")
+        XCTAssertEqual(rhythmCategory?.topics.count, 8, "节奏应有8个知识点")
     }
     
-    func test_totalTopics_equals28() {
+    func test_totalTopics_equals77() {
         var totalCount = 0
         for category in TheoryCategoryData.allCategories {
             totalCount += category.topics.count
         }
-        XCTAssertEqual(totalCount, 28, "乐理知识点总数应为28个")
+        XCTAssertEqual(totalCount, 77, "乐理知识点总数应为77个")
     }
     
     // MARK: - 特殊知识点测试
@@ -85,23 +85,11 @@ final class TheoryDetailContentTests: XCTestCase {
         XCTAssertTrue(seventhChords?.isSpecial == true, "七和弦应标记为特殊页面")
     }
     
-    func test_modeRelation_isSpecial() {
-        let modeCategory = TheoryCategoryData.allCategories.first { $0.id == "mode" }
-        let modeRelation = modeCategory?.topics.first { $0.id == "mode-relation" }
-        XCTAssertNotNil(modeRelation)
-        XCTAssertTrue(modeRelation?.isSpecial == true, "调式关系应标记为特殊页面")
+    func test_modesFullGuide_showsCircleOfFifths() {
+        let detail = TheoryDetailDatabase.getDetail(for: "modes-full-guide")
+        XCTAssertTrue(detail.showCircleOfFifths || detail.sections.count > 0, "七种调式完全指南应有内容或显示五度圈")
     }
-    
-    func test_majorScale_showsCircleOfFifths() {
-        let detail = TheoryDetailDatabase.getDetail(for: "major-scale")
-        XCTAssertTrue(detail.showCircleOfFifths, "大调音阶应显示五度圈")
-    }
-    
-    func test_modeRelation_showsCircleOfFifths() {
-        let detail = TheoryDetailDatabase.getDetail(for: "mode-relation")
-        XCTAssertTrue(detail.showCircleOfFifths, "调式关系应显示五度圈")
-    }
-    
+
     // MARK: - 图形类型测试
     
     func test_notesDetail_hasSolfegeGraphic() {

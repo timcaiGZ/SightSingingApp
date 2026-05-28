@@ -188,6 +188,14 @@ extension TheoryDetailDatabase {
                 民谣应用：《童年》前奏=大调五声音阶；民谣Solo基本都围绕五声。
                 """),
                 sec("吉他应用", "一把位C大调音阶练习：从6弦3品(G)开始，上行到1弦3品(C)。五声音阶练习：去掉4(F)和7(B)。"),
+                secG("🎸 C大调五声音阶 指板分布", "大调五声(1-2-3-5-6)去掉了4和7两个不稳定音。弹什么都好听！", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "C",
+                    harmonyScaleMode: "major-pentatonic"
+                )),
+                secG("🎸 A小调五声音阶 指板分布", "小调五声(6-1-2-3-5)同样的音集，从A开始。民谣Solo基本都围绕五声。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "A",
+                    harmonyScaleMode: "minor-pentatonic"
+                )),
             ]),
             TheoryDetailData(topicId: "beat-time-sig", title: "节拍与拍号", sections: [
                 sec("一句话解释", "拍号告诉你每小节有几拍、以什么音符为一拍。"),
@@ -463,6 +471,16 @@ extension TheoryDetailDatabase {
                 减七=减三和弦+小三度：1-♭3-♭5-♭♭7
                 半减七=减三和弦+大三度：1-♭3-♭5-♭7
                 """),
+                secG("🎸 五种常用七和弦 指法+构成音", "由HarmonyCore自动求解指法和构成音。点击任意和弦卡片试听。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "常用七和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "Cmaj7", degree: "Ⅰmaj7", tsdFunction: "T", label: "温暖梦幻"),
+                        ChordCardItem(chordName: "C7", degree: "Ⅴ7", tsdFunction: "D", label: "想解决到F"),
+                        ChordCardItem(chordName: "Cm7", degree: "ⅰ7", tsdFunction: "T", label: "柔和忧伤"),
+                        ChordCardItem(chordName: "Cdim7", degree: "ⅶ°7", tsdFunction: "D", label: "极度紧张"),
+                        ChordCardItem(chordName: "Cm7b5", degree: "ⅶø7", tsdFunction: "D", label: "半减七"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "bass-perception", title: "Bass音感知训练", sections: [
                 sec("一句话解释", "低音决定了和弦的「底色」，听歌先听Bass是最快的扒歌方法。"),
@@ -494,19 +512,51 @@ extension TheoryDetailDatabase {
                     chordIntervals: ["大三度", "小三度"],
                     chordNoteRoles: ["根音", "三音", "五音"]
                 )),
+                secG("🎸 C大三和弦指法（多把位）", "通过HarmonyCore动态指法求解，展示C大三和弦在不同把位上的多种按法。尝试切换把位查看不同的横按和开放指法。", .harmonyChordDiagram, GraphicData(
+                    chordFormula: "1-3-5",
+                    chordNotes: ["C", "E", "G"],
+                    chordIntervals: ["大三度", "小三度"],
+                    chordNoteRoles: ["根音", "三音", "五音"],
+                    harmonyChordName: "C"
+                )),
                 secG("小三和弦", "由根音+小三度+纯五度构成。以Am为例：A→C(小三度,3半音)→E(纯五度)。声音柔和、略带忧伤。", .chordConstruction, GraphicData(
                     chordFormula: "1-♭3-5",
                     chordNotes: ["A", "C", "E"],
                     chordIntervals: ["小三度", "大三度"],
                     chordNoteRoles: ["根音", "三音", "五音"]
                 )),
+                secG("🎸 Am小三和弦指法（多把位）", "Am小三和弦的动态指法求解结果。查看不同把位的按法，感受同一和弦在指板上的多种可能。", .harmonyChordDiagram, GraphicData(
+                    chordFormula: "1-♭3-5",
+                    chordNotes: ["A", "C", "E"],
+                    chordIntervals: ["小三度", "大三度"],
+                    chordNoteRoles: ["根音", "三音", "五音"],
+                    harmonyChordName: "Am"
+                )),
                 sec("减三和弦与增三和弦", "减三和弦(1-♭3-♭5)：紧张、不稳定。增三和弦(1-3-♯5)：扩张、不确定。这两种和弦通常用作过渡。"),
+                secG("🎸 Cdim 减三和弦指法", "Cdim = C-E♭-G♭ (1-♭3-♭5)。极度紧张不稳定，通常用作过渡和弦。由HarmonyCore动态求解指法。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "减三与增三和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "Cdim", degree: "ⅶ°", tsdFunction: "D", label: "紧张不稳定"),
+                        ChordCardItem(chordName: "Caug", degree: "Ⅰ+", tsdFunction: "T", label: "扩张不确定"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "caged-system", title: "CAGED系统 ⭐", sections: [
                 sec("一句话解释", "CAGED=5种基本和弦指型，让你在整个指板上找到任何和弦。"),
                 sec("五个指型", "CAGED本身就是5个开放和弦名称：C指型、A指型、G指型、E指型、D指型。关键：这5个指型可以在指板上移动，变成任何和弦！"),
                 sec("五指型的循环", "...C→A→G→E→D→C→A→G→E→D→...\n5个指型首尾相连，循环往复，覆盖整个指板。"),
                 sec("CAGED的核心价值", "1.指板不再是盲区——知道和弦在5个位置都能弹\n2.编配有更多选择——同一和弦不同把位=不同音色\n3.即兴Solo有地图——和弦音的位置一目了然"),
+                secG("🎸 CAGED 五指型和弦卡片", "C大三和弦的五个CAGED指型：C型(开放)、A型(3品)、G型(5品)、E型(8品)、D型(10品)。由ChordFingeringSolver自动求解每个把位的指法。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "C大三和弦 · CAGED五形",
+                    harmonyChordCardsColumns: 2,
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C", degree: "C型", tsdFunction: "T", label: "开放把位"),
+                        ChordCardItem(chordName: "C", degree: "A型", tsdFunction: "T", label: "3品横按"),
+                        ChordCardItem(chordName: "C", degree: "G型", tsdFunction: "T", label: "5品"),
+                        ChordCardItem(chordName: "C", degree: "E型", tsdFunction: "T", label: "8品横按"),
+                        ChordCardItem(chordName: "C", degree: "D型", tsdFunction: "T", label: "10品"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "suspended-chords", title: "挂留和弦", sections: [
                 sec("一句话解释", "挂留和弦=去掉三度音，换成二度或四度，制造悬而未决的感觉。"),
@@ -520,6 +570,20 @@ extension TheoryDetailDatabase {
                     comparisonDiff: "2度 vs 4度"
                 )),
                 sec("实战应用", "《平凡之路》前奏：Asus2→Asus4→A→Asus2→A\nD→Dsus4→D：在两个D和弦之间插入Dsus4，增加流动感。"),
+                secG("🎸 Csus2 指法", "挂二和弦(1-2-5)：去掉三度音换成二度。查看Csus2在不同把位的指法。", .harmonyChordDiagram, GraphicData(
+                    chordFormula: "1-2-5",
+                    chordNotes: ["C", "D", "G"],
+                    chordIntervals: ["大二度", "纯四度"],
+                    chordNoteRoles: ["根音", "二音", "五音"],
+                    harmonyChordName: "Csus2"
+                )),
+                secG("🎸 Csus4 指法", "挂四和弦(1-4-5)：去掉三度音换成四度，制造悬而未决的紧张感。", .harmonyChordDiagram, GraphicData(
+                    chordFormula: "1-4-5",
+                    chordNotes: ["C", "F", "G"],
+                    chordIntervals: ["纯四度", "大二度"],
+                    chordNoteRoles: ["根音", "四音", "五音"],
+                    harmonyChordName: "Csus4"
+                )),
             ]),
             TheoryDetailData(topicId: "slash-chords", title: "转位与斜杠和弦", sections: [
                 sec("一句话解释", "斜杠和弦=和弦+非根音做Bass，让低音线更流畅。"),
@@ -531,8 +595,8 @@ extension TheoryDetailDatabase {
                 为什么好听：低音线流畅像一条旋律，和弦过渡更自然。
                 《关于郑州的记忆》大量使用这种手法。
                 """, .bassLine, GraphicData(
-                    bassChords: ["C", "C/B", "Am", "Am/G", "F", "G"],
-                    bassNotes: ["C", "B", "A", "G", "F", "G"]
+                    bassNotes: ["C", "B", "A", "G", "F", "G"],
+                    bassChords: ["C", "C/B", "Am", "Am/G", "F", "G"]
                 )),
                 sec("吉他上怎么弹斜杠和弦？",
                 """
@@ -540,6 +604,14 @@ extension TheoryDetailDatabase {
                 C/G：332010（6弦加3品G）
                 Am/G：302210（6弦加3品G）
                 """),
+                secG("🎸 斜杠和弦指法卡片", "由ChordFingeringSolver自动求解斜杠和弦的指法。C/B的低音是B、C/G的低音是G、Am/G的低音是G。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "常用斜杠和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C", degree: "", tsdFunction: "T", label: "原位"),
+                        ChordCardItem(chordName: "C", degree: "C/E", tsdFunction: "T", label: "第一转位"),
+                        ChordCardItem(chordName: "C", degree: "C/G", tsdFunction: "T", label: "第二转位"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "scale-degrees", title: "级数思维 ⭐⭐", sections: [
                 sec("一句话解释", "用级数(1-2-3-4-5-6-7)代替和弦名，学会一套走向=任何调都能弹。"),
@@ -558,7 +630,7 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["C", "Am", "F", "G"],
                     progressionDegrees: ["I", "vi", "IV", "V"],
-                    tsdLabels: ["T", "T", "S", "D"]
+                    progressionLabels: ["T", "T", "S", "D"]
                 )),
                 sec("实战：《平凡之路》移调",
                 """
@@ -582,6 +654,17 @@ extension TheoryDetailDatabase {
                 《平凡之路》：Em→C→G→D (T→S→D→S)
                 注意：不以T结束，停在D→S的悬念上=一直在「路上」的感觉。
                 """),
+                secG("🎸 TSD 各组代表和弦卡片", "每个功能组的代表和弦：T组(C,Em,Am)、S组(Dm,F)、D组(G,Bdim)。自动求解指法。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "C大调 TSD 功能组",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C", degree: "Ⅰ", tsdFunction: "T", label: "主功能·家"),
+                        ChordCardItem(chordName: "Am", degree: "vi", tsdFunction: "T", label: "主功能·家"),
+                        ChordCardItem(chordName: "Dm", degree: "ii", tsdFunction: "S", label: "下属·出发"),
+                        ChordCardItem(chordName: "F", degree: "Ⅳ", tsdFunction: "S", label: "下属·出发"),
+                        ChordCardItem(chordName: "G", degree: "Ⅴ", tsdFunction: "D", label: "属·想回家"),
+                        ChordCardItem(chordName: "Bdim", degree: "ⅶ°", tsdFunction: "D", label: "属·紧张"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "major-progressions", title: "大调常用和弦走向 ⭐⭐⭐", sections: [
                 sec("一句话解释", "流行歌的和弦走向是有套路的，掌握这几个万能走向=能弹几千首歌。"),
@@ -593,7 +676,7 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["C", "Am", "F", "G"],
                     progressionDegrees: ["I", "vi", "IV", "V"],
-                    tsdLabels: ["T", "T", "S", "D"]
+                    progressionLabels: ["T", "T", "S", "D"]
                 )),
                 secG("走向二：1-5-6-4（四个万能和弦）",
                 """
@@ -603,7 +686,7 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["C", "G", "Am", "F"],
                     progressionDegrees: ["I", "V", "vi", "IV"],
-                    tsdLabels: ["T", "D", "T", "S"]
+                    progressionLabels: ["T", "D", "T", "S"]
                 )),
                 secG("走向三：4-5-3-6-2-5-1（华语万能走向）⭐⭐⭐",
                 """
@@ -613,7 +696,7 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["F", "G", "Em", "Am", "Dm", "G", "C"],
                     progressionDegrees: ["IV", "V", "iii", "vi", "ii", "V", "I"],
-                    tsdLabels: ["S", "D", "T", "T", "S", "D", "T"]
+                    progressionLabels: ["S", "D", "T", "T", "S", "D", "T"]
                 )),
                 secG("走向四：卡农走向",
                 """
@@ -623,7 +706,23 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["C", "G", "Am", "Em", "F", "C", "F", "G"],
                     progressionDegrees: ["I", "V", "vi", "iii", "IV", "I", "IV", "V"],
-                    tsdLabels: ["T", "D", "T", "T", "S", "T", "S", "D"]
+                    progressionLabels: ["T", "D", "T", "T", "S", "T", "S", "D"]
+                )),
+                secG("🎹 交互式播放器：1-6-4-5", "切换不同调、调速播放，体验和弦进行在指板上的实际编配。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "1-6-4-5 一路上是我",
+                    harmonyProgressionKey: "C"
+                )),
+                secG("🎹 交互式播放器：1-5-6-4 万能和弦", "四个万能和弦的交互式播放。切换调式感受在不同调中的和弦变化。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "1-5-6-4 万能和弦",
+                    harmonyProgressionKey: "C"
+                )),
+                secG("🎹 交互式播放器：4-5-3-6-2-5-1", "华语万能走向的交互式播放，切换key感受转调效果。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "4-5-3-6-2-5-1 华语万能",
+                    harmonyProgressionKey: "C"
+                )),
+                secG("🎹 交互式播放器：卡农进行", "卡农进行的交互式播放。调BPM感受不同速度下的和弦感觉。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "卡农进行",
+                    harmonyProgressionKey: "C"
                 )),
             ]),
             TheoryDetailData(topicId: "minor-progressions", title: "小调常用和弦走向", sections: [
@@ -636,7 +735,7 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["Am", "F", "C", "G"],
                     progressionDegrees: ["i", "VI", "III", "VII"],
-                    tsdLabels: ["T", "S", "T", "D"]
+                    progressionLabels: ["T", "S", "T", "D"]
                 )),
                 secG("小调走向二：i-VI-III-E7",
                 """
@@ -645,9 +744,16 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["Am", "F", "C", "E7"],
                     progressionDegrees: ["i", "VI", "III", "V7"],
-                    tsdLabels: ["T", "S", "T", "D"]
+                    progressionLabels: ["T", "S", "T", "D"]
                 )),
                 sec("小调vs大调的情绪对比", "1-6-4-5：大调版C-Am-F-G（明亮）vs 小调版Am-F-C-G（暗淡）\n卡农：大调版优美 vs 小调版忧伤"),
+                secG("🎹 交互式播放器：小调 i-VI-III-VII", "小调经典走向的交互式播放器。更换到Am调演奏，感受小调的忧伤情绪。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "小调 i-VI-III-VII",
+                    harmonyProgressionKey: "A"
+                )),
+                secG("🎹 十二调速查：小调 i-VI-III-VII", "将小调经典走向在所有12个调中展开。1级始终为小三和弦，体感各调的小调色彩差异。", .harmonyAllKeys, GraphicData(
+                    harmonyAllKeysProgressionName: "小调 i-VI-III-VII"
+                )),
             ]),
             TheoryDetailData(topicId: "chord-substitution", title: "和弦替换与色彩", sections: [
                 sec("一句话解释", "同一个和弦走向，替换不同的和弦变体=完全不同的色彩。"),
@@ -668,6 +774,122 @@ extension TheoryDetailDatabase {
                 C→Cmaj7「回家→温暖的回家」
                 """),
                 sec("什么时候用替换？", "弹唱伴奏：替换让伴奏更有味道。编曲：不同段落用不同色彩。即兴：在基本走向上自由变化。"),
+                secG("🎸 和弦替换对比卡片", "同一级数，不同色彩。左侧为基础三和弦，右侧为色彩替换版本。由HarmonyCore动态生成。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "和弦替换对照",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C", degree: "Ⅰ", tsdFunction: "T", label: "大三(基础)"),
+                        ChordCardItem(chordName: "Cmaj7", degree: "Ⅰmaj7", tsdFunction: "T", label: "大七(温暖)"),
+                        ChordCardItem(chordName: "Am", degree: "vi", tsdFunction: "T", label: "小三(基础)"),
+                        ChordCardItem(chordName: "Am7", degree: "vi7", tsdFunction: "T", label: "小七(柔和)"),
+                        ChordCardItem(chordName: "G", degree: "Ⅴ", tsdFunction: "D", label: "大三(基础)"),
+                        ChordCardItem(chordName: "G7", degree: "Ⅴ7", tsdFunction: "D", label: "属七(解决感)"),
+                    ]
+                )),
+            ]),
+            // === 新增：和弦大全（交互式浏览器）===
+            TheoryDetailData(topicId: "chord-library-full", title: "和弦大全（交互式浏览器）⭐", sections: [
+                sec("一句话解释", "完整收录30+种和弦类型，按家族分组，一键查看指法和构成音。从三和弦到十三和弦，一网打尽。"),
+                secG("🎸 三和弦家族", "基础中的基础。大三明亮、小三忧伤、增三紧张、减三不安——一个根音，四种情结。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "三和弦 · 四种色彩",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C", degree: "Ⅰ", tsdFunction: "T", label: "明亮积极"),
+                        ChordCardItem(chordName: "Cm", degree: "i", tsdFunction: "T", label: "忧伤内敛"),
+                        ChordCardItem(chordName: "Caug", degree: "Ⅰ+", tsdFunction: "T", label: "紧张神秘"),
+                        ChordCardItem(chordName: "Cdim", degree: "ⅶ°", tsdFunction: "D", label: "极度紧张"),
+                    ]
+                )),
+                secG("🎸 挂留 + 加音和弦", "去掉三度音换成二度或四度 = 挂留；在三和弦上加九度 = 加音。这些都是最常见的色彩和弦。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "挂留/加音/六和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "Csus2", degree: "Ⅰsus2", tsdFunction: "T", label: "空旷飘逸"),
+                        ChordCardItem(chordName: "Csus4", degree: "Ⅰsus4", tsdFunction: "T", label: "悬挂待解"),
+                        ChordCardItem(chordName: "C7sus4", degree: "Ⅴ7sus4", tsdFunction: "D", label: "属七挂四"),
+                        ChordCardItem(chordName: "Cadd9", degree: "Ⅰadd9", tsdFunction: "T", label: "清新明亮"),
+                        ChordCardItem(chordName: "Cmadd9", degree: "iadd9", tsdFunction: "T", label: "温柔丰富"),
+                        ChordCardItem(chordName: "C6", degree: "Ⅰ6", tsdFunction: "T", label: "复古明亮"),
+                        ChordCardItem(chordName: "Cm6", degree: "i6", tsdFunction: "T", label: "忧郁带甜"),
+                        ChordCardItem(chordName: "C69", degree: "Ⅰ69", tsdFunction: "T", label: "Steely Dan风味"),
+                    ]
+                )),
+                secG("🎸 七和弦家族", "在三和弦上叠加七度音，开启和声新世界。核心五种：大七(温暖)、属七(紧张)、小七(柔和)、半减七(黑暗)、减七(极致紧张)。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "核心七和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "Cmaj7", degree: "Ⅰmaj7", tsdFunction: "T", label: "温暖梦幻"),
+                        ChordCardItem(chordName: "C7", degree: "Ⅴ7", tsdFunction: "D", label: "紧张求解"),
+                        ChordCardItem(chordName: "Cm7", degree: "i7", tsdFunction: "T", label: "柔和爵士"),
+                        ChordCardItem(chordName: "Cm7b5", degree: "ⅶø7", tsdFunction: "D", label: "半减七 Ø"),
+                        ChordCardItem(chordName: "Cdim7", degree: "ⅶ°7", tsdFunction: "D", label: "极度对称"),
+                        ChordCardItem(chordName: "CmM7", degree: "imM7", tsdFunction: "T", label: "小大七 特殊"),
+                    ]
+                )),
+                secG("🎸 九和弦家族", "七和弦 + 九度音 = 九和弦。大九温暖富饶、属九R&B感、小九爵士内省。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "九和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "Cmaj9", degree: "Ⅰmaj9", tsdFunction: "T", label: "丰富温柔"),
+                        ChordCardItem(chordName: "C9", degree: "Ⅴ9", tsdFunction: "D", label: "R&B律动"),
+                        ChordCardItem(chordName: "Cm9", degree: "i9", tsdFunction: "T", label: "爵士内省"),
+                    ]
+                )),
+                secG("🎸 延伸和弦（11/13）", "继续叠加：十一和弦、十三和弦。爵士和融合风格的核心和声材料。通常省略5音、9音等非核心音程。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "十一/十三和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C11", degree: "Ⅴ11", tsdFunction: "D", label: "色彩复杂"),
+                        ChordCardItem(chordName: "Cm11", degree: "i11", tsdFunction: "T", label: "小十一"),
+                        ChordCardItem(chordName: "C13", degree: "Ⅴ13", tsdFunction: "D", label: "爵士必备"),
+                        ChordCardItem(chordName: "Cm13", degree: "i13", tsdFunction: "T", label: "融合风格"),
+                    ]
+                )),
+                secG("🎸 变化属和弦", "属七和弦的各种变体：降九(b9)、升九(#9,「亨德里克斯和弦」)、升十一(#11)、降十三(b13)。增加张力和独特色彩。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "变化属和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C7b9", degree: "Ⅴ7♭9", tsdFunction: "D", label: "更紧张"),
+                        ChordCardItem(chordName: "C7#9", degree: "Ⅴ7♯9", tsdFunction: "D", label: "Hendrix和弦"),
+                        ChordCardItem(chordName: "C7#11", degree: "Ⅴ7♯11", tsdFunction: "D", label: "利底亚属七"),
+                        ChordCardItem(chordName: "C7b13", degree: "Ⅴ7♭13", tsdFunction: "D", label: "强烈张力"),
+                    ]
+                )),
+                secG("🔍 和弦类型完整浏览器", "由HarmonyCore动态驱动，浏览全部和弦类型的音程构成。点击任意类型查看以C为根的构成音，是理解和弦公式的最快方式。", .harmonyChordTypeBrowser, GraphicData()),
+            ]),
+            // === 新增：和弦听觉色彩速查 ===
+            TheoryDetailData(topicId: "chord-ear-color", title: "和弦听觉色彩速查 👂", sections: [
+                sec("一句话解释", "每种和弦有独特的「听觉色彩」——听感特征。记住这些，扒歌和编曲事半功倍。"),
+                sec("三和弦色彩",
+                """
+                • 大三和弦：明亮、开朗、稳定 —— 像阳光直射
+                • 小三和弦：忧郁、内敛、温柔 —— 像阴天或黄昏
+                • 增三和弦：紧张、神秘、期待 —— 像悬疑片配乐
+                • 减三和弦：极度紧张、不稳定 —— 像恐怖片音效
+                """),
+                sec("七和弦色彩",
+                """
+                • 大七和弦(maj7)：温柔、梦幻、浪漫 —— 像躺在云上
+                • 属七和弦(7)：蓝调感、紧张、解决欲强 —— 像「还没说完的话」
+                • 小七和弦(m7)：柔和、爵士、内敛 —— 像深夜小酒馆
+                • 半减七(m7♭5)：黑暗、爵士、不安定 —— 像地下通道的回声
+                • 减七(dim7)：高度紧张、对称感 —— 像迷宫，四面都是出口
+                """),
+                sec("挂留/加音和弦色彩",
+                """
+                • sus2(挂二)：空旷、悬浮、自然 —— 像山谷回音
+                • sus4(挂四)：悬挂感、期待、未解决 —— 像踮脚张望
+                • add9(加九)：清新、明亮、通透 —— 像清晨露珠
+                • maj9(大九)：丰富、温柔、爵士 —— 像丝绸铺开
+                """),
+                sec("扩展和弦色彩",
+                """
+                • 9(属九)：律动感、R&B、色彩丰富 —— 像城市夜景
+                • m9(小九)：柔美、爵士、内省 —— 像独处时刻
+                • 6(大六)：明亮、复古、爵士 —— 像老唱片
+                • m6(小六)：忧郁中带甜、巴萨诺瓦 —— 像雨后的甜
+                """),
+                sec("记忆技巧",
+                """
+                1. 先区分「大/小」—— 大=明亮，小=暗淡
+                2. 再加「七音」—— 大七=温暖，属七=紧张，小七=柔和
+                3. 挂留=去掉三度 = 不确定感
+                4. 加九=加丰富度 = 更开阔
+                """),
+                sec("练习建议", "在App的测试模块中选择「和弦辨认测试」。从大三 vs 小三开始，逐步扩展到七和弦和色彩和弦。"),
             ]),
         ]
 
@@ -692,6 +914,16 @@ extension TheoryDetailDatabase {
                 F→Dm(1♭)  B♭→Gm(2♭)  E♭→Cm(3♭)
                 """),
                 sec("吉他应用", "C大调的指型=Am的指型（只是主音不同）。弹C大调时可以自然地转到Am。"),
+                secG("📊 C大调 vs A小调顺阶和弦对比", "关系大小调使用相同音集，但顺阶和弦的级数和功能完全不同。C大调的Ⅰ=C，A小调的Ⅰ=Am。", .harmonyDiatonicChords, GraphicData(
+                    harmonyDiatonicRoot: "C",
+                    harmonyDiatonicMode: "major",
+                    harmonyDiatonicType: "triad"
+                )),
+                secG("📊 A小调顺阶三和弦", "由ScaleEngine.relativeMode()推导，A小调的顺阶和弦：Am-Bdim-C-Dm-Em-F-G。与C大调共用音集但功能组不同。", .harmonyDiatonicChords, GraphicData(
+                    harmonyDiatonicRoot: "A",
+                    harmonyDiatonicMode: "minor",
+                    harmonyDiatonicType: "triad"
+                )),
             ]),
             TheoryDetailData(topicId: "parallel-keys", title: "同主音大小调", sections: [
                 sec("一句话解释", "同主音大小调=主音相同但音阶不同，情绪变化巨大。"),
@@ -724,6 +956,9 @@ extension TheoryDetailDatabase {
                 记忆：Battle Ends And Down Goes Charles Father
                 """),
                 sec("吉他手最常用的6个调", "C(无)⭐⭐⭐⭐⭐ G(1♯)⭐⭐⭐⭐⭐ D(2♯)⭐⭐⭐⭐ A(3♯)⭐⭐⭐⭐ E(4♯)⭐⭐⭐ F(1♭)⭐⭐⭐⭐"),
+                secG("🎹 十二调速查：1-6-4-5", "将经典和弦进行I-vi-IV-V在所有12个调中展开，每行一个调。点击任意调试听该调的和弦走向，直观感受不同调的音高变化。", .harmonyAllKeys, GraphicData(
+                    harmonyAllKeysProgressionName: "1-6-4-5 一路上是我"
+                )),
             ]),
             TheoryDetailData(topicId: "capo-usage", title: "变调夹（Capo）使用", sections: [
                 sec("一句话解释", "Capo=移动的琴枕，夹在哪品=升几个半音，用简单指法弹高调和。"),
@@ -777,6 +1012,23 @@ extension TheoryDetailDatabase {
                 Mixolydian：比大调少大七度(用♭7)。G Mixolydian有F(对比G大调F♯)。
                 代表大量布鲁斯、摇滚。粗犷、不羁。
                 """),
+                secG("🎸 D Dorian 指板音阶", "D多利亚调式在指板上的全把位分布。对比D自然小调，感受#F带来的凯尔特韵味。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "D",
+                    harmonyScaleMode: "dorian"
+                )),
+                secG("🎸 G Mixolydian 指板音阶", "G混合利底亚调式在指板上的分布。注意♭7音(F)替代了G大调的F♯，这是布鲁斯摇滚的关键音。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "G",
+                    harmonyScaleMode: "mixolydian"
+                )),
+                secG("🎸 E Phrygian 指板音阶", "E弗里几亚调式。从E开始的自然音阶，西班牙弗拉门戈风味。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "E",
+                    harmonyScaleMode: "phrygian"
+                )),
+                secG("📊 D Dorian 顺阶三和弦", "D多利亚调式的动态顺阶和弦表。注意Dm是1级（小调色彩）但4级G是大三（Dorian特色！）。", .harmonyDiatonicChords, GraphicData(
+                    harmonyDiatonicRoot: "D",
+                    harmonyDiatonicMode: "dorian",
+                    harmonyDiatonicType: "triad"
+                )),
             ]),
             TheoryDetailData(topicId: "mode-identification", title: "调式辨识训练", sections: [
                 sec("一句话解释", "听歌判断是大调还是小调，找到主音，确定调性。"),
@@ -797,6 +1049,94 @@ extension TheoryDetailDatabase {
                 Step3验证：用推测的调性检查歌中其他和弦是否匹配
                 """),
                 sec("练习建议", "拿3首你熟悉的歌练定调。先猜，再查谱验证。逐步建立调性感。"),
+            ]),
+            // === 新增：七种调式完全指南 ===
+            TheoryDetailData(topicId: "modes-full-guide", title: "七种调式完全指南 ⭐", sections: [
+                sec("一句话解释", "教会调式不止有大小调——7种调式各有独特的色彩和情绪。掌握它们，你的和声词汇量翻7倍。"),
+                sec("七种调式一览（以C为起点）",
+                """
+                Ionian 大调：   C D E F G A B   明亮积极
+                Dorian 多利亚： D E F G A B C   凯尔特/爵士
+                Phrygian 弗里几亚：E F G A B C D   西班牙/弗拉门戈
+                Lydian 利底亚： F G A B C D E   梦幻/科幻
+                Mixolydian 混合利底亚：G A B C D E F   布鲁斯/摇滚
+                Aeolian 自然小调：A B C D E F G   忧伤内敛
+                Locrian 洛克里亚：B C D E F G A   极度黑暗/金属
+                """),
+                sec("各调式特色音（关键！）",
+                """
+                • Ionian(大调)：4级(F)是大调特色，自然感觉
+                • Dorian(多利亚)：6级(大六度)是小调+大六 → 介于大小调之间。本该是小调的♭6换成了大6
+                • Phrygian(弗里几亚)：2级(小二度)是特色，降2级带来异域感。西班牙弗拉门戈灵魂音
+                • Lydian(利底亚)：4级(增四度/#4)是特色，最梦幻的调式。Steve Vai最爱，#4度是科幻配乐标志
+                • Mixolydian(混合利底亚)：7级(小七度/♭7)替代大七。这一个大七变♭7 = 摇滚蓝调的灵魂
+                • Aeolian(自然小调)：3级(小三度)奠定忧伤基调
+                • Locrian(洛克里亚)：1级就是减三和弦 + ♭5 → 最黑暗。Metallica等金属乐队常用
+                """),
+                sec("各调式顺阶和弦规律",
+                """
+                大调(Ⅰ-maj)：Ⅰ=maj Ⅱ=min Ⅲ=min Ⅳ=maj Ⅴ=maj Ⅵ=min Ⅶ=dim
+                多利亚(Dorian)：Ⅰ=min Ⅱ=min Ⅲ=maj Ⅳ=maj Ⅴ=min Ⅵ=dim Ⅶ=maj → 4级是大三！Dorian特色
+                弗里几亚(Phrygian)：Ⅰ=min Ⅱ=maj Ⅲ=maj Ⅳ=min Ⅴ=dim Ⅵ=maj Ⅶ=min → 2级是大三！与自然小调不同
+                利底亚(Lydian)：Ⅰ=maj Ⅱ=maj Ⅲ=min Ⅳ=dim Ⅴ=maj Ⅵ=min Ⅶ=min → 2级是大三！与大调不同
+                混合利底亚(Mixo)：Ⅰ=maj Ⅱ=min Ⅲ=dim Ⅳ=maj Ⅴ=min Ⅵ=min Ⅶ=maj → 5级是小三！
+                自然小调(Aeolian)：Ⅰ=min Ⅱ=dim Ⅲ=maj Ⅳ=min Ⅴ=min Ⅵ=maj Ⅶ=maj
+                洛克里亚(Locrian)：Ⅰ=dim Ⅱ=maj Ⅲ=min Ⅳ=min Ⅴ=maj Ⅵ=maj Ⅶ=min → 1级就是减三！独一无二
+                """),
+                secG("🎸 C Ionian（大调）指板音阶", "最基础的调式，所有调式的参照系。全全半全全全半。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "C",
+                    harmonyScaleMode: "major"
+                )),
+                secG("🎸 A Aeolian（自然小调）指板音阶", "忧伤基调，关系于C大调。与C大调共享音集但主音不同。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "A",
+                    harmonyScaleMode: "minor"
+                )),
+                secG("🎸 D Dorian 指板音阶", "多利亚调式：介于大小调之间。升6级是其灵魂。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "D",
+                    harmonyScaleMode: "dorian"
+                )),
+                secG("🎸 E Phrygian 指板音阶", "弗里几亚调式：♭2级带来异域弗拉门戈风味。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "E",
+                    harmonyScaleMode: "phrygian"
+                )),
+                secG("🎸 F Lydian 指板音阶", "利底亚调式：#4级(增四度)带来梦幻飘逸的超现实感。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "F",
+                    harmonyScaleMode: "lydian"
+                )),
+                secG("🎸 G Mixolydian 指板音阶", "混合利底亚：♭7级替代大七，摇滚布鲁斯的标配。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "G",
+                    harmonyScaleMode: "mixolydian"
+                )),
+                secG("🎸 B Locrian 指板音阶", "洛克里亚：最黑暗的调式。1级就是减三和弦，金属乐的最爱。", .harmonyScaleFretboard, GraphicData(
+                    harmonyScaleRoot: "B",
+                    harmonyScaleMode: "locrian"
+                )),
+                secG("📊 C Ionian 顺阶三和弦", "大调顺阶和弦参照标准。", .harmonyDiatonicChords, GraphicData(
+                    harmonyDiatonicRoot: "C",
+                    harmonyDiatonicMode: "major",
+                    harmonyDiatonicType: "triad"
+                )),
+                secG("📊 A Aeolian 顺阶三和弦", "自然小调动态顺阶和弦表。与大调完全不同。", .harmonyDiatonicChords, GraphicData(
+                    harmonyDiatonicRoot: "A",
+                    harmonyDiatonicMode: "minor",
+                    harmonyDiatonicType: "triad"
+                )),
+                secG("📊 D Dorian 顺阶三和弦", "注意4级G是大三(Aeolian里是Gm)→这就是Dorian特色。", .harmonyDiatonicChords, GraphicData(
+                    harmonyDiatonicRoot: "D",
+                    harmonyDiatonicMode: "dorian",
+                    harmonyDiatonicType: "triad"
+                )),
+                sec("实战应用",
+                """
+                想写凯尔特/爱尔兰味 → 用Dorian（D多利亚最经典）
+                想写西班牙/弗拉门戈 → 用Phrygian（E弗里几亚是经典）
+                想写科幻/梦幻 → 用Lydian（F利底亚最自然）
+                想写摇滚/布鲁斯 → 用Mixolydian（G混合利底亚入门）
+                想写金属/黑暗 → 用Locrian（极少单独用一整首）
+                
+                常见手法：主歌Aeolian(小调) + 副歌Dorian(升6) 
+                = 忧伤中带有一丝希望的感觉。
+                """),
             ]),
         ]
 
@@ -902,7 +1242,7 @@ extension TheoryDetailDatabase {
             ]),
         ]
 
-        // ==================== 模块七：和弦指板数据库 ====================
+        // ==================== 模块四（续一）：和弦指板数据库 ====================
         let m7: [TheoryDetailData] = [
             TheoryDetailData(topicId: "4string-root-triads", title: "四弦根音·三和弦指型", sections: [
                 sec("一句话解释", "以4弦(D弦)为根音的三和弦指型，适合指板中段演奏。"),
@@ -920,6 +1260,15 @@ extension TheoryDetailDatabase {
                 大三→增三：五音升1品
                 """),
                 sec("练习", "在4弦各品找到大三和弦：D(0品)、E(2品)、F(3品)、G(5品)...同位置切换大/小/增/减，感受手指微调。"),
+                secG("🎸 四弦根音三和弦指法卡片", "以D弦(4弦)为根音的三和弦。每种和弦类型都有动态指法图。点击试听。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "四弦根音·三和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "D", degree: "Ⅳ", tsdFunction: "S", label: "大三和弦"),
+                        ChordCardItem(chordName: "Dm", degree: "iv", tsdFunction: "S", label: "小三和弦"),
+                        ChordCardItem(chordName: "Ddim", degree: "iv°", tsdFunction: "S", label: "减三和弦"),
+                        ChordCardItem(chordName: "Daug", degree: "Ⅳ+", tsdFunction: "S", label: "增三和弦"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "5string-root-triads", title: "五弦根音·三和弦指型", sections: [
                 sec("一句话解释", "以5弦(A弦)为根音的三和弦指型，以A和弦指型为基础移动。"),
@@ -932,6 +1281,13 @@ extension TheoryDetailDatabase {
                 1弦：3（高十度）
                 """),
                 sec("练习", "5弦0品=A和弦→2品=B→3品=C→5品=D。"),
+                secG("🎸 五弦根音三和弦指法卡片", "以A弦(5弦)为根音的三和弦。点击查看动态指法图。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "五弦根音·三和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "A", degree: "Ⅵ", tsdFunction: "T", label: "大三和弦"),
+                        ChordCardItem(chordName: "Am", degree: "vi", tsdFunction: "T", label: "小三和弦"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "6string-root-triads", title: "六弦根音·三和弦指型", sections: [
                 sec("一句话解释", "以6弦(E弦)为根音的三和弦指型，这是最常用的横按指型基础。"),
@@ -945,11 +1301,26 @@ extension TheoryDetailDatabase {
                 1弦：1（高八度）
                 """),
                 sec("练习", "6弦0品=E→1品=F（横按）→3品=G→5品=A。"),
+                secG("🎸 六弦根音三和弦指法卡片", "以E弦(6弦)为根音的三和弦，横按指型最常用。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "六弦根音·三和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "E", degree: "Ⅲ", tsdFunction: "T", label: "大三和弦"),
+                        ChordCardItem(chordName: "Em", degree: "iii", tsdFunction: "T", label: "小三和弦"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "triad-inversions", title: "三和弦转位", sections: [
                 sec("一句话解释", "原位、第一转位、第二转位在指板上的全位置。"),
                 sec("三种转位", "原位：根音最下面(1-3-5) →稳定\n第一转位：三音最下面(3-5-1) →流动\n第二转位：五音最下面(5-1-3) →悬空"),
                 sec("实战用途", "制造低音下行/上行线条：\nC→C/E→F=低音C→E→F（上行更流畅）\nC→C/G→F=低音C→G→F（跳跃感）"),
+                secG("🎸 三和弦转位卡片", "C大三和弦的原位与两个转位。注意最低音不同：原位(C最低)、一转(E最低)、二转(G最低)。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "C大三和弦·三转位",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C", degree: "原位", tsdFunction: "T", label: "C-E-G · 根音最低"),
+                        ChordCardItem(chordName: "C", degree: "一转", tsdFunction: "T", label: "E-G-C · 三音最低"),
+                        ChordCardItem(chordName: "C", degree: "二转", tsdFunction: "T", label: "G-C-E · 五音最低"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "4string-root-sevenths", title: "四弦根音·七和弦指型", sections: [
                 sec("一句话解释", "以4弦为根音的五大七和弦指型。"),
@@ -962,10 +1333,28 @@ extension TheoryDetailDatabase {
                 减七(dim7)：1-♭3-♭5-♭♭7 →全部降低
                 """),
                 sec("省略5音", "七和弦中5音可以省略（不影响和弦性质），简化指法。"),
+                secG("🎸 四弦根音·七和弦指法卡片", "以D弦(4弦)为根音的五种七和弦。动态指法图自动求解每种和弦的按法。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "四弦根音·七和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "Dmaj7", degree: "Ⅳmaj7", tsdFunction: "S", label: "大七"),
+                        ChordCardItem(chordName: "Dm7", degree: "iv7", tsdFunction: "S", label: "小七"),
+                        ChordCardItem(chordName: "D7", degree: "Ⅳ7", tsdFunction: "S", label: "属七"),
+                        ChordCardItem(chordName: "Dm7b5", degree: "ivø7", tsdFunction: "S", label: "半减七"),
+                        ChordCardItem(chordName: "Ddim7", degree: "iv°7", tsdFunction: "S", label: "减七"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "5string-root-sevenths", title: "五弦根音·七和弦指型", sections: [
                 sec("一句话解释", "以5弦为根音的七和弦，微调一品就能换和弦性质。"),
                 sec("实用技巧", "大七vs小七：只差一个三音的半品\n属七vs大七：只差一个七音的半品\n记住「基准指型」，微调一品就能换和弦性质。"),
+                secG("🎸 五弦根音·七和弦指法卡片", "以A弦(5弦)为根音的四种常用七和弦。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "五弦根音·七和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "Amaj7", degree: "Ⅵmaj7", tsdFunction: "T", label: "大七"),
+                        ChordCardItem(chordName: "Am7", degree: "vi7", tsdFunction: "T", label: "小七"),
+                        ChordCardItem(chordName: "A7", degree: "Ⅵ7", tsdFunction: "T", label: "属七"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "6string-root-sevenths", title: "六弦根音·七和弦指型", sections: [
                 sec("一句话解释", "以6弦为根音的七和弦，配合C调2-5-1-6全把位串联。"),
@@ -977,6 +1366,14 @@ extension TheoryDetailDatabase {
                 7品：Dm7(XX7787) G7(X10988)
                 """),
                 sec("练习", "从1品到10品，用不同把位弹同一组2-5-1-6。理解同一走向在全指板的不同实现。"),
+                secG("🎸 六弦根音·七和弦指法卡片", "以E弦(6弦)为根音的七和弦。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "六弦根音·七和弦",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "Emaj7", degree: "Ⅲmaj7", tsdFunction: "T", label: "大七"),
+                        ChordCardItem(chordName: "Em7", degree: "iii7", tsdFunction: "T", label: "小七"),
+                        ChordCardItem(chordName: "E7", degree: "Ⅲ7", tsdFunction: "T", label: "属七"),
+                    ]
+                )),
             ]),
             TheoryDetailData(topicId: "color-chords", title: "常见色彩和弦大全", sections: [
                 sec("一句话解释", "sus2、sus4、add9、69、maj9、m11等色彩和弦的构成和常用按法。"),
@@ -1004,10 +1401,39 @@ extension TheoryDetailDatabase {
                 ♯9(1-3-5-♭7-♯2)：Hendrix和弦
                 13(1-3-5-♭7-2-4-6)：完整属和弦
                 """),
+                secG("🎸 Cmaj7 大七和弦指法", "温暖梦幻的大七和弦，C-E-G-B (1-3-5-7)。点击查看多把位指法。", .harmonyChordDiagram, GraphicData(
+                    chordFormula: "1-3-5-7",
+                    chordNotes: ["C", "E", "G", "B"],
+                    chordIntervals: ["大三度", "小三度", "大三度"],
+                    chordNoteRoles: ["根音", "三音", "五音", "七音"],
+                    harmonyChordName: "Cmaj7"
+                )),
+                secG("🎸 C7 属七和弦指法", "属七和弦 C-E-G-B♭ (1-3-5-♭7)，强烈想解决到F的感觉。", .harmonyChordDiagram, GraphicData(
+                    chordFormula: "1-3-5-♭7",
+                    chordNotes: ["C", "E", "G", "B♭"],
+                    chordIntervals: ["大三度", "小三度", "小三度"],
+                    chordNoteRoles: ["根音", "三音", "五音", "七音"],
+                    harmonyChordName: "C7"
+                )),
+                secG("🎸 Cm7 小七和弦指法", "小七和弦 C-E♭-G-B♭ (1-♭3-5-♭7)，柔和忧伤，爵士入门必会。", .harmonyChordDiagram, GraphicData(
+                    chordFormula: "1-♭3-5-♭7",
+                    chordNotes: ["C", "E♭", "G", "B♭"],
+                    chordIntervals: ["小三度", "大三度", "小三度"],
+                    chordNoteRoles: ["根音", "三音", "五音", "七音"],
+                    harmonyChordName: "Cm7"
+                )),
+                secG("🎸 Cadd9 加九和弦指法", "加九和弦 C-E-G-D (1-3-5-9)，温暖丰富，比C大三和弦更开阔。", .harmonyChordDiagram, GraphicData(
+                    chordFormula: "1-3-5-9",
+                    chordNotes: ["C", "E", "G", "D"],
+                    chordIntervals: ["大三度", "小三度", "大二度"],
+                    chordNoteRoles: ["根音", "三音", "五音", "九音"],
+                    harmonyChordName: "Cadd9"
+                )),
+                secG("🔍 和弦类型大全（动态浏览器）", "浏览全部24种和弦类型的音程构成。由ChordIdentity.allTypes驱动，点击任意类型查看以C为根的构成音。", .harmonyChordTypeBrowser, GraphicData()),
             ]),
         ]
 
-        // ==================== 模块八：和弦进行与替代 ====================
+        // ==================== 模块四（续二）：和弦进行与替代 ====================
         let m8: [TheoryDetailData] = [
             TheoryDetailData(topicId: "diatonic-chords", title: "顺阶和弦系统", sections: [
                 sec("一句话解释", "一个调的自然音阶上构建的和弦，只使用调内音。"),
@@ -1028,6 +1454,16 @@ extension TheoryDetailDatabase {
                 A调：A-Bm-C♯m-D-E-F♯m-G♯dim
                 E调：E-F♯m-G♯m-A-B-C♯m-D♯dim
                 """),
+                secG("📊 C大调顺阶三和弦（动态生成）", "由HarmonyCore的ScaleEngine.diatonicTriads()动态计算，展示级数、和弦名、构成音、TSD功能组。点击任意和弦试听。", .harmonyDiatonicChords, GraphicData(
+                    harmonyDiatonicRoot: "C",
+                    harmonyDiatonicMode: "major",
+                    harmonyDiatonicType: "triad"
+                )),
+                secG("📊 C大调顺阶七和弦（动态生成）", "由ScaleEngine.diatonicSeventhChords()动态计算。注意5级为属七(G7)，7级为半减七(Bm7♭5)，与大调自然三和弦不同。", .harmonyDiatonicChords, GraphicData(
+                    harmonyDiatonicRoot: "C",
+                    harmonyDiatonicMode: "major",
+                    harmonyDiatonicType: "seventh"
+                )),
             ]),
             TheoryDetailData(topicId: "two-five-one-2", title: "2-5-1进行构建（二级法）", sections: [
                 sec("一句话解释", "爵士乐最核心的和弦进行：ii→V→I=S→D→T=最完整的情绪弧线。"),
@@ -1041,9 +1477,13 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["Dm7", "G7", "Cmaj7", "Am7"],
                     progressionDegrees: ["ii7", "V7", "Imaj7", "vi7"],
-                    tsdLabels: ["S", "D", "T", "T"]
+                    progressionLabels: ["S", "D", "T", "T"]
                 )),
                 sec("为什么好听？", "2级(S出发)→5级(D紧张)→1级(T回家)。每个和弦都自然「导向」下一个。"),
+                secG("🎹 交互式播放器：爵士 Ⅱ-Ⅴ-Ⅰ", "爵士最核心的和声进行的交互式播放。切换到不同调、调速感受走向。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "爵士 Ⅱ-Ⅴ-Ⅰ",
+                    harmonyProgressionKey: "C"
+                )),
             ]),
             TheoryDetailData(topicId: "two-five-one-3", title: "2-5-1进行构建（三级法）", sections: [
                 sec("一句话解释", "三级作为「临时一级」，构建新的2-5-1，用于转调和色彩变化。"),
@@ -1055,7 +1495,7 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["Em7", "B7", "F♯m7♭5"],
                     progressionDegrees: ["iii7", "VII7", "♯viø7"],
-                    tsdLabels: ["T", "D", "S"]
+                    progressionLabels: ["T", "D", "S"]
                 )),
                 sec("三级构建的用途", "转调到3级调（C→E）。增加和声色彩变化。桥段常用手法。"),
             ]),
@@ -1068,9 +1508,22 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["C", "Am", "F", "G"],
                     progressionDegrees: ["I", "vi", "IV", "V"],
-                    tsdLabels: ["T", "T", "S", "D"]
+                    progressionLabels: ["T", "T", "S", "D"]
                 )),
                 sec("顺阶七和弦替代", "1级Cmaj7、6级Am7、4级Fmaj7或Dm7/Dm9/Dm11、5级G7或Bm7♭5或E7"),
+                secG("🎸 1-6-4-5 三层替换对比", "从基础三和弦→七和弦→色彩替代，同一走向的三种层次。均由HarmonyCore动态生成。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "I-vi-IV-V 替换层次",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C", degree: "Ⅰ", tsdFunction: "T", label: "基础大三"),
+                        ChordCardItem(chordName: "Am", degree: "vi", tsdFunction: "T", label: "基础小三"),
+                        ChordCardItem(chordName: "F", degree: "Ⅳ", tsdFunction: "S", label: "基础"),
+                        ChordCardItem(chordName: "G", degree: "Ⅴ", tsdFunction: "D", label: "基础"),
+                        ChordCardItem(chordName: "Cmaj7", degree: "Ⅰmaj7", tsdFunction: "T", label: "七和弦版"),
+                        ChordCardItem(chordName: "Am7", degree: "vi7", tsdFunction: "T", label: "七和弦版"),
+                        ChordCardItem(chordName: "Fmaj7", degree: "Ⅳmaj7", tsdFunction: "S", label: "七和弦版"),
+                        ChordCardItem(chordName: "G7", degree: "Ⅴ7", tsdFunction: "D", label: "七和弦版"),
+                    ]
+                )),
                 sec("色彩替代（借用和弦）",
                 """
                 4级F→F/G（开放感）
@@ -1078,6 +1531,10 @@ extension TheoryDetailDatabase {
                 1级C→♭Dmaj7（离调冲击）
                 """),
                 sec("实战案例：《最长电影》", "C→Am→F→G→Em→Dm→G7（加入3级和2级，延长弧线）"),
+                secG("🎹 交互式播放器：1-6-4-5 万能替代", "用播放器体验I-vi-IV-V在不同调中的和弦变化。切换Key感受转调效果。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "1-6-4-5 一路上是我",
+                    harmonyProgressionKey: "C"
+                )),
             ]),
             TheoryDetailData(topicId: "1564-substitutions", title: "1-5-6-4万能替代", sections: [
                 sec("一句话解释", "「四个万能和弦」走向的三层替代版本。"),
@@ -1088,7 +1545,24 @@ extension TheoryDetailDatabase {
                 丰富版：Cadd9→G/B→Am7→Fmaj7
                 爵士版：Cmaj9→G13→Am9→Fmaj9
                 """),
+                secG("🎸 1-5-6-4 三层替换对比", "从基础三和弦→七和弦的替换对比。由ChordFingeringSolver自动生成指法。", .harmonyChordCards, GraphicData(
+                    harmonyChordCardsTitle: "I-V-vi-IV 替换层次",
+                    harmonyChordCards: [
+                        ChordCardItem(chordName: "C", degree: "Ⅰ", tsdFunction: "T", label: "基础"),
+                        ChordCardItem(chordName: "G", degree: "Ⅴ", tsdFunction: "D", label: "基础"),
+                        ChordCardItem(chordName: "Am", degree: "vi", tsdFunction: "T", label: "基础"),
+                        ChordCardItem(chordName: "F", degree: "Ⅳ", tsdFunction: "S", label: "基础"),
+                        ChordCardItem(chordName: "Cmaj7", degree: "Ⅰmaj7", tsdFunction: "T", label: "七和弦"),
+                        ChordCardItem(chordName: "G7", degree: "Ⅴ7", tsdFunction: "D", label: "七和弦"),
+                        ChordCardItem(chordName: "Am7", degree: "vi7", tsdFunction: "T", label: "七和弦"),
+                        ChordCardItem(chordName: "Fmaj7", degree: "Ⅳmaj7", tsdFunction: "S", label: "七和弦"),
+                    ]
+                )),
                 sec("实战案例：《明明就》", "G→D→Em→C→Bm→Am→D7（加入3级和2级）"),
+                secG("🎹 交互式播放器：1-5-6-4 万能和弦", "交互式体验 I-V-vi-IV 走向。切换调式试听不同Key的效果。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "1-5-6-4 万能和弦",
+                    harmonyProgressionKey: "C"
+                )),
             ]),
             TheoryDetailData(topicId: "4536251-substitutions", title: "4-5-3-6-2-5-1替代", sections: [
                 sec("一句话解释", "华语万能走向的每一步都有丰富替代方案。"),
@@ -1105,6 +1579,10 @@ extension TheoryDetailDatabase {
                 1级Cmaj7→Cadd9（温暖回家）
                 """),
                 sec("终极丰富版", "Fmaj7→G7sus4→Em7→Am7→Dm9→G7♭9→Cmaj9"),
+                secG("🎹 交互式播放器：4-5-3-6-2-5-1 华语万能", "体验华语万能走向在播放器中的完整进行。调速、换Key，感受层层推进的和声。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "4-5-3-6-2-5-1 华语万能",
+                    harmonyProgressionKey: "C"
+                )),
             ]),
             TheoryDetailData(topicId: "leading-bass", title: "Leading Bass套路", sections: [
                 sec("一句话解释", "用斜杠和弦制造低音线条，低音像一条旋律独立于和弦走向。"),
@@ -1113,16 +1591,16 @@ extension TheoryDetailDatabase {
                 下行低音：C→C/B→Am→Am/G→F→G
                 低音线：C→B→A→G→F→G（逐步下行）
                 """, .bassLine, GraphicData(
-                    bassChords: ["C", "C/B", "Am", "Am/G", "F", "G"],
-                    bassNotes: ["C", "B", "A", "G", "F", "G"]
+                                        bassNotes: ["C", "B", "A", "G", "F", "G"],
+bassChords: ["C", "C/B", "Am", "Am/G", "F", "G"]
                 )),
                 secG("上行低音",
                 """
                 C→Dm/C→Em→F→G
                 低音线：C→C→E→F→G（逐步上行）
                 """, .bassLine, GraphicData(
-                    bassChords: ["C", "Dm/C", "Em", "F", "G"],
-                    bassNotes: ["C", "C", "E", "F", "G"]
+                                        bassNotes: ["C", "C", "E", "F", "G"],
+bassChords: ["C", "Dm/C", "Em", "F", "G"]
                 )),
                 sec("斜杠和弦指法速查",
                 """
@@ -1138,22 +1616,83 @@ extension TheoryDetailDatabase {
                 低音：C→B♭→A→G
                 代表：《最长的电影》《花海》
                 """, .bassLine, GraphicData(
-                    bassChords: ["C", "C/B♭", "F/A", "G"],
-                    bassNotes: ["C", "B♭", "A", "G"]
+                                        bassNotes: ["C", "B♭", "A", "G"],
+bassChords: ["C", "C/B♭", "F/A", "G"]
                 )),
                 secG("半音进行二：4→♭4→3→♭3→2→♭2→1",
                 """
                 F→Fm→Fdim→Fm6→♯Fm7♭5→Em→...→C
                 完整半音下行线。代表：《最寂寞的时候》。
                 """, .bassLine, GraphicData(
-                    bassChords: ["F", "Fm", "Fdim", "Fm6", "♯Fm7♭5", "Em", "C"],
-                    bassNotes: ["F", "E", "E♭", "D", "D♭", "C", "C"]
+                                        bassNotes: ["F", "E", "E♭", "D", "D♭", "C", "C"],
+bassChords: ["F", "Fm", "Fdim", "Fm6", "♯Fm7♭5", "Em", "C"]
                 )),
                 sec("半音进行的吉他实现", "关键：保持上方和弦不变，只移动Bass音。用斜杠和弦实现。练习：C→C/B→C/B♭→C/A→F。"),
             ]),
+            // === 新增：TSD和声运动规律 ===
+            TheoryDetailData(topicId: "tsd-motion-rules", title: "TSD和声运动规律 ⭐", sections: [
+                sec("一句话解释", "TSD不仅是和弦分三类，更重要的是它们之间的9种运动方向——每种都有独特的情绪含义。"),
+                sec("TSD三组简介",
+                """
+                T(主功能·家)：1级、3级、6级 → 稳定、归宿、安全
+                S(下属功能·出发)：2级、4级 → 离开家、展开故事
+                D(属功能·想回家)：5级、7级 → 紧张、必须回到T
+                """),
+                secG("九种TSD运动",
+                """
+                1. T→S 离调运动（稳定→离开）：从家出发，故事开始
+                2. T→D 半解决期待：感觉要回家了，但还没到
+                3. T→T 同功能平移：在家里的不同房间走动
+                4. S→D 趋向进行（最常见）：离家后想回家
+                5. S→T 变格终止（阿门终止）：「阿——门——」
+                6. S→S 同功能延伸：在外面的不同地方逛逛
+                7. D→T 正格终止（最强解决）：到家了！
+                8. D→S 欺骗终止（意外解决）：门开了，发现不是家
+                9. D→D 属功能延伸：在门口犹豫徘徊
+                """, .tsdFunctionalGroup),
+                sec("各功能组常见进行走向",
+                """
+                【大调各级常用下一步】
+                Ⅰ(T)：→ Ⅳ、Ⅴ、Ⅵm、Ⅱm — 从哪里出发都行
+                Ⅱm(S)：→ Ⅴ、Ⅰ — 二级最经典是往五级走
+                Ⅲm(T)：→ Ⅳ、Ⅱm、Ⅵm — 三级常做过渡
+                Ⅳ(S)：→ Ⅰ、Ⅴ、Ⅵm — 四级可变格终止或趋向五级
+                Ⅴ(D)：→ Ⅰ — 五级最自然地回到一级！
+                Ⅵm(T)：→ Ⅳ、Ⅰ、Ⅱm — 六级常接四级或一级
+                Ⅶdim(D)：→ Ⅰ — 导音强烈倾向于主音
+                常用模板：Ⅰ-Ⅳ-Ⅴ-Ⅰ、Ⅰ-Ⅵm-Ⅳ-Ⅴ、Ⅱm-Ⅴ-Ⅰ(二五一)
+                """),
+                secG("🎹 交互式感受：正格终止 V→I", "D→T是最强解决感。体验G7→C的强烈「回家」感。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "爵士 Ⅱ-Ⅴ-Ⅰ",
+                    harmonyProgressionKey: "C"
+                )),
+                secG("🎹 交互式感受：变格终止 IV→I", "S→T是「阿门终止」。体验F→C的庄严与平和。", .harmonyChordProgression, GraphicData(
+                    harmonyProgressionName: "1-6-4-5 一路上是我",
+                    harmonyProgressionKey: "C"
+                )),
+                sec("实战应用",
+                """
+                • 想制造强烈解决感 → 用 D→T（正格终止，Ⅴ→Ⅰ）
+                • 想制造开放的不结束感 → 用 S→T（变格终止，Ⅳ→Ⅰ）
+                • 想制造意外 → 用 D→S（欺骗终止，Ⅴ→Ⅵm）
+                • 想延长紧张感 → 用 D→D（属功能延伸，Ⅴ→Ⅶdim）
+                • 想让歌循环 → 结尾用 IV→I 代替 V→I
+                """),
+                sec("实战分析",
+                """
+                《达尔文》C调：F→G→Am→G (S→D→T→D)
+                规律：从S出发→D紧张→「假装回家」到Am→又回D
+                效果：在主歌阶段保持「未完成感」，让副歌的T更有力量。
+                
+                《平凡之路》：Em→C→G→D (T→S→D→S)
+                规律：T出发→S铺垫→D紧张→S拉开
+                效果：停在S不解决，整首歌都在「在路上」的感觉。
+                """),
+            ]),
         ]
 
-        // ==================== 模块九：转调实战 ====================
+        // ==================== 模块五（续）：转调实战 ====================
+        // 以下转调相关 topic 也归属模块五「调式与转调」：
         let m9: [TheoryDetailData] = [
             TheoryDetailData(topicId: "major-to-parallel-minor", title: "同主音大调转小调", sections: [
                 sec("一句话解释", "X大调→X小调，主音不变音阶变，情绪明亮→暗淡。"),
@@ -1302,7 +1841,7 @@ extension TheoryDetailDatabase {
                 """, .chordProgression, GraphicData(
                     progressionChords: ["C(分解)", "C(轻扫)", "C(全扫)", "C(拍弦)"],
                     progressionDegrees: ["前奏", "主歌", "副歌", "高潮"],
-                    tsdLabels: ["", "轻", "重", "爆"]
+                    progressionLabels: ["", "轻", "重", "爆"]
                 )),
                 sec("跟原曲扫（5分钟）", "重点感受鼓的变化。主歌鼓轻→副歌鼓重→高潮鼓密。吉他跟着鼓的层次走。"),
             ]),
@@ -1345,7 +1884,9 @@ extension TheoryDetailDatabase {
             ]),
         ]
 
-        return m0 + m1 + m2 + m3 + m4 + m5 + m6 + m7 + m8 + m9 + m10
+        // m4 + m7 + m8 合并为模块四「和弦」
+        // m5 + m9 合并为模块五「调式与转调」
+        return m0 + m1 + m2 + m3 + m4 + m7 + m8 + m5 + m6 + m9 + m10
     }()
 
     /// 获取课程体系详情（优先查新课程，回退到旧数据库）

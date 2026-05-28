@@ -6,9 +6,8 @@ struct CourseTab: View {
     
     var body: some View {
         NavigationStack {
-        ScrollView {
-            VStack(spacing: 16) {
-                // === 页面标题 28px bold ===
+            VStack(spacing: 0) {
+                // === 固定头部 ===
                 HStack {
                     Text("课程学习")
                         .font(.system(size: 28, weight: .bold))
@@ -17,24 +16,27 @@ struct CourseTab: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
+                .padding(.bottom, 4)
+                .background(AppTheme.background)
                 
-                // === 课程卡片列表 space-y-3 ===
-                VStack(spacing: 12) {
-                    ForEach(CourseItemData.allCourses) { course in
-                        CourseCardView(course: course) {
-                            selectedCourse = course
+                // === 滚动内容：课程卡片列表 ===
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(CourseItemData.allCourses) { course in
+                            CourseCardView(course: course) {
+                                selectedCourse = course
+                            }
                         }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 16)
             }
-            .padding(.bottom, 24)
+            .background(AppTheme.background)
+            .navigationDestination(item: $selectedCourse) { course in
+                CourseDetailView(course: course)
+            }
         }
-        .background(AppTheme.background)
-        .navigationDestination(item: $selectedCourse) { course in
-            CourseDetailView(course: course)
-        }
-        }  // NavigationStack close
     }
 }
 
@@ -464,6 +466,34 @@ struct CourseItemData: Identifiable, Hashable {
                     CourseLesson(id: "et-l3", title: "音程听辨入门", difficulty: "基础", duration: "10min"),
                     CourseLesson(id: "et-l4", title: "和弦色彩辨认", difficulty: "基础", duration: "10min"),
                     CourseLesson(id: "et-l5", title: "和声进行听辨", difficulty: "进阶", duration: "12min"),
+                ])
+            ]
+        ),
+        CourseItemData(
+            id: "harmony-analysis",
+            title: "和声分析实战",
+            icon: "arrow.triangle.branch",
+            color: Color(hex: "0EA5E9"),
+            lessonCount: 10,
+            status: .notStarted,
+            progress: 0,
+            total: 10,
+            chapters: [
+                CourseChapter(id: "ha-ch1", title: "TSD功能组认知", lessons: [
+                    CourseLesson(id: "ha-l1", title: "T主功能：音乐的家", difficulty: "入门", duration: "8min"),
+                    CourseLesson(id: "ha-l2", title: "S下属功能：出发的起点", difficulty: "入门", duration: "8min"),
+                    CourseLesson(id: "ha-l3", title: "D属功能：回家的欲望", difficulty: "基础", duration: "10min"),
+                ]),
+                CourseChapter(id: "ha-ch2", title: "TSD运动方向", lessons: [
+                    CourseLesson(id: "ha-l4", title: "正格终止 D→T 最强解决", difficulty: "基础", duration: "10min"),
+                    CourseLesson(id: "ha-l5", title: "变格终止 S→T 阿门终止", difficulty: "基础", duration: "10min"),
+                    CourseLesson(id: "ha-l6", title: "趋向进行 S→D 最常见走向", difficulty: "进阶", duration: "12min"),
+                    CourseLesson(id: "ha-l7", title: "欺骗终止 D→S 意外之美", difficulty: "进阶", duration: "12min"),
+                ]),
+                CourseChapter(id: "ha-ch3", title: "和弦进行规律与实战", lessons: [
+                    CourseLesson(id: "ha-l8", title: "大调每级和弦的常见下一步", difficulty: "进阶", duration: "15min"),
+                    CourseLesson(id: "ha-l9", title: "小调和声进行的情绪设计", difficulty: "进阶", duration: "15min"),
+                    CourseLesson(id: "ha-l10", title: "名曲和声分析：卡农/Let It Be", difficulty: "综合", duration: "20min"),
                 ])
             ]
         )

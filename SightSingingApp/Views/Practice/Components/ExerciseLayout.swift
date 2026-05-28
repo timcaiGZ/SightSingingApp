@@ -8,6 +8,7 @@ struct ExerciseLayout<Content: View, BottomContent: View>: View {
     let totalQuestions: Int
     let questionText: String
     let score: Int?
+    let scoreLabel: String?
     let showDecompose: Bool
     let onBack: () -> Void
     let onNewQuestion: () -> Void
@@ -25,6 +26,7 @@ struct ExerciseLayout<Content: View, BottomContent: View>: View {
         totalQuestions: Int,
         questionText: String,
         score: Int? = nil,
+        scoreLabel: String? = nil,
         showDecompose: Bool = false,
         onBack: @escaping () -> Void,
         onNewQuestion: @escaping () -> Void,
@@ -39,6 +41,7 @@ struct ExerciseLayout<Content: View, BottomContent: View>: View {
         self.totalQuestions = totalQuestions
         self.questionText = questionText
         self.score = score
+        self.scoreLabel = scoreLabel
         self.showDecompose = showDecompose
         self.onBack = onBack
         self.onNewQuestion = onNewQuestion
@@ -79,6 +82,7 @@ struct ExerciseLayout<Content: View, BottomContent: View>: View {
             // 底部内容（键盘、录音按钮等）
             if !(bottomContent is EmptyView) {
                 bottomContent
+                    .frame(maxHeight: .infinity, alignment: .bottom)
                     .padding(.horizontal, 16)
                     .padding(.bottom, 8)
             }
@@ -112,7 +116,11 @@ struct ExerciseLayout<Content: View, BottomContent: View>: View {
             Spacer()
 
             // 右侧分数
-            if let score = score {
+            if let scoreLabel = scoreLabel {
+                Text(scoreLabel)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundStyle(AppTheme.accent)
+            } else if let score = score {
                 Text("\(score) 分")
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(AppTheme.accent)

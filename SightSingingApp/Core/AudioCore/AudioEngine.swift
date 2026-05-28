@@ -1,9 +1,10 @@
 import AVFoundation
 import Foundation
 
-/// 音频引擎 actor — 负责播放吉他音色音符，线程安全。
+/// 音频引擎 actor — 负责播放多音色音符与鼓组，线程安全。
 ///
 /// 现在位于 Core/AudioCore/，支持按 PlaybackEngine 时间线同步调度播放。
+/// 音色由全局 TimbreSettings 通过 UserDefaults 驱动，所有播放自动适配当前设定。
 actor AudioEngineManager {
     static let shared = AudioEngineManager()
 
@@ -79,7 +80,19 @@ actor AudioEngineManager {
         }
     }
 
-    // MARK: - Basic Playback (保留原有 API)
+    // MARK: - Tone & Drum Kit (read from UserDefaults)
+
+    private var currentInstrumentTone: TimbreSettings.InstrumentTone {
+        let raw = UserDefaults.standard.string(forKey: "timbre.instrumentTone") ?? "acoustic-guitar"
+        return TimbreSettings.InstrumentTone(rawValue: raw) ?? .acousticGuitar
+    }
+
+    private var currentDrumKit: TimbreSettings.DrumKit {
+        let raw = UserDefaults.standard.string(forKey: "timbre.drumKit") ?? "drum-kit"
+        return TimbreSettings.DrumKit(rawValue: raw) ?? .drumKit
+    }
+
+    // MARK: - Basic Playback
 
     /// 播放单个音符（简谱 solfege，如 "1", "2", "5"）
     func playSolfege(_ solfege: String, octave: Int = 4, duration: TimeInterval = 0.8) async {
@@ -88,7 +101,7 @@ actor AudioEngineManager {
         await playNote(frequency: frequency, duration: duration)
     }
 
-    /// 播放指定频率的音符（吉他音色合成）
+    /// 播放指定频率的音符（自动适配当前乐器音色）
     func playNote(frequency: Double, duration: TimeInterval = 0.8, stopPrevious: Bool = true) async {
         await setup()
 
@@ -97,7 +110,7 @@ actor AudioEngineManager {
             player.stop()
         }
 
-        let samples = generateGuitarTone(frequency: frequency, duration: duration)
+        let samples = generateInstrumentTone(frequency: frequency, duration: duration)
         let buffer = createBuffer(from: samples)
         player.scheduleBuffer(buffer, at: nil, options: [], completionHandler: nil)
         if !player.isPlaying {
@@ -105,7 +118,7 @@ actor AudioEngineManager {
         }
     }
 
-    /// 播放和弦（多个音符同时发声）
+    /// 播放和弦（多个音符同时发声，自动适配当前乐器音色）
     func playChord(_ notes: [(solfege: String, octave: Int)], duration: TimeInterval = 1.0) async {
         await setup()
 
@@ -117,7 +130,7 @@ actor AudioEngineManager {
             return MusicTheory.frequencyFromMIDI(midi)
         }
 
-        let samples = generateGuitarChord(frequencies: allFrequencies, duration: duration)
+        let samples = generateInstrumentChord(frequencies: allFrequencies, duration: duration)
         let buffer = createBuffer(from: samples)
         player.scheduleBuffer(buffer, at: nil, options: [], completionHandler: nil)
         player.play()
@@ -134,14 +147,14 @@ actor AudioEngineManager {
         playerNode?.stop()
     }
 
-    // MARK: - Scheduled Playback API (新增 —— 供 PlaybackEngine 调用)
+    // MARK: - Scheduled Playback API
 
     /// 调度一个音符在指定时间播发（用于时间线同步）
     func scheduleNote(midi: Int, at beat: Double, duration: TimeInterval, velocity: Double = 0.7) {
         guard let player = playerNode else { return }
 
         let frequency = MusicTheory.frequencyFromMIDI(midi)
-        let samples = generateGuitarTone(frequency: frequency, duration: duration)
+        let samples = generateInstrumentTone(frequency: frequency, duration: duration)
         let adjustedSamples = samples.map { $0 * velocity }
         let buffer = createBuffer(from: adjustedSamples)
 
@@ -153,7 +166,7 @@ actor AudioEngineManager {
         guard let player = playerNode, !midiNotes.isEmpty else { return }
 
         let frequencies = midiNotes.map { MusicTheory.frequencyFromMIDI($0) }
-        let samples = generateGuitarChord(frequencies: frequencies, duration: duration)
+        let samples = generateInstrumentChord(frequencies: frequencies, duration: duration)
         let adjustedSamples = samples.map { $0 * velocity }
         let buffer = createBuffer(from: adjustedSamples)
 
@@ -167,7 +180,6 @@ actor AudioEngineManager {
 
         player.stop()
 
-        // 将事件按顺序排列
         let sorted = events.sorted { $0.beat < $1.beat }
 
         guard let bpm = try? await getBPM() else { return }
@@ -179,7 +191,6 @@ actor AudioEngineManager {
             } else {
                 await scheduleNote(midi: event.midiNote, at: event.beat, duration: event.duration * beatDuration, velocity: event.velocity)
             }
-            // 等待拍数间隔
             try? await Task.sleep(nanoseconds: UInt64(beatDuration * 1_000_000_000))
         }
     }
@@ -190,7 +201,6 @@ actor AudioEngineManager {
 
         let beatDuration = 60.0 / bpm
         for i in 0..<beats {
-            // 强拍用更亮的音色
             let midi = i == 0 ? 72 : 70
             let velocity = i == 0 ? 1.0 : 0.6
             await playMIDI(midi, duration: min(0.15, beatDuration * 0.3))
@@ -217,21 +227,37 @@ actor AudioEngineManager {
         return buffer
     }
 
-    // MARK: - Guitar Tone Synthesis
+    // MARK: - Instrument Tone Synthesis
 
-    /// 生成吉他音色波形（正弦波 + 谐波 + ADSR 包络）
-    private func generateGuitarTone(frequency: Double, duration: TimeInterval) -> [Double] {
+    /// 生成乐器音色波形（根据当前 TimbreSettings 自动适配）
+    private func generateInstrumentTone(frequency: Double, duration: TimeInterval) -> [Double] {
         let sampleRate = 44100.0
         let totalSamples = Int(sampleRate * duration)
 
-        let harmonics: [(partial: Int, amplitude: Double)] = [
-            (1, 1.0),
-            (2, 0.5),
-            (3, 0.3),
-            (4, 0.15),
-            (5, 0.1),
-            (6, 0.05),
-        ]
+        let (harmonics, envelopeProfile): ([(partial: Int, amplitude: Double)], EnvelopeProfile)
+        switch currentInstrumentTone {
+        case .acousticGuitar:
+            harmonics = [(1, 1.0), (2, 0.5), (3, 0.3), (4, 0.15), (5, 0.1), (6, 0.05)]
+            envelopeProfile = .pluckedString
+        case .electricGuitar:
+            harmonics = [(1, 1.0), (2, 0.6), (3, 0.4), (4, 0.25), (5, 0.15), (6, 0.1), (7, 0.05)]
+            envelopeProfile = .sustainedPluck
+        case .nylonGuitar:
+            harmonics = [(1, 1.0), (2, 0.3), (3, 0.35), (4, 0.1), (5, 0.08), (6, 0.03)]
+            envelopeProfile = .softPluck
+        case .bass:
+            harmonics = [(1, 1.0), (2, 0.2), (3, 0.05), (4, 0.02)]
+            envelopeProfile = .longBass
+        case .piano:
+            harmonics = [(1, 1.0), (2, 0.4), (3, 0.25), (4, 0.12), (5, 0.06), (6, 0.03)]
+            envelopeProfile = .piano
+        case .ukulele:
+            harmonics = [(1, 1.0), (2, 0.45), (3, 0.2), (4, 0.08), (5, 0.04)]
+            envelopeProfile = .shortPluck
+        case .synth:
+            harmonics = [(1, 1.0), (2, 0.1), (3, 0.05)]
+            envelopeProfile = .synthPad
+        }
 
         var samples = [Double](repeating: 0, count: totalSamples)
 
@@ -243,23 +269,7 @@ actor AudioEngineManager {
             }
         }
 
-        for i in 0..<totalSamples {
-            let time = Double(i) / sampleRate
-            let progress = time / duration
-
-            let envelope: Double
-            if progress < 0.02 {
-                envelope = progress / 0.02
-            } else if progress < 0.1 {
-                envelope = 1.0 - (progress - 0.02) / 0.08 * 0.4
-            } else if progress < 0.8 {
-                envelope = 0.6
-            } else {
-                envelope = 0.6 * (1.0 - (progress - 0.8) / 0.2)
-            }
-
-            samples[i] *= envelope
-        }
+        applyEnvelope(&samples, duration: duration, profile: envelopeProfile)
 
         let maxAmp = samples.map { abs($0) }.max() ?? 1.0
         if maxAmp > 0 {
@@ -269,14 +279,14 @@ actor AudioEngineManager {
         return samples
     }
 
-    /// 生成和弦波形
-    private func generateGuitarChord(frequencies: [Double], duration: TimeInterval) -> [Double] {
+    /// 生成和弦波形（自动适配当前乐器音色）
+    private func generateInstrumentChord(frequencies: [Double], duration: TimeInterval) -> [Double] {
         let sampleRate = 44100.0
         let totalSamples = Int(sampleRate * duration)
         var mixedSamples = [Double](repeating: 0, count: totalSamples)
 
         for freq in frequencies {
-            let samples = generateGuitarTone(frequency: freq, duration: duration)
+            let samples = generateInstrumentTone(frequency: freq, duration: duration)
             for i in 0..<min(totalSamples, samples.count) {
                 mixedSamples[i] += samples[i] / Double(frequencies.count)
             }
@@ -290,7 +300,95 @@ actor AudioEngineManager {
         return mixedSamples
     }
 
-    // MARK: - Metronome Click Synthesis
+    // MARK: - Envelope Profiles
+
+    private enum EnvelopeProfile {
+        case pluckedString      // 木吉他
+        case sustainedPluck     // 电吉他
+        case softPluck          // 尼龙吉他
+        case longBass           // 贝斯
+        case piano              // 钢琴
+        case shortPluck         // 尤克里里
+        case synthPad           // 合成音
+    }
+
+    private func applyEnvelope(_ samples: inout [Double], duration: TimeInterval, profile: EnvelopeProfile) {
+        let totalSamples = samples.count
+        let sampleRate = 44100.0
+
+        for i in 0..<totalSamples {
+            let time = Double(i) / sampleRate
+            let progress = time / duration
+            var envelope: Double = 0
+
+            switch profile {
+            case .pluckedString:
+                if progress < 0.02 {
+                    envelope = progress / 0.02
+                } else if progress < 0.1 {
+                    envelope = 1.0 - (progress - 0.02) / 0.08 * 0.4
+                } else if progress < 0.8 {
+                    envelope = 0.6
+                } else {
+                    envelope = 0.6 * (1.0 - (progress - 0.8) / 0.2)
+                }
+            case .sustainedPluck:
+                if progress < 0.01 {
+                    envelope = progress / 0.01
+                } else if progress < 0.15 {
+                    envelope = 1.0 - (progress - 0.01) / 0.14 * 0.2
+                } else if progress < 0.9 {
+                    envelope = 0.8 * exp(-(progress - 0.15) * 2.0)
+                } else {
+                    envelope = 0.8 * exp(-0.75 * 2.0) * (1.0 - (progress - 0.9) / 0.1)
+                }
+            case .softPluck:
+                if progress < 0.03 {
+                    envelope = progress / 0.03
+                } else if progress < 0.2 {
+                    envelope = 1.0 - (progress - 0.03) / 0.17 * 0.3
+                } else {
+                    envelope = 0.7 * exp(-(progress - 0.2) * 3.0)
+                }
+            case .longBass:
+                if progress < 0.01 {
+                    envelope = progress / 0.01
+                } else if progress < 0.05 {
+                    envelope = 1.0
+                } else {
+                    envelope = exp(-(progress - 0.05) * 4.0)
+                }
+            case .piano:
+                if progress < 0.005 {
+                    envelope = progress / 0.005
+                } else {
+                    envelope = exp(-progress * 5.0)
+                }
+            case .shortPluck:
+                if progress < 0.02 {
+                    envelope = progress / 0.02
+                } else if progress < 0.08 {
+                    envelope = 1.0 - (progress - 0.02) / 0.06 * 0.3
+                } else if progress < 0.5 {
+                    envelope = 0.7
+                } else {
+                    envelope = 0.7 * (1.0 - (progress - 0.5) / 0.5)
+                }
+            case .synthPad:
+                if progress < 0.05 {
+                    envelope = progress / 0.05
+                } else if progress < 0.7 {
+                    envelope = 1.0
+                } else {
+                    envelope = 1.0 - (progress - 0.7) / 0.3
+                }
+            }
+
+            samples[i] *= envelope
+        }
+    }
+
+    // MARK: - Drum & Metronome
 
     /// 节拍器重音级别
     enum MetronomeAccent {
@@ -299,12 +397,19 @@ actor AudioEngineManager {
         case weak     // 非拍首位置
     }
 
-    /// 播放机械节拍器点击声
+    /// 播放节拍器/鼓组点击声（自动适配当前鼓组设置）
     func playMetronomeClick(accent: MetronomeAccent) async {
         await setup()
         guard let player = playerNode else { return }
 
-        let samples = generateMetronomeClick(accent: accent)
+        let samples: [Double]
+        switch currentDrumKit {
+        case .metronome:
+            samples = generateMetronomeClick(accent: accent)
+        default:
+            samples = generateDrumHit(accent: accent)
+        }
+
         let buffer = createBuffer(from: samples)
         player.scheduleBuffer(buffer, at: nil, options: [], completionHandler: nil)
         if !player.isPlaying {
@@ -312,26 +417,24 @@ actor AudioEngineManager {
         }
     }
 
-    /// 生成机械节拍器"滴答"波形：短促指数衰减 + 金属泛音，模拟真实机械节拍器
+    // MARK: - Metronome Synthesis (legacy)
+
     private func generateMetronomeClick(accent: MetronomeAccent) -> [Double] {
         let sampleRate = 44100.0
 
         let (duration, mainFreq, overtoneFreq, amplitude): (TimeInterval, Double, Double, Double)
         switch accent {
         case .strong:
-            // 第一拍重音：低频、大声、长衰减（类似 "tock"）
             duration = 0.12
             mainFreq = 800
             overtoneFreq = 2400
             amplitude = 1.0
         case .medium:
-            // 其他拍首：中频、中等音量（类似 "tick"）
             duration = 0.08
             mainFreq = 1200
             overtoneFreq = 3600
             amplitude = 0.65
         case .weak:
-            // 非拍首：高频、小声、短促
             duration = 0.045
             mainFreq = 1600
             overtoneFreq = 4800
@@ -343,22 +446,150 @@ actor AudioEngineManager {
 
         for i in 0..<totalSamples {
             let time = Double(i) / sampleRate
-            // 快速指数衰减，模拟机械敲击的瞬态
             let envelope = exp(-time * 40.0)
-            // 主频 + 高频泛音叠加，产生金属/木质质感
             let click = sin(2.0 * .pi * mainFreq * time) * 0.65 +
                         sin(2.0 * .pi * overtoneFreq * time) * 0.25 +
-                        // 加入轻微白噪声增强瞬态冲击感
                         (Double.random(in: -0.1...0.1) * exp(-time * 80.0))
             samples[i] = click * envelope * amplitude
         }
 
-        // 归一化
-        let maxAmp = samples.map { abs($0) }.max() ?? 1.0
-        if maxAmp > 0 {
-            samples = samples.map { $0 / maxAmp * 0.9 }
+        normalize(&samples, target: 0.9)
+        return samples
+    }
+
+    // MARK: - Drum Kit Synthesis
+
+    private func generateDrumHit(accent: MetronomeAccent) -> [Double] {
+        switch currentDrumKit {
+        case .drumKit:
+            return generateDrumKitHit(accent: accent)
+        case .acousticDrum:
+            return generateAcousticDrumHit(accent: accent)
+        case .electronicDrum:
+            return generateElectronicDrumHit(accent: accent)
+        case .metronome:
+            return generateMetronomeClick(accent: accent)
+        }
+    }
+
+    /// 套鼓：强拍=kick+hi-hat, 中拍=snare+hi-hat, 弱拍=hi-hat
+    private func generateDrumKitHit(accent: MetronomeAccent) -> [Double] {
+        let sampleRate = 44100.0
+        let duration: TimeInterval = accent == .strong ? 0.25 : (accent == .medium ? 0.18 : 0.12)
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Double](repeating: 0, count: totalSamples)
+
+        // Hi-hat 始终存在
+        addHiHat(to: &samples, sampleRate: sampleRate, electronic: false)
+
+        switch accent {
+        case .strong:
+            addKick(to: &samples, sampleRate: sampleRate, electronic: false)
+        case .medium:
+            addSnare(to: &samples, sampleRate: sampleRate, electronic: false)
+        case .weak:
+            break // hi-hat only
         }
 
+        normalize(&samples, target: 0.9)
         return samples
+    }
+
+    /// 原声鼓：更温暖、自然的音色
+    private func generateAcousticDrumHit(accent: MetronomeAccent) -> [Double] {
+        let sampleRate = 44100.0
+        let duration: TimeInterval = accent == .strong ? 0.3 : (accent == .medium ? 0.22 : 0.15)
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Double](repeating: 0, count: totalSamples)
+
+        addHiHat(to: &samples, sampleRate: sampleRate, electronic: false, softer: true)
+
+        switch accent {
+        case .strong:
+            addKick(to: &samples, sampleRate: sampleRate, electronic: false, deeper: true)
+        case .medium:
+            addSnare(to: &samples, sampleRate: sampleRate, electronic: false, warmer: true)
+        case .weak:
+            break
+        }
+
+        normalize(&samples, target: 0.85)
+        return samples
+    }
+
+    /// 电音鼓：电子鼓机音色
+    private func generateElectronicDrumHit(accent: MetronomeAccent) -> [Double] {
+        let sampleRate = 44100.0
+        let duration: TimeInterval = accent == .strong ? 0.2 : (accent == .medium ? 0.15 : 0.1)
+        let totalSamples = Int(sampleRate * duration)
+        var samples = [Double](repeating: 0, count: totalSamples)
+
+        addHiHat(to: &samples, sampleRate: sampleRate, electronic: true)
+
+        switch accent {
+        case .strong:
+            addKick(to: &samples, sampleRate: sampleRate, electronic: true)
+        case .medium:
+            addSnare(to: &samples, sampleRate: sampleRate, electronic: true)
+        case .weak:
+            break
+        }
+
+        normalize(&samples, target: 0.9)
+        return samples
+    }
+
+    // MARK: - Drum Components
+
+    private func addKick(to samples: inout [Double], sampleRate: Double, electronic: Bool, deeper: Bool = false) {
+        let count = samples.count
+        let freq: Double = electronic ? 55.0 : (deeper ? 50.0 : 60.0)
+        let decay: Double = electronic ? 25.0 : 18.0
+
+        for i in 0..<count {
+            let time = Double(i) / sampleRate
+            let env = exp(-time * decay)
+            let sweep = freq * (1.0 - min(time * 15.0, 0.5))
+            samples[i] += sin(2.0 * .pi * sweep * time) * env * 0.8
+            if !electronic {
+                samples[i] += sin(2.0 * .pi * sweep * 2.0 * time) * env * 0.15
+            }
+        }
+    }
+
+    private func addSnare(to samples: inout [Double], sampleRate: Double, electronic: Bool, warmer: Bool = false) {
+        let count = samples.count
+        let toneFreq: Double = electronic ? 220.0 : (warmer ? 180.0 : 200.0)
+        let decay: Double = electronic ? 35.0 : 22.0
+
+        for i in 0..<count {
+            let time = Double(i) / sampleRate
+            let env = exp(-time * decay)
+            let tone = sin(2.0 * .pi * toneFreq * time) * env * 0.3
+            let noise = (Double.random(in: -1.0...1.0) * exp(-time * (electronic ? 50.0 : 30.0))) * 0.5
+            samples[i] += tone + noise
+        }
+    }
+
+    private func addHiHat(to samples: inout [Double], sampleRate: Double, electronic: Bool, softer: Bool = false) {
+        let count = samples.count
+        let decay: Double = electronic ? 80.0 : (softer ? 45.0 : 60.0)
+        let amp: Double = softer ? 0.25 : 0.35
+
+        for i in 0..<count {
+            let time = Double(i) / sampleRate
+            let env = exp(-time * decay)
+            let metallic = sin(2.0 * .pi * 8000.0 * time) * 0.3 +
+                           sin(2.0 * .pi * 12000.0 * time) * 0.2
+            let noise = Double.random(in: -1.0...1.0) * 0.5
+            samples[i] += (metallic + noise) * env * amp
+        }
+    }
+
+    private func normalize(_ samples: inout [Double], target: Double) {
+        let maxAmp = samples.map { abs($0) }.max() ?? 1.0
+        if maxAmp > 0 {
+            samples = samples.map { $0 / maxAmp * target }
+        }
     }
 }

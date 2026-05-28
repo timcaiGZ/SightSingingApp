@@ -14,6 +14,34 @@ actor PlaybackEngine {
 
     static let shared = PlaybackEngine()
 
+    private init() {
+        setupAudioCallback()
+    }
+
+    /// 将时间线事件自动路由到 AudioEngineManager，使用当前全局音色设置
+    private func setupAudioCallback() {
+        onEvent { [weak self] event in
+            guard self != nil else { return }
+            Task {
+                await AudioEngineManager.shared.setup()
+                if event.isChord, let chordNotes = event.chordNotes {
+                    await AudioEngineManager.shared.scheduleChord(
+                        midiNotes: chordNotes,
+                        duration: event.duration,
+                        velocity: event.velocity
+                    )
+                } else {
+                    await AudioEngineManager.shared.scheduleNote(
+                        midi: event.midiNote,
+                        at: event.beat,
+                        duration: event.duration,
+                        velocity: event.velocity
+                    )
+                }
+            }
+        }
+    }
+
     // MARK: - Types
 
     /// 时间线上的一个音频事件
@@ -67,8 +95,8 @@ actor PlaybackEngine {
     /// 状态变更回调（给 UI 层）
     private var stateChangeHandler: (@Sendable (PlaybackState) -> Void)?
 
-    /// 事件触发回调（给 AudioCore 调度音频）
-    private var eventHandler: (@Sendable (TimedAudioEvent) -> Void)?
+    /// 事件触发回调（给 AudioCore 调度音频 + UI 更新）
+    private var eventHandlers: [(@Sendable (TimedAudioEvent) -> Void)] = []
 
     /// 完成回调
     private var completionHandler: CompletionHandler?
@@ -86,7 +114,7 @@ actor PlaybackEngine {
     }
 
     func onEvent(_ handler: @escaping @Sendable (TimedAudioEvent) -> Void) {
-        eventHandler = handler
+        eventHandlers.append(handler)
     }
 
     func onComplete(_ handler: @escaping CompletionHandler) {
@@ -224,7 +252,9 @@ actor PlaybackEngine {
         while nextEventIndex < timeline.count {
             let event = timeline[nextEventIndex]
             if event.beat <= tick.beat + 0.05 {
-                eventHandler?(event)
+                for handler in eventHandlers {
+                    handler(event)
+                }
                 nextEventIndex += 1
             } else {
                 break

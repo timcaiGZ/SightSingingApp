@@ -47,39 +47,68 @@ struct SingleNoteListeningView: View {
                 title: "单音辨认",
                 questionNumber: currentQuestion,
                 totalQuestions: totalQuestions,
-                questionText: "请问演奏了哪个单音? 你听到的第一个音是标准音 (无须录入)。",
+                questionText: "请问演奏了哪个单音? 第一个音为标准音 (无须录入)。",
                 score: score,
+                scoreLabel: "\(score)/\(currentQuestion * 10) 分",
                 showDecompose: false,
                 onBack: { dismiss() },
                 onNewQuestion: handleNewQuestion,
                 onReplay: handleReplay,
                 replayLabel: "重听"
             ) {
-                VStack(spacing: 16) {
+                VStack(spacing: 12) {
                     // 谱式展示
                     if notationPrefs.preferredNotation == .staff {
                         StaffNotationDisplay(inputNotes: inputNotes, feedback: answerState)
                     } else {
-                        TabSolfegeDisplay(inputNotes: inputNotes, feedback: answerState)
+                        TabSolfegeDisplay(
+                            inputNotes: inputNotes,
+                            feedback: answerState,
+                            correctNote: answerState == .wrong ? currentAnswer?.noteName : nil
+                        )
                     }
 
-                    // 下一题按钮
+                    // 提交后的正确/错误反馈
+                    if answerState != .idle {
+                        let attempted = currentQuestion
+                        let accuracy = attempted > 0 ? Int(Double(correctCount) / Double(attempted) * 100) : 0
+                        HStack(spacing: 6) {
+                            Text(answerState == .correct ? "🤩" : "😅")
+                            Text(answerState == .correct ? "正确。" : "不正确。")
+                                .font(.system(size: 15, weight: .medium))
+                            Text("今天的正确率是 \(accuracy)%。")
+                                .font(.system(size: 15))
+                        }
+                        .foregroundStyle(answerState == .correct ? AppTheme.success : AppTheme.error)
+                        .padding(.top, 4)
+                    }
+
+                    // 输入提示
+                    if inputNotes.isEmpty && answerState == .idle {
+                        Text("点击下方键盘输入音名")
+                            .font(.system(size: 13))
+                            .foregroundStyle(AppTheme.tertiaryText)
+                            .padding(.top, 4)
+                    }
+
+                    // 答错时显示下一题按钮
                     if showNext {
                         Button {
                             goNext()
                         } label: {
                             Text("下一题")
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(.system(size: 16, weight: .semibold))
                                 .foregroundStyle(.white)
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 48)
+                                .frame(height: 44)
                                 .background(AppTheme.accent)
-                                .clipShape(RoundedRectangle(cornerRadius: 18))
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
                         }
                         .buttonStyle(.plain)
+                        .padding(.top, 4)
                     }
                 }
-                .padding(.vertical, 16)
+                .padding(.vertical, 8)
             } bottomContent: {
                 MusicKeyboard(
                     onNotePress: handleNotePress,
@@ -87,7 +116,7 @@ struct SingleNoteListeningView: View {
                     onSubmit: handleSubmit,
                     canSubmit: !inputNotes.isEmpty && answerState == .idle
                 )
-                .padding(.bottom, 8)
+                .padding(.bottom, 6)
             }
 
             // 完成覆盖层
@@ -174,8 +203,8 @@ struct SingleNoteListeningView: View {
             score += 10
             session.submitAnswer(isCorrect: true)
             ExperienceEngine.shared.onUserAction(.noteCorrect(deviation: 0))
-            // 答对：短暂显示正确反馈后自动进入下一题
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            // 答对：显示正确反馈后自动进入下一题
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                 goNext()
             }
         } else {
@@ -354,19 +383,20 @@ struct TrebleClefShape: Shape {
     }
 }
 
-// MARK: - 六线谱+简谱展示 (匹配 v0 TabSolfegeNotation)
+// MARK: - 六线谱展示 (C 调指板，匹配 v0 TabSolfegeNotation)
 
 struct TabSolfegeDisplay: View {
     let inputNotes: [String]
     let feedback: SingleNoteListeningView.AnswerState
+    /// 标准音音名（C 调下始终为 A，5 弦空弦）
+    var standardNote: String = "A"
+    /// 正确答案（答错时同时显示）
+    var correctNote: String? = nil
 
-    private let noteToSolfege: [String: String] = [
-        "C": "1", "D": "2", "E": "3", "F": "4", "G": "5", "A": "6", "B": "7",
-    ]
-
+    /// C 调标准调弦 EADGBE 下各自然音在指板上的位置
     private let noteToFret: [String: (string: Int, fret: Int)] = [
         "C": (5, 3), "D": (4, 0), "E": (4, 2), "F": (4, 3),
-        "G": (3, 0), "A": (3, 2), "B": (2, 0),
+        "G": (3, 0), "A": (5, 0), "B": (2, 0),
     ]
 
     private var borderColor: Color {
@@ -378,20 +408,20 @@ struct TabSolfegeDisplay: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
-            // 六线谱
-            tablatureCard
-
-            // 简谱
-            solfegeCard
-        }
-    }
-
-    private var tablatureCard: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text("六线谱")
-                .font(.system(size: 11))
-                .foregroundStyle(AppTheme.secondaryText)
+            // 标题行：六线谱 + C 调标记
+            HStack(spacing: 6) {
+                Text("六线谱")
+                    .font(.system(size: 11))
+                    .foregroundStyle(AppTheme.secondaryText)
+                Text("C 调")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(AppTheme.accent.opacity(0.7))
+                    .clipShape(Capsule())
+            }
 
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
@@ -402,24 +432,23 @@ struct TabSolfegeDisplay: View {
                     )
 
                 GeometryReader { geo in
+                    let w = geo.size.width
                     let h = geo.size.height
-                    let lineSpacing = (h - 20) / 5
+                    let lineSpacing = (h - 24) / 5
 
                     ZStack {
-                        // 左侧数字 1-6 + 6 条线
+                        // 左侧弦号 + 6 条线
                         HStack(spacing: 6) {
-                            // 弦号列
                             VStack(spacing: 0) {
                                 ForEach(1...6, id: \.self) { num in
                                     Text("\(num)")
-                                        .font(.system(size: 9))
+                                        .font(.system(size: 10, weight: .medium))
                                         .foregroundStyle(AppTheme.secondaryText)
                                         .frame(height: lineSpacing)
                                 }
                             }
-                            .frame(width: 16)
+                            .frame(width: 18)
 
-                            // 6 条线
                             VStack(spacing: 0) {
                                 ForEach(0..<6, id: \.self) { i in
                                     Rectangle()
@@ -431,102 +460,82 @@ struct TabSolfegeDisplay: View {
                                 }
                             }
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 6)
+                            .padding(.vertical, 8)
                         }
                         .padding(.horizontal, 12)
 
-                        // 输入的音符（品位标记）
-                        HStack(spacing: 28) {
+                        // 标准音标记（左侧固定位置，显示 0）
+                        if let pos = noteToFret[standardNote] {
+                            let yOffset = CGFloat(pos.string - 1) * lineSpacing - (h - 24) / 2
+                            HStack(spacing: 4) {
+                                ZStack {
+                                    Circle()
+                                        .stroke(Color(hex: "94A3B8"), lineWidth: 1.5)
+                                        .background(Circle().fill(Color.white.opacity(0.9)))
+                                        .frame(width: 24, height: 24)
+                                    Text("0")
+                                        .font(.system(size: 10, weight: .semibold))
+                                        .foregroundStyle(Color(hex: "64748B"))
+                                }
+                                .offset(x: 0, y: yOffset)
+
+                                Spacer()
+                            }
+                            .padding(.leading, 52)
+                        }
+
+                        // 用户答案 + 正确答案标记
+                        HStack(spacing: 32) {
+                            if inputNotes.isEmpty && correctNote == nil {
+                                Color.clear.frame(width: 1, height: 1)
+                            }
+
+                            // 用户输入的音符
                             ForEach(Array(inputNotes.enumerated()), id: \.offset) { _, note in
                                 let baseNote = note.replacingOccurrences(of: "#", with: "").replacingOccurrences(of: "b", with: "")
                                 if let pos = noteToFret[baseNote] {
-                                    let yOffset = CGFloat(pos.string - 1) * lineSpacing - (h - 20) / 2 + 10
-                                    Circle()
-                                        .fill(Color.white)
-                                        .frame(width: 18, height: 18)
-                                        .overlay(
-                                            Text("\(pos.fret)")
-                                                .font(.system(size: 10, weight: .medium))
-                                                .foregroundStyle(AppTheme.primaryText)
-                                        )
-                                        .offset(x: 0, y: yOffset)
+                                    let yOffset = CGFloat(pos.string - 1) * lineSpacing - (h - 24) / 2
+                                    let dotColor = feedback == .wrong ? AppTheme.error : AppTheme.accent
+                                    ZStack {
+                                        Circle()
+                                            .fill(dotColor.opacity(0.15))
+                                            .frame(width: 28, height: 28)
+                                        Circle()
+                                            .fill(dotColor)
+                                            .frame(width: 22, height: 22)
+                                        Text("\(pos.fret)")
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundStyle(.white)
+                                    }
+                                    .offset(x: 0, y: yOffset)
+                                }
+                            }
+
+                            // 正确答案（答错时显示，绿色）
+                            if feedback == .wrong, let correct = correctNote {
+                                let baseCorrect = correct.replacingOccurrences(of: "#", with: "").replacingOccurrences(of: "b", with: "")
+                                if let pos = noteToFret[baseCorrect] {
+                                    let yOffset = CGFloat(pos.string - 1) * lineSpacing - (h - 24) / 2
+                                    ZStack {
+                                        Circle()
+                                            .fill(AppTheme.success.opacity(0.15))
+                                            .frame(width: 28, height: 28)
+                                        Circle()
+                                            .fill(AppTheme.success)
+                                            .frame(width: 22, height: 22)
+                                        Text("\(pos.fret)")
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundStyle(.white)
+                                    }
+                                    .offset(x: 0, y: yOffset)
                                 }
                             }
                         }
-                        .position(x: geo.size.width / 2 + 10, y: h / 2)
+                        .position(x: w / 2 + 20, y: h / 2)
                     }
                 }
             }
-            .frame(height: 80)
-        }
-    }
-
-    private var solfegeCard: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text("简谱")
-                .font(.system(size: 11))
-                .foregroundStyle(AppTheme.secondaryText)
-
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(AppTheme.cardBackground)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(borderColor, lineWidth: 1)
-                    )
-
-                HStack(spacing: 20) {
-                    if inputNotes.isEmpty {
-                        Text("等待输入...")
-                            .font(.system(size: 14))
-                            .foregroundStyle(AppTheme.secondaryText)
-                    } else {
-                        ForEach(Array(inputNotes.enumerated()), id: \.offset) { _, note in
-                            let baseNote = note.replacingOccurrences(of: "#", with: "").replacingOccurrences(of: "b", with: "")
-                            let solfege = noteToSolfege[baseNote] ?? "?"
-                            let hasSharp = note.contains("#")
-                            let hasFlat = note.contains("b")
-
-                            VStack(spacing: 2) {
-                                HStack(alignment: .lastTextBaseline, spacing: 1) {
-                                    if hasSharp {
-                                        Text("♯")
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(AppTheme.accent)
-                                    }
-                                    if hasFlat {
-                                        Text("♭")
-                                            .font(.system(size: 12))
-                                            .foregroundStyle(AppTheme.accent)
-                                    }
-                                    Text(solfege)
-                                        .font(.system(size: 24, weight: .bold))
-                                        .foregroundStyle(AppTheme.accent)
-                                }
-
-                                Text(solfegeName(baseNote))
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(AppTheme.secondaryText)
-                            }
-                        }
-                    }
-                }
-                .padding(.horizontal, 16)
-            }
-            .frame(height: 80)
-        }
-    }
-
-    private func solfegeName(_ note: String) -> String {
-        switch note {
-        case "C": return "do"
-        case "D": return "re"
-        case "E": return "mi"
-        case "F": return "fa"
-        case "G": return "sol"
-        case "A": return "la"
-        case "B": return "si"
-        default: return ""
+            .frame(height: 140)
         }
     }
 }

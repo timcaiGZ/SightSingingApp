@@ -16,9 +16,8 @@ struct ProfileTab: View {
     
     var body: some View {
         NavigationStack {
-        ScrollView {
-            VStack(spacing: 16) {
-                // === 页面标题 34px bold ===
+            VStack(spacing: 0) {
+                // === 固定头部 ===
                 VStack(alignment: .leading, spacing: 4) {
                     Text("我的")
                         .font(.system(size: 34, weight: .bold))
@@ -30,7 +29,12 @@ struct ProfileTab: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
+                .padding(.bottom, 4)
+                .background(AppTheme.background)
                 
+                // === 滚动内容 ===
+                ScrollView {
+                    VStack(spacing: 16) {
                 // === 用户信息卡 bg-card rounded-2xl border p-4 ===
                 HStack(spacing: 12) {
                     // 头像 w-16 h-16 bg-accent/20 rounded-full
@@ -230,12 +234,13 @@ struct ProfileTab: View {
             }
             .padding(.bottom, 24)
         }
+        }
         .background(AppTheme.background)
         .navigationDestination(item: $selectedSettingsRow) { dest in
             SettingsDetailView(destination: dest)
         }
-        }  // NavigationStack
     }
+}
 }
 
 // MARK: - 设置详情页 (通用占位页)
@@ -245,7 +250,7 @@ struct SettingsDetailView: View {
     
     private var title: String {
         switch destination {
-        case .audio: return "音频设置"
+        case .audio: return "音色设置"
         case .reminder: return "每日提醒"
         case .studyData: return "学习数据"
         case .help: return "帮助与反馈"
@@ -268,25 +273,136 @@ struct SettingsDetailView: View {
             }
             .padding(16)
             .background(Color.white)
-            
-            ScrollView {
-                VStack(spacing: 16) {
-                    Spacer().frame(height: 40)
-                    Image(systemName: "gear")
-                        .font(.system(size: 48))
-                        .foregroundStyle(AppTheme.secondaryText.opacity(0.3))
-                    Text("\(title)页面")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(AppTheme.secondaryText)
-                    Text("该功能将在后续版本中完善")
-                        .font(.system(size: 14))
-                        .foregroundStyle(AppTheme.tertiaryText)
-                    Spacer()
+
+            if destination == .audio {
+                TimbreSettingsView()
+            } else {
+                ScrollView {
+                    VStack(spacing: 16) {
+                        Spacer().frame(height: 40)
+                        Image(systemName: "gear")
+                            .font(.system(size: 48))
+                            .foregroundStyle(AppTheme.secondaryText.opacity(0.3))
+                        Text("\(title)页面")
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        Text("该功能将在后续版本中完善")
+                            .font(.system(size: 14))
+                            .foregroundStyle(AppTheme.tertiaryText)
+                        Spacer()
+                    }
                 }
             }
         }
         .background(AppTheme.background)
         .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
+    }
+}
+
+// MARK: - 音色设置页面
+struct TimbreSettingsView: View {
+    @State private var settings = TimbreSettings.shared
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // === 吉他调音 ===
+                settingsSection(title: "吉他调音") {
+                    HStack(spacing: 10) {
+                        ForEach(TimbreSettings.GuitarTuning.allCases) { tuning in
+                            TimbreSelectCard(
+                                title: tuning.displayName,
+                                subtitle: tuning.subtitle,
+                                isSelected: settings.guitarTuning == tuning
+                            ) {
+                                settings.guitarTuning = tuning
+                            }
+                        }
+                    }
+                }
+
+                // === 鼓组 ===
+                settingsSection(title: "鼓组") {
+                    HStack(spacing: 10) {
+                        ForEach(TimbreSettings.DrumKit.allCases) { kit in
+                            TimbreSelectCard(
+                                title: kit.displayName,
+                                subtitle: "",
+                                isSelected: settings.drumKit == kit
+                            ) {
+                                settings.drumKit = kit
+                            }
+                        }
+                    }
+                }
+
+                // === 乐器音色 ===
+                settingsSection(title: "乐器音色") {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
+                        ForEach(TimbreSettings.InstrumentTone.allCases) { tone in
+                            TimbreSelectCard(
+                                title: tone.displayName,
+                                subtitle: "",
+                                isSelected: settings.instrumentTone == tone
+                            ) {
+                                settings.instrumentTone = tone
+                            }
+                        }
+                    }
+                }
+
+                Spacer().frame(height: 40)
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 24)
+        }
+        .safeAreaInset(edge: .bottom, content: { Color.clear.frame(height: 8) })
+    }
+
+    private func settingsSection<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(AppTheme.primaryText)
+            content()
+        }
+    }
+}
+
+// MARK: - 音色选择卡片（统一 AppTheme 风格）
+struct TimbreSelectCard: View {
+    let title: String
+    let subtitle: String
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.system(size: 16, weight: isSelected ? .bold : .semibold))
+                    .foregroundStyle(isSelected ? Color.white : AppTheme.primaryText)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
+                if !subtitle.isEmpty {
+                    Text(subtitle)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(isSelected ? Color.white.opacity(0.9) : AppTheme.secondaryText)
+                }
+                Spacer()
+            }
+            .frame(maxWidth: .infinity, minHeight: subtitle.isEmpty ? 60 : 80, alignment: .leading)
+            .padding(12)
+            .background(isSelected ? AppTheme.accent : AppTheme.cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? AppTheme.accent : AppTheme.border, lineWidth: isSelected ? 0 : 1)
+            )
+        }
+        .buttonStyle(IOSPressStyle())
     }
 }
 

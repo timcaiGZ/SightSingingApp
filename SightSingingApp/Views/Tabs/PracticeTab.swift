@@ -6,23 +6,24 @@ struct PracticeTab: View {
     
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    // === 页面标题 34px bold ===
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("练习")
-                            .font(.system(size: 34, weight: .bold))
-                            .foregroundStyle(AppTheme.primaryText)
-                        Text("轻松视唱练耳，自由畅快弹唱")
-                            .font(.system(size: 15))
-                            .foregroundStyle(AppTheme.secondaryText)
-                    }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.top, 8)
-                    .padding(.bottom, 44)
-                    
-                    // === 五大练习分类 space-y-3 ===
+            VStack(spacing: 0) {
+                // === 固定头部 ===
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("练习")
+                        .font(.system(size: 34, weight: .bold))
+                        .foregroundStyle(AppTheme.primaryText)
+                    Text("轻松视唱练耳，自由畅快弹唱")
+                        .font(.system(size: 15))
+                        .foregroundStyle(AppTheme.secondaryText)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+                .padding(.bottom, 16)
+                .background(AppTheme.background)
+                
+                // === 滚动内容 ===
+                ScrollView {
                     VStack(spacing: 12) {
                         ForEach(PracticeCategoryData.allCategories) { category in
                             PracticeCategoryCard(category: category) {
@@ -31,8 +32,8 @@ struct PracticeTab: View {
                         }
                     }
                     .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
                 }
-                .padding(.bottom, 24)
             }
             .background(AppTheme.background)
             .toolbar(.hidden, for: .navigationBar)

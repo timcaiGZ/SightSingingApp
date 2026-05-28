@@ -14,9 +14,8 @@ struct TestTab: View {
     
     var body: some View {
         NavigationStack {
-        ScrollView {
-            VStack(spacing: 16) {
-                // === 页面标题 34px bold + 副标题 ===
+            VStack(spacing: 0) {
+                // === 固定头部 ===
                 VStack(alignment: .leading, spacing: 4) {
                     Text("测试")
                         .font(.system(size: 34, weight: .bold))
@@ -28,9 +27,14 @@ struct TestTab: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
+                .padding(.bottom, 4)
+                .background(AppTheme.background)
                 
-                // === 统计卡片 grid-cols-3 gap-3 ===
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
+                // === 滚动内容 ===
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // === 统计卡片 grid-cols-3 gap-3 ===
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
                     TestStatCard(
                         icon: "trophy",
                         value: "\(completedCount)",
@@ -86,12 +90,13 @@ struct TestTab: View {
             }
             .padding(.bottom, 24)
         }
+        }
         .background(AppTheme.background)
         .navigationDestination(item: $selectedTest) { test in
             TestContainerView(test: test)
         }
-        }  // NavigationStack
     }
+}
 }
 
 // MARK: - 统计卡片 (匹配 v0: bg-card rounded-xl border p-3 text-center)
@@ -136,6 +141,8 @@ struct TestRowView: View {
         case "chord-test": return "music.note"           // Music → music.note (确定存在)
         case "rhythm-test": return "metronome"           // Drum → metronome (确定存在)
         case "sight-singing-test": return "mic"           // Mic
+        case "tsd-motion-test": return "arrow.triangle.branch" // 和声进行
+        case "mode-test": return "tuningfork"             // 调式
         default: return "doc.text"
         }
     }
@@ -147,6 +154,8 @@ struct TestRowView: View {
         case "chord-test": return Color(hex: "EC4899")      // pink-500
         case "rhythm-test": return Color(hex: "F97316")     // orange-500
         case "sight-singing-test": return Color(hex: "22C55E") // green-500
+        case "tsd-motion-test": return Color(hex: "0EA5E9")   // sky-500
+        case "mode-test": return Color(hex: "14B8A6")         // teal-500
         default: return AppTheme.accent
         }
     }

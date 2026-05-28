@@ -44,7 +44,7 @@ enum TheoryGraphics {
                 chordProgressionGraphic(
                     chords: data.progressionChords,
                     degrees: data.progressionDegrees,
-                    tsdLabels: data.tsdLabels,
+                    tsdLabels: data.progressionLabels,
                     audio: audio
                 )
             case .tsdFunctionalGroup:
@@ -77,6 +77,54 @@ enum TheoryGraphics {
                     baseChord: data.colorChordBase,
                     variants: data.colorChordVariants,
                     feelings: data.colorChordFeelings,
+                    audio: audio
+                )
+            // HarmonyCore 新图形
+            case .harmonyFretboard:
+                harmonyFretboardGraphic(audio: audio)
+            case .harmonyChordDiagram:
+                harmonyChordConstructionGraphic(
+                    formula: data.chordFormula,
+                    notes: data.chordNotes,
+                    intervals: data.chordIntervals,
+                    roles: data.chordNoteRoles,
+                    chordName: data.harmonyChordName,
+                    audio: audio
+                )
+            case .harmonyScaleFretboard:
+                let mode = ScaleMode.allCases.first { data.harmonyScaleMode.isEmpty || $0.rawValue == data.harmonyScaleMode } ?? .major
+                harmonyScaleGraphic(
+                    root: data.harmonyScaleRoot,
+                    mode: mode,
+                    audio: audio
+                )
+            case .harmonyChordProgression:
+                let prog = ChordProgressionEngine.builtInProgressions.first { $0.name == data.harmonyProgressionName } ?? .popCanon
+                harmonyChordProgressionGraphic(
+                    progression: prog,
+                    key: data.harmonyProgressionKey,
+                    audio: audio
+                )
+            case .harmonyAllKeys:
+                harmonyAllKeysGraphic(
+                    progressionName: data.harmonyAllKeysProgressionName,
+                    audio: audio
+                )
+            case .harmonyDiatonicChords:
+                let mode = ScaleMode.allCases.first { $0.rawValue == data.harmonyDiatonicMode } ?? .major
+                harmonyDiatonicChordsGraphic(
+                    root: data.harmonyDiatonicRoot,
+                    mode: mode,
+                    chordType: data.harmonyDiatonicType,
+                    audio: audio
+                )
+            case .harmonyChordTypeBrowser:
+                harmonyChordTypeBrowserGraphic(audio: audio)
+            case .harmonyChordCards:
+                harmonyChordCardsGraphic(
+                    cards: data.harmonyChordCards,
+                    title: data.harmonyChordCardsTitle,
+                    columns: data.harmonyChordCardsColumns,
                     audio: audio
                 )
             default:
@@ -233,49 +281,11 @@ enum TheoryGraphics {
         }
     }
 
-    // MARK: - 吉他指板半音图
+    // MARK: - 吉他指板半音图（使用 HarmonyCore 动态生成）
 
     @ViewBuilder
     static func fretboardGraphic(audio: TheoryTapAudio?) -> some View {
-        VStack(spacing: 4) {
-            Text("吉他指板上的半音（点击任意位置试听）")
-                .font(.system(size: 12))
-                .foregroundStyle(AppTheme.secondaryText)
-                .padding(.bottom, 4)
-
-            GeometryReader { _ in
-                Canvas { ctx, size in
-                    for i in 0..<6 {
-                        let y = 8 + CGFloat(i) * 8
-                        let path = Path { p in
-                            p.move(to: CGPoint(x: 20, y: y))
-                            p.addLine(to: CGPoint(x: size.width - 20, y: y))
-                        }
-                        ctx.stroke(path, with: .color(Color(hex: "94A3B8")), lineWidth: 0.5 + CGFloat(i) * 0.1)
-                    }
-                    for i in 0..<6 {
-                        let x = 20 + CGFloat(i) * 48
-                        let path = Path { p in
-                            p.move(to: CGPoint(x: x, y: 5))
-                            p.addLine(to: CGPoint(x: x, y: 52))
-                        }
-                        ctx.stroke(path, with: .color(Color(hex: "94A3B8")), lineWidth: 1)
-                    }
-                }
-            }
-            .frame(height: 60)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                audio?.playFretboardNote(string: 2, fret: 3)
-            }
-
-            Text("相邻品位 = 半音")
-                .font(.system(size: 11))
-                .foregroundStyle(AppTheme.secondaryText)
-        }
-        .padding(12)
-        .background(AppTheme.secondaryBg)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        harmonyFretboardGraphic(audio: audio)
     }
 
     // MARK: - 音阶结构图
@@ -544,13 +554,20 @@ enum TheoryGraphics {
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(AppTheme.border, lineWidth: 0.5))
 
-            // 右侧：指板位置示意
+            // 右侧：动态指板高亮（HarmonyCore）
             VStack(spacing: 4) {
                 Text("指板位置")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(AppTheme.secondaryText)
 
-                fretboardWithHighlights(notes: notes, audio: audio)
+                HarmonyFretboardView(
+                    fretboard: FretboardModel(),
+                    highlightNotes: Set(notes),
+                    highlightColor: AppTheme.accent,
+                    showNoteLabels: true,
+                    fretRange: 0..<6,
+                    audio: audio
+                )
             }
             .padding(12)
             .frame(maxWidth: .infinity)
@@ -561,57 +578,6 @@ enum TheoryGraphics {
         .padding(8)
         .background(AppTheme.secondaryBg)
         .clipShape(RoundedRectangle(cornerRadius: 14))
-    }
-
-    private static func fretboardWithHighlights(notes: [String], audio: TheoryTapAudio?) -> some View {
-        let openStrings = ["E", "A", "D", "G", "B", "E"]
-        return VStack(spacing: 2) {
-            // 简化的指板示意（只展示0-4品）
-            ForEach(0..<5, id: \.self) { fret in
-                HStack(spacing: 0) {
-                    ForEach(0..<6, id: \.self) { stringIdx in
-                        let noteName = getNoteAtFret(stringIdx: stringIdx, fret: fret)
-                        let isHighlight = notes.contains(noteName)
-                        ZStack {
-                            if isHighlight {
-                                Circle()
-                                    .fill(AppTheme.accent)
-                                    .frame(width: 18, height: 18)
-                                Text(noteName)
-                                    .font(.system(size: 8, weight: .bold))
-                                    .foregroundStyle(.white)
-                                    .onTapGesture { audio?.playNoteByName(noteName) }
-                            } else {
-                                Circle()
-                                    .stroke(AppTheme.border, lineWidth: 0.5)
-                                    .frame(width: 14, height: 14)
-                                Text(noteName)
-                                    .font(.system(size: 7))
-                                    .foregroundStyle(AppTheme.secondaryText)
-                            }
-                        }
-                        .frame(width: 24, height: 22)
-                    }
-                }
-                .padding(.horizontal, 4)
-            }
-
-            HStack(spacing: 0) {
-                ForEach(0..<5, id: \.self) { fret in
-                    Text("\(fret)")
-                        .font(.system(size: 8))
-                        .foregroundStyle(AppTheme.secondaryText)
-                        .frame(width: 24)
-                }
-            }
-        }
-    }
-
-    private static func getNoteAtFret(stringIdx: Int, fret: Int) -> String {
-        let openStrings = ["E", "F", "F♯", "G", "G♯", "A", "A♯", "B", "C", "C♯", "D", "D♯"]
-        let stringOffsets = [4, 9, 2, 7, 11, 4] // E,A,D,G,B,E → index in openStrings
-        let idx = (stringOffsets[stringIdx] + fret) % 12
-        return openStrings[idx]
     }
 
     // MARK: - 和弦进行流程图

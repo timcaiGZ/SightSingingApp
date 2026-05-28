@@ -26,42 +26,45 @@ struct TheoryTab: View {
     
     var body: some View {
         NavigationStack {
-        ScrollView {
-            VStack(spacing: 16) {
-                // === 页面标题 34px bold + 副标题 15px ===
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("乐理")
-                        .font(.system(size: 34, weight: .bold))
-                        .foregroundStyle(AppTheme.primaryText)
-                    Text("轻松视唱练耳，自由畅快弹唱")
-                        .font(.system(size: 15))
-                        .foregroundStyle(AppTheme.secondaryText)
+            VStack(spacing: 0) {
+                // === 固定头部：标题 + 搜索框 ===
+                VStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("乐理")
+                            .font(.system(size: 34, weight: .bold))
+                            .foregroundStyle(AppTheme.primaryText)
+                        Text("轻松视唱练耳，自由畅快弹唱")
+                            .font(.system(size: 15))
+                            .foregroundStyle(AppTheme.secondaryText)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    // 搜索框
+                    HStack(spacing: 10) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 20, weight: .regular))
+                            .foregroundStyle(AppTheme.secondaryText)
+                        
+                        TextField("搜索乐理知识...", text: $searchQuery)
+                            .font(.system(size: 15))
+                    }
+                    .padding(.horizontal, 12)
+                    .frame(height: 44)
+                    .background(AppTheme.secondaryBg)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(searchQuery.isEmpty ? Color.clear : AppTheme.accent.opacity(0.2), lineWidth: 1.5)
+                    )
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
+                .padding(.bottom, 4)
+                .background(AppTheme.background)
                 
-                // === 搜索框 h-11 rounded-xl bg-secondary/50 ===
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 20, weight: .regular))
-                        .foregroundStyle(AppTheme.secondaryText)
-                    
-                    TextField("搜索乐理知识...", text: $searchQuery)
-                        .font(.system(size: 15))
-                }
-                .padding(.horizontal, 12)
-                .frame(height: 44)   // h-11
-                .background(AppTheme.secondaryBg)
-                .clipShape(RoundedRectangle(cornerRadius: 12))  // rounded-xl
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(searchQuery.isEmpty ? Color.clear : AppTheme.accent.opacity(0.2), lineWidth: 1.5)
-                )
-                .padding(.horizontal, 16)
-                
-                // === 分类手风琴列表 space-y-4 ===
-                VStack(spacing: 16) {
+                // === 滚动内容：分类手风琴列表 ===
+                ScrollView {
+                    VStack(spacing: 16) {
                     ForEach(filteredCategories) { category in
                         TheoryCategoryAccordionView(
                             category: category,
@@ -111,11 +114,11 @@ struct TheoryTab: View {
                     }
                 }
                 .padding(.horizontal, 16)
+                .padding(.bottom, 20)
             }
-            .padding(.bottom, 20)
-        }
-        .background(AppTheme.background)
-        .navigationDestination(item: $selectedTopic) { topic in
+            .background(AppTheme.background)
+            }
+            .navigationDestination(item: $selectedTopic) { topic in
             TheoryDetailView(topic: topic, progressService: progressService)
         }
         .navigationDestination(item: $navigateToSpecial) { specialId in

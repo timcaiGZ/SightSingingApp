@@ -56,10 +56,10 @@ class TheoryTapAudio {
 
     // MARK: - 吉他指板
 
-    /// 标准调音：E2(40) A2(45) D3(50) G3(55) B3(59) E4(64)
-    /// string: 0=低音E .. 5=高音E
+    /// 自动适配当前 TimbreSettings 调弦设置
+    /// string: 0=最低音弦
     func playFretboardNote(string: Int, fret: Int) {
-        let openMidi = [40, 45, 50, 55, 59, 64]
+        let openMidi = FretboardModel.currentTuningMIDI
         guard string >= 0, string < openMidi.count else { return }
         playNote(openMidi[string] + fret)
     }
