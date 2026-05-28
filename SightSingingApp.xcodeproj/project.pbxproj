@@ -150,7 +150,7 @@
 		44327F8C01BE33003F2AD880 /* TheoryViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryViewModel.swift; sourceTree = "<group>"; };
 		44EF59FACB6B74712F2D261D /* SightSingingApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingApp.swift; sourceTree = "<group>"; };
 		486D52842A974C64AA845606 /* MasterMusicClock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackCore/MasterMusicClock.swift; sourceTree = "<group>"; };
-		4A4AAC8FC3A3C6A25CD962D3 /* ChordData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChordData.swift; path = Models/Theory/ChordData.swift; sourceTree = "<group>"; };
+		4A4AAC8FC3A3C6A25CD962D3 /* ChordData.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChordData.swift; path = ChordData.swift; sourceTree = "<group>"; };
 		4B8CDBBB9FEDC767D8C2ABBE /* ChordFingeringSolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ChordFingeringSolver.swift; sourceTree = "<group>"; };
 		516FBA6A201B490786BC6706 /* TheoryTapAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryTapAudio.swift; sourceTree = "<group>"; };
 		5718CA3B9970A36EA3D28588 /* SixteenthRhythmPattern.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SixteenthRhythmPattern.swift; path = RhythmCore/SixteenthRhythmPattern.swift; sourceTree = "<group>"; };
@@ -168,7 +168,7 @@
 		70F3981E49AC51E5E81ACDDD /* FretboardPoint.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FretboardPoint.swift; sourceTree = "<group>"; };
 		76D7C724F714E1B7C161F690 /* NotationType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotationType.swift; sourceTree = "<group>"; };
 		8025FF101825CA9830B6C653 /* TheoryPracticeMapperTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TheoryPracticeMapperTests.swift; sourceTree = "<group>"; };
-		87642F55052640ADAA07DB60 /* ChordBrowserView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChordBrowserView.swift; path = Views/Theory/ChordBrowserView.swift; sourceTree = "<group>"; };
+		87642F55052640ADAA07DB60 /* ChordBrowserView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ChordBrowserView.swift; path = ChordBrowserView.swift; sourceTree = "<group>"; };
 		9102C416F7914C0BA51FDE3D /* RhythmPattern.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RhythmCore/RhythmPattern.swift; sourceTree = "<group>"; };
 		963FE412C2BA09770E554DD4 /* PitchMeterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PitchMeterView.swift; sourceTree = "<group>"; };
 		9AF463D8B36E4C26920E4B1A /* PracticeScore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PracticeCore/PracticeScore.swift; sourceTree = "<group>"; };
@@ -181,8 +181,8 @@
 		A1B2C3D4E5F6000100010001 /* ExerciseSoundPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseSoundPlayer.swift; sourceTree = "<group>"; };
 		A3DE4A370F6300914E4059D5 /* MusicTheoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusicTheoryTests.swift; sourceTree = "<group>"; };
 		A76BD6724A47D565B80AC285 /* TestHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestHistory.swift; sourceTree = "<group>"; };
-		A822BE26318C6E0B54ECE17E /* RhythmLibraryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RhythmLibraryView.swift; path = Views/Theory/RhythmLibraryView.swift; sourceTree = "<group>"; };
-		A998B391AF01140BE2695ED1 /* ProgressionAnalyzerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProgressionAnalyzerView.swift; path = Views/Theory/ProgressionAnalyzerView.swift; sourceTree = "<group>"; };
+		A822BE26318C6E0B54ECE17E /* RhythmLibraryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RhythmLibraryView.swift; path = RhythmLibraryView.swift; sourceTree = "<group>"; };
+		A998B391AF01140BE2695ED1 /* ProgressionAnalyzerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProgressionAnalyzerView.swift; path = ProgressionAnalyzerView.swift; sourceTree = "<group>"; };
 		A9F7D90BF97ADBF2FCF2D6F8 /* SpecialTheoryViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SpecialTheoryViews.swift; sourceTree = "<group>"; };
 		AA3BE023D84A72ED98E30509 /* StaffNotationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaffNotationView.swift; sourceTree = "<group>"; };
 		AB598DB81C5E521DA7B4DABC /* QuestionBank.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestionBank.swift; sourceTree = "<group>"; };
@@ -212,7 +212,7 @@
 		D5B86F3AE1CE6A63F1625AA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		D6D950CE790C5A1604DFB9F3 /* GuitarTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuitarTabView.swift; sourceTree = "<group>"; };
 		D81F937A8A46BC53602A14D2 /* NotationDisplayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotationDisplayView.swift; sourceTree = "<group>"; };
-		DA76AA508226C631B939F0E9 /* ModeExplorerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ModeExplorerView.swift; path = Views/Theory/ModeExplorerView.swift; sourceTree = "<group>"; };
+		DA76AA508226C631B939F0E9 /* ModeExplorerView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ModeExplorerView.swift; path = ModeExplorerView.swift; sourceTree = "<group>"; };
 		DBE913440F6842978D984C5E /* PlaybackEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaybackCore/PlaybackEngine.swift; sourceTree = "<group>"; };
 		DD8B4B3FA9716AF3F5F7B76A /* ColorTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorTheme.swift; sourceTree = "<group>"; };
 		DF46E4511E3AA40579F6B40F /* SightSingingResultView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SightSingingResultView.swift; sourceTree = "<group>"; };
