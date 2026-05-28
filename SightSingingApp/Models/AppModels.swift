@@ -239,7 +239,7 @@ struct TheoryCategoryData: Identifiable, Hashable {
             TheoryTopicData(id: "major-progressions", title: "大调常用和弦走向 ⭐⭐⭐", description: "1645、1564、卡农走向"),
             TheoryTopicData(id: "minor-progressions", title: "小调常用和弦走向", description: "小调独特的情绪色彩"),
             TheoryTopicData(id: "chord-substitution", title: "和弦替换与色彩", description: "同一个走向，不同的色彩"),
-            TheoryTopicData(id: "chord-library-full", title: "和弦大全（交互式浏览器）⭐", description: "30+种和弦类型一网打尽"),
+            TheoryTopicData(id: "chord-library-full", title: "和弦大全（交互式浏览器）⭐", description: "30+种和弦类型一网打尽", isSpecial: true),
             TheoryTopicData(id: "chord-ear-color", title: "和弦听觉色彩速查 👂", description: "每种和弦的听感特征速记"),
             // —— 和弦指板数据库 ——
             TheoryTopicData(id: "4string-root-triads", title: "四弦根音·三和弦指型", description: "以D弦为根音的大/小/减/增"),
@@ -272,6 +272,7 @@ struct TheoryCategoryData: Identifiable, Hashable {
             TheoryTopicData(id: "mode-identification", title: "调式辨识训练", description: "听歌判断大小调和主音"),
             TheoryTopicData(id: "key-finding", title: "定调实战", description: "三步确定一首歌的调"),
             TheoryTopicData(id: "modes-full-guide", title: "七种调式完全指南 ⭐", description: "Ionian到Locrian全解析+指板"),
+            TheoryTopicData(id: "mode-explorer", title: "调式交互式探索器 🎹", description: "任意根音×七种调式实时切换", isSpecial: true),
             // —— 转调实战 ——
             TheoryTopicData(id: "major-to-parallel-minor", title: "同主音大调转小调", description: "C大→C小，明亮→暗淡"),
             TheoryTopicData(id: "minor-to-parallel-major", title: "同主音小调转大调", description: "暗淡→明亮，情绪反转"),
@@ -288,6 +289,7 @@ struct TheoryCategoryData: Identifiable, Hashable {
             TheoryTopicData(id: "syncopation", title: "切分音", description: "弱拍变重，创造律动"),
             TheoryTopicData(id: "rest-usage", title: "休止符的运用", description: "敢停=节奏感好的标志"),
             TheoryTopicData(id: "right-hand-independence", title: "右手独立性训练 ⭐⭐", description: "右手永不断，像钟摆一样"),
+            TheoryTopicData(id: "rhythm-library", title: "节奏型库 🥁", description: "8组经典节奏型+交互式播放器", isSpecial: true),
             TheoryTopicData(id: "rhythm-layers", title: "节奏层次", description: "主歌轻→副歌重 的情绪设计"),
             TheoryTopicData(id: "rubato", title: "Rubato（自由速度）", description: "先练稳，再学自由"),
         ]),

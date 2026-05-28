@@ -127,6 +127,12 @@ struct TheoryTab: View {
                 SeventhChordsView()
             case "mode-relation", "circle-of-fifths-intro":
                 CircleOfFifthsView()
+            case "chord-library-full":
+                ChordBrowserView()
+            case "mode-explorer":
+                ModeExplorerView()
+            case "rhythm-library":
+                RhythmLibraryView()
             default:
                 Text("未知页面")
             }
