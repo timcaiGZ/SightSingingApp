@@ -378,7 +378,16 @@ struct ChordBrowserView: View {
                                   info: ChordInfoData.info[tag] ?? "",
                                   earCharacter: EarCharacterData.characters[tag] ?? "", tsd: c.tsd)
             }
-        default:
+        case .slash:
+            return SlashChordDatabase.chordsFor(key: selectedKey, mode: selectedMode)
+        case .borrowed:
+            return ChordExtensionEngine.borrowedChords(for: selectedKey, mode: selectedMode)
+        case .harmonicMinor:
+            return ChordExtensionEngine.harmonicMinorChords(for: selectedKey, mode: selectedMode)
+        case .secondaryDominant:
+            return ChordExtensionEngine.secondaryDominants(for: selectedKey, mode: selectedMode)
+        case .eleventh, .thirteenth:
+            // 十一和十三和弦暂时使用简化的三和弦+7音版本
             return []
         }
     }

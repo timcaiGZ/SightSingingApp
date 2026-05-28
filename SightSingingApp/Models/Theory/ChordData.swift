@@ -494,3 +494,146 @@ struct RhythmPatternLibrary {
             tip: "注意3&位置有上扫但4&位置没有，形成切分律动感"),
     ]
 }
+
+// MARK: - 斜杠和弦数据库（从 buitar SLASH_DB 迁移）
+
+struct SlashChordDatabase {
+    /// 所有斜杠和弦的按法数据
+    static let allSlashChords: [SlashChord] = [
+        SlashChord(name: "G/B", bass: "B", chord: "G",
+                   taps: [(2,2,"B"),(3,0,"D"),(4,0,"G"),(5,0,"B"),(6,3,"G")]),
+        SlashChord(name: "G/F#", bass: "F#", chord: "G",
+                   taps: [(1,2,"F#"),(2,0,"A"),(3,0,"D"),(4,0,"G"),(5,0,"B"),(6,3,"G")]),
+        SlashChord(name: "G/D", bass: "D", chord: "G",
+                   taps: [(3,0,"D"),(4,0,"G"),(5,0,"B"),(6,3,"G")]),
+        SlashChord(name: "C/E", bass: "E", chord: "C",
+                   taps: [(1,0,"E"),(3,2,"E"),(4,0,"G"),(5,1,"C"),(6,0,"E")]),
+        SlashChord(name: "C/G", bass: "G", chord: "C",
+                   taps: [(1,3,"G"),(2,3,"C"),(3,2,"E"),(4,0,"G"),(5,1,"C"),(6,0,"E")]),
+        SlashChord(name: "C/B", bass: "B", chord: "C",
+                   taps: [(2,2,"B"),(3,2,"E"),(4,0,"G"),(5,1,"C"),(6,0,"E")]),
+        SlashChord(name: "D/F#", bass: "F#", chord: "D",
+                   taps: [(1,2,"F#"),(3,0,"D"),(4,2,"F#"),(5,3,"A"),(6,2,"D")]),
+        SlashChord(name: "D/A", bass: "A", chord: "D",
+                   taps: [(1,0,"A"),(3,0,"D"),(4,2,"F#"),(5,3,"A"),(6,2,"D")]),
+        SlashChord(name: "F/C", bass: "C", chord: "F",
+                   taps: [(2,3,"C"),(3,3,"F"),(4,2,"A"),(5,1,"C"),(6,1,"F")]),
+        SlashChord(name: "Am/G", bass: "G", chord: "Am",
+                   taps: [(1,3,"G"),(2,0,"A"),(3,2,"E"),(4,2,"A"),(5,1,"C"),(6,0,"E")]),
+        SlashChord(name: "Am/E", bass: "E", chord: "Am",
+                   taps: [(1,0,"E"),(2,0,"A"),(3,2,"E"),(4,2,"A"),(5,1,"C"),(6,0,"E")]),
+        SlashChord(name: "Am/F", bass: "F", chord: "Am",
+                   taps: [(1,1,"F"),(2,0,"A"),(3,2,"E"),(4,2,"A"),(5,1,"C"),(6,0,"E")]),
+        SlashChord(name: "E/G#", bass: "G#", chord: "E",
+                   taps: [(1,4,"G#"),(2,0,"A"),(3,2,"E"),(4,1,"G#"),(5,0,"B"),(6,0,"E")]),
+        SlashChord(name: "A/C#", bass: "C#", chord: "A",
+                   taps: [(1,4,"C#"),(2,0,"A"),(3,2,"E"),(4,2,"A"),(5,2,"C#"),(6,0,"E")]),
+        SlashChord(name: "A/E", bass: "E", chord: "A",
+                   taps: [(1,0,"E"),(2,0,"A"),(3,2,"E"),(4,2,"A"),(5,2,"C#"),(6,0,"E")]),
+        SlashChord(name: "Em/D", bass: "D", chord: "Em",
+                   taps: [(3,0,"D"),(4,0,"G"),(5,0,"B"),(6,0,"E")]),
+        SlashChord(name: "Bm/A", bass: "A", chord: "Bm",
+                   taps: [(1,0,"A"),(2,2,"B"),(4,4,"F#"),(5,4,"B"),(6,4,"D")]),
+    ]
+
+    static func chordsFor(key: String, mode: KeyMode) -> [ChordEntry] {
+        let keySlashMap: [String: [String]] = [
+            "C": ["C/E","C/G","C/B","G/B","G/F#","Am/G","Am/E","D/F#"],
+            "G": ["G/B","G/F#","G/D","D/F#","D/A","Bm/A","Em/D","C/E"],
+            "D": ["D/F#","D/A","A/C#","A/E","Bm/A","G/B","G/F#","Em/D"],
+            "A": ["A/C#","A/E","E/G#","D/F#","Bm/A","G/B"],
+            "E": ["E/G#","A/C#","A/E","D/F#","G/B","C/E"],
+            "F": ["F/C","Am/E","Am/G","C/E","C/G"],
+            "Am": ["Am/G","Am/E","Am/F","E/G#","C/E","C/G","G/B","D/F#"],
+            "Em": ["Em/D","G/B","G/F#","D/F#","Am/G","Am/E"],
+            "Bm": ["Bm/A","D/F#","G/B","A/C#","E/G#"],
+        ]
+        let keys = keySlashMap[key] ?? ["G/B","D/F#","C/E","Am/G","E/G#","A/C#"]
+        return keys.compactMap { name in
+            guard let slash = allSlashChords.first(where: { $0.name == name }) else { return nil }
+            let notes = Array(Set(slash.taps.map { $0.2 }))
+            return ChordEntry(root: slash.chord, tag: "/", label: name,
+                              notes: notes, degree: "斜杠和弦", degreeIndex: nil,
+                              info: "分数和弦：\(slash.chord)和弦以\(slash.bass)为低音。制造流畅Bass线，常用于转位。",
+                              earCharacter: "低音独立行走，和声更有流动感", tsd: nil)
+        }
+    }
+}
+
+struct SlashChord {
+    let name: String
+    let bass: String
+    let chord: String
+    let taps: [(string: Int, grade: Int, note: String)]
+}
+
+// MARK: - 和弦扩展引擎（借用和弦 + 副属和弦 + 和声小调）
+
+struct ChordExtensionEngine {
+
+    static func borrowedChords(for key: String, mode: KeyMode) -> [ChordEntry] {
+        guard mode == .major else { return [] }
+        let ri = MusicTheoryHelper.noteIndex(key)
+        let bVII = MusicTheoryHelper.normNote(MusicTheoryHelper.chromatic[(ri + 10) % 12])
+        let bIII = MusicTheoryHelper.normNote(MusicTheoryHelper.chromatic[(ri + 3) % 12])
+        let bVI  = MusicTheoryHelper.normNote(MusicTheoryHelper.chromatic[(ri + 8) % 12])
+        let iv   = MusicTheoryHelper.normNote(MusicTheoryHelper.chromatic[(ri + 5) % 12])
+
+        let defs: [(root: String, tag: String, degree: String)] = [
+            (bVII, "", "♭Ⅶ（借用平行小调）"),
+            (bIII, "", "♭Ⅲ（借用平行小调）"),
+            (bVI,  "", "♭Ⅵ（借用平行小调）"),
+            (key,  "m", "im（平行小调主和弦）"),
+            (iv,   "m", "ivm（借用小四级）"),
+            (bVII, "maj7", "♭Ⅶmaj7（借用）"),
+            (bIII, "maj7", "♭Ⅲmaj7（借用）"),
+        ]
+        return defs.compactMap { def in
+            let notes = ChordBuilder.buildChordNotes(root: def.root, tag: def.tag)
+            return ChordEntry(root: def.root, tag: def.tag, label: def.root + def.tag,
+                              notes: notes, degree: def.degree, degreeIndex: nil,
+                              info: ChordInfoData.info[def.tag] ?? "借用和弦：从平行小调借来的和弦，增添色彩变化。",
+                              earCharacter: EarCharacterData.characters[def.tag] ?? "借用色彩", tsd: nil)
+        }
+    }
+
+    static func secondaryDominants(for key: String, mode: KeyMode) -> [ChordEntry] {
+        let notes = MusicTheoryHelper.keyNotes(for: key)
+        let degrees = mode == .major ? MusicTheoryHelper.majorDegrees : MusicTheoryHelper.minorDegrees
+        return (1..<notes.count).compactMap { i in
+            let targetNote = notes[i]
+            let ri = MusicTheoryHelper.noteIndex(targetNote)
+            let domRoot = MusicTheoryHelper.normNote(MusicTheoryHelper.chromatic[(ri + 7) % 12])
+            let label = domRoot + "7"
+            let notes7 = ChordBuilder.buildChordNotes(root: domRoot, tag: "7")
+            return ChordEntry(root: domRoot, tag: "7", label: label,
+                              notes: notes7, degree: "V7/\(degrees[i])（→\(targetNote)）",
+                              degreeIndex: nil,
+                              info: "副属和弦：\(label) 是 \(targetNote) 的临时属七和弦，增强解决感。",
+                              earCharacter: "蓝调感、紧张、解决欲强", tsd: .dominant)
+        }
+    }
+
+    static func harmonicMinorChords(for key: String, mode: KeyMode) -> [ChordEntry] {
+        let minRoot = mode == .minor ? (MusicTheoryHelper.minorKeys.contains(key) ? String(key.dropLast()) : key) : key
+        let mri = MusicTheoryHelper.noteIndex(minRoot)
+        let v5r = MusicTheoryHelper.normNote(MusicTheoryHelper.chromatic[(mri + 7) % 12])
+        let ldr = MusicTheoryHelper.normNote(MusicTheoryHelper.chromatic[(mri + 11) % 12])
+        let b6r = MusicTheoryHelper.normNote(MusicTheoryHelper.chromatic[(mri + 8) % 12])
+
+        let defs: [(root: String, tag: String, degree: String, info: String)] = [
+            (v5r, "7", "和声小调Ⅴ7（→\(minRoot)m）", "和声小调的属七和弦，升导音制造强烈解决感。"),
+            (ldr, "dim", "和声小调Ⅶdim", "和声小调的导七减三和弦，极度紧张。"),
+            (ldr, "dim7", "和声小调Ⅶdim7", "和声小调的减七和弦，完全对称，爵士常用。"),
+            (b6r, "", "和声小调♭Ⅵ", "和声小调的降六级大三和弦，明亮对比。"),
+            (b6r, "maj7", "和声小调♭Ⅵmaj7", "和声小调降六级大七和弦。"),
+        ]
+        return defs.compactMap { def in
+            let notes = ChordBuilder.buildChordNotes(root: def.root, tag: def.tag)
+            return ChordEntry(root: def.root, tag: def.tag, label: def.root + def.tag,
+                              notes: notes, degree: def.degree, degreeIndex: nil,
+                              info: def.info,
+                              earCharacter: EarCharacterData.characters[def.tag] ?? "和声小调色彩", tsd: nil)
+        }
+    }
+}
