@@ -9,12 +9,9 @@ enum KeyMode: String, CaseIterable, Codable {
     case minor = "小调"
 }
 
-/// TSD 功能组
-enum TSDFunction: String, CaseIterable, Codable {
-    case tonic = "T"
-    case subdominant = "S"
-    case dominant = "D"
-
+// TSDFunction 已在 HarmonyCore/ScaleEngine.swift 中定义
+// 这里添加扩展属性
+extension TSDFunction: CaseIterable {}
     var displayName: String {
         switch self {
         case .tonic: return "主功能 Tonic"
